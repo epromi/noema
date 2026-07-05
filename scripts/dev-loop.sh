@@ -512,7 +512,7 @@ ok "Status updated — $PKG_ID marked done + dashboard regen pushed"
 banner "5g: Review Sub-Agent"
 # ═══════════════════════════════════════════════════════════════════════════
 
-REVIEW_SPAWNER="$PROJECT_DIR/scripts/spawn-review-agent.js"
+REVIEW_SPAWNER="$PROJECT_DIR/scripts/spawn-review-agent.cjs"
 
 if [ -f "$REVIEW_SPAWNER" ]; then
   if [ "${REVIEW_WARN:-0}" -gt 0 ] || [ "${REVIEW_FAIL:-0}" -gt 0 ]; then
@@ -522,7 +522,7 @@ if [ -f "$REVIEW_SPAWNER" ]; then
     echo "✅ Review clean — no sub-agent needed"
   fi
 else
-  echo "(spawn-review-agent.js not found — skip)"
+  echo "(spawn-review-agent.cjs not found — skip)"
 fi
 
 echo ""

@@ -161,8 +161,8 @@ async function main() {
   console.log(`   Low coverage: ${hasLowCoverage}`);
   console.log(`   Arch violations: ${hasArchViolation}`);
 
-  if (passCount === 0 && warnCount === 0 && failCount === 0) {
-    console.log('   → Review log empty — nothing to review, skipping spawn');
+  if (warnCount === 0 && failCount === 0) {
+    console.log('   → No issues detected — skipping review agent');
     process.exit(0);
   }
 
