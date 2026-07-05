@@ -149,9 +149,29 @@ h1{font-size:1.3em;margin-bottom:0}.subtitle{color:var(--muted);font-size:0.92em
   .pkg-row { cursor:pointer; transition:opacity 0.15s; }
   .pkg-row:hover { background:var(--accent); }
   .pkg-detail { display:none; }
+
+  /* ── Dev Loop Indicator (fixed right-center) ── */
+  #dev-loop-indicator { position:fixed; right:16px; top:50%; transform:translateY(-50%); background:var(--card); border:2px solid var(--border); border-radius:10px; padding:12px 16px; min-width:210px; z-index:9999; box-shadow:0 4px 16px rgba(0,0,0,0.35); font-size:0.82em; line-height:1.5; transition:border-color 0.3s; }
+  #dev-loop-indicator.idle { border-color:var(--border); }
+  #dev-loop-indicator.active { border-color:var(--green); animation:pulse 2s infinite; }
+  #dev-loop-indicator.soon { border-color:var(--yellow); }
+  @keyframes pulse { 0%,100% { box-shadow:0 4px 16px rgba(0,0,0,0.3); } 50% { box-shadow:0 0 24px rgba(63,185,80,0.3); } }
+  .dli-title { font-weight:700; color:var(--accent); font-size:0.85em; margin-bottom:4px; }
+  .dli-row { display:flex; justify-content:space-between; margin-bottom:2px; }
+  .dli-label { color:var(--muted); }
+  .dli-val { font-weight:700; }
+  .dli-countdown { font-size:1.1em; font-family:'Fira Code',monospace; }
 </style>
 </head>
 <body>
+
+<!-- ── Dev Loop Indicator ── -->
+<div id="dev-loop-indicator" class="idle">
+  <div class="dli-title">⚙️ Dev Job</div>
+  <div class="dli-row"><span class="dli-label">Következő:</span><span class="dli-val dli-countdown" id="dli-next">—</span></div>
+  <div class="dli-row"><span class="dli-label">Sorban áll:</span><span class="dli-val" id="dli-queue" style="color:var(--muted)">0</span></div>
+  <div class="dli-row" id="dli-running-row" style="display:none"><span class="dli-label">Fut:</span><span class="dli-val" id="dli-running" style="color:var(--green)">—</span></div>
+</div>
 
 <!-- ── Header ── -->
 <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
@@ -1031,6 +1051,64 @@ function actionBtn(action, id, description, label) {
       el.style.fontSize = MIN + 'px';
     }
   });
+})();
+
+// ── Dev Loop Indicator — poll relay every 10s, countdown every 1s ──
+(async function devLoopIndicator() {
+  const RELAY = 'http://127.0.0.1:18998';
+  const countdownEl = document.getElementById('dli-next');
+  const queueEl = document.getElementById('dli-queue');
+  const runningEl = document.getElementById('dli-running');
+  const runningRow = document.getElementById('dli-running-row');
+  const indicator = document.getElementById('dev-loop-indicator');
+  let nextMs = 0;
+
+  function updateCountdown() {
+    if (nextMs === 0) return;
+    const diff = nextMs - Date.now();
+    if (diff <= 0) {
+      countdownEl.textContent = 'most...';
+      countdownEl.style.color = 'var(--green)';
+      return;
+    }
+    const mins = Math.floor(diff / 60000);
+    const secs = Math.floor((diff % 60000) / 1000);
+    countdownEl.textContent = String(mins).padStart(2,'0') + ':' + String(secs).padStart(2,'0');
+    countdownEl.style.color = diff < 60000 ? 'var(--yellow)' : 'var(--muted)';
+  }
+
+  async function refresh() {
+    try {
+      const [ntRes, rRes] = await Promise.all([
+        fetch(RELAY + '/next-trigger'),
+        fetch(RELAY + '/running')
+      ]);
+      const nt = await ntRes.json();
+      const r = await rRes.json();
+      
+      nextMs = nt.nextMs || 0;
+      queueEl.textContent = nt.queue || 0;
+      queueEl.style.color = nt.queue > 0 ? 'var(--yellow)' : 'var(--muted)';
+
+      if (r.running) {
+        runningRow.style.display = '';
+        runningEl.textContent = r.running;
+        indicator.className = 'active';
+      } else {
+        runningRow.style.display = 'none';
+        indicator.className = nextMs - Date.now() < 60000 ? 'soon' : 'idle';
+      }
+      updateCountdown();
+    } catch(e) {
+      countdownEl.textContent = 'offline';
+      countdownEl.style.color = 'var(--red)';
+      indicator.className = 'idle';
+    }
+  }
+
+  await refresh();
+  setInterval(updateCountdown, 1000);
+  setInterval(refresh, 10000);
 })();
 </script>
 </body>
