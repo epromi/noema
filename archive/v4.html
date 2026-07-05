@@ -16,7 +16,9 @@
   --g-bg: #1a3a1a; --y-bg: #3a2a0a; --r-bg: #3a0a0a;
 }
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;padding:16px 24px;max-width:1200px;margin:0 auto;font-size:18px}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;margin:0;font-size:18px}
+.app-layout{display:flex;min-height:100vh;align-items:stretch}
+.main-content{flex:1;min-width:0;padding:16px 24px}
 h1{font-size:1.3em;margin-bottom:0}.subtitle{color:var(--muted);font-size:0.92em;margin-bottom:16px}
 
 /* ── Tabs ── */
@@ -136,6 +138,50 @@ h1{font-size:1.3em;margin-bottom:0}.subtitle{color:var(--muted);font-size:0.92em
 .ct-now{display:flex;align-items:center;gap:8px;padding:8px 10px 8px 0;margin:4px 0 4px 12px;border-left:3px solid var(--red);position:relative}
 .ct-now-line{flex:1;text-align:center;font-weight:700;font-size:0.88em;color:var(--red);background:linear-gradient(90deg,transparent,rgba(248,81,73,0.15),transparent);padding:4px 8px;border-radius:4px;animation:ct-now-pulse 2s ease-in-out infinite}
 @keyframes ct-now-pulse{0%,100%{opacity:1;box-shadow:0 0 0 rgba(248,81,73,0)}50%{opacity:0.85;box-shadow:0 0 14px rgba(248,81,73,0.35)}}
+
+/* ── Cron Sidebar (always visible) ── */
+.cron-sidebar{width:280px;min-width:280px;position:sticky;top:0;height:100vh;overflow:hidden;display:flex;flex-direction:column;background:var(--card);border-left:1px solid var(--border);flex-shrink:0;transition:width .2s,min-width .2s}
+.cron-sidebar.collapsed{width:40px;min-width:40px}
+.cs-header{display:flex;align-items:center;gap:6px;padding:10px 8px;border-bottom:1px solid var(--border);flex-shrink:0;background:rgba(0,0,0,0.15)}
+.cs-toggle{cursor:pointer;background:var(--bg);color:var(--accent);border:1px solid var(--border);border-radius:4px;padding:2px 6px;font-size:0.75em;line-height:1.2;flex-shrink:0}
+.cs-toggle:hover{border-color:var(--accent)}
+.cs-title{font-weight:700;font-size:0.88em;color:var(--accent);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cs-clock{font-family:monospace;font-size:0.72em;color:var(--muted);white-space:nowrap}
+.cron-sidebar.collapsed .cs-title,.cron-sidebar.collapsed .cs-clock{display:none}
+.cron-sidebar.collapsed .cs-header{justify-content:center;padding:10px 4px}
+.cs-scroll{flex:1;overflow-y:auto;padding:6px 0}
+.cron-sidebar.collapsed .cs-scroll{display:none}
+.cs-collapsed-icons{display:none;flex:1;overflow-y:auto;padding:6px 2px;flex-direction:column;align-items:center;gap:8px}
+.cron-sidebar.collapsed .cs-collapsed-icons{display:flex}
+.cs-icon-btn{background:none;border:none;cursor:pointer;font-size:1.1em;padding:4px;line-height:1;border-radius:4px}
+.cs-icon-btn:hover{background:rgba(255,255,255,0.06)}
+.cron-sidebar .cr-item{padding:4px 8px 4px 6px;border-left:2px solid transparent;margin:1px 0;font-size:0.82em;transition:background .15s,opacity .15s}
+.cron-sidebar .cr-item:hover{background:rgba(255,255,255,0.04)}
+.cron-sidebar .cr-item.cr-status-g{border-left-color:var(--green)}
+.cron-sidebar .cr-item.cr-status-r{border-left-color:var(--red)}
+.cron-sidebar .cr-item.cr-status-y{border-left-color:var(--yellow)}
+.cron-sidebar .cr-item.cr-past{opacity:0.45}
+.cron-sidebar .cr-item.cr-next{border-left-color:var(--blue);box-shadow:inset 0 0 10px rgba(88,166,255,0.12);background:rgba(88,166,255,0.05)}
+.cron-sidebar .cr-row{display:flex;align-items:center;gap:6px;min-width:0}
+.cron-sidebar .cr-time{font-family:monospace;color:var(--accent);font-weight:600;min-width:42px;flex-shrink:0;font-size:0.92em}
+.cron-sidebar .cr-icon{flex-shrink:0}
+.cron-sidebar .cr-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cron-sidebar .cr-countdown{color:var(--muted);font-size:0.88em;padding-left:48px;font-family:monospace}
+.cron-sidebar .cr-item.now-marker{border-top:2px solid var(--red);border-bottom:2px solid var(--red);border-left-color:var(--red);background:rgba(248,81,73,0.08);padding:6px 8px;margin:4px 0}
+.cron-sidebar .cr-now-line{text-align:center;font-weight:700;font-size:0.82em;color:var(--red);animation:ct-now-pulse 2s ease-in-out infinite}
+.tab-btn-mobile-crons{display:none}
+@media(max-width:900px){
+  .cron-sidebar{width:220px;min-width:220px}
+  .cron-sidebar.collapsed{width:40px;min-width:40px}
+  .cron-sidebar .cr-item{font-size:0.78em}
+  .cron-sidebar .cr-time{min-width:38px}
+}
+@media(max-width:599px){
+  .cron-sidebar{display:none!important}
+  .tab-btn-mobile-crons{display:inline-block}
+  .cs-scroll-mobile{max-height:none}
+}
+
 /* ── Processor Timer Bar ── */
 .processor-timer-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px;margin-bottom:12px;border-radius:8px;border:1px solid var(--border);background:var(--card);font-size:0.90em;flex-wrap:wrap}
 .processor-timer-bar.pt-idle{border-color:var(--border);color:var(--muted)}
@@ -196,6 +242,9 @@ h1{font-size:1.3em;margin-bottom:0}.subtitle{color:var(--muted);font-size:0.92em
   <div class="dli-row" id="dli-running-row" style="display:none"><span class="dli-label">Fut:</span><span class="dli-val" id="dli-running" style="color:var(--green)">—</span></div>
 </div>
 
+<div class="app-layout">
+<div class="main-content">
+
 <!-- ── Header ── -->
 <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
   <div><h1>🧠 Noema</h1><p class="subtitle">OpenClaw Operations Center · <span id="hostname">pop-os</span></p></div>
@@ -223,6 +272,7 @@ h1{font-size:1.3em;margin-bottom:0}.subtitle{color:var(--muted);font-size:0.92em
   <button class="tab-btn" data-tab="brainstorming">🧠 Brainstorm</button>
   <button class="tab-btn" data-tab="noema">🧠 Noema</button>
   <button class="tab-btn" data-tab="activity">📊 Activity</button>
+  <button class="tab-btn tab-btn-mobile-crons" data-tab="crons">⏰ Cronok</button>
 </nav>
 
 <!-- ════════════════ TAB 1: Overview ════════════════ -->
@@ -492,8 +542,35 @@ h1{font-size:1.3em;margin-bottom:0}.subtitle{color:var(--muted);font-size:0.92em
   </div>
 </section>
 
+<!-- ════════════════ TAB Mobile: Cronok ════════════════ -->
+<section class="tab-content" id="tab-crons">
+  <h2 style="color:var(--accent);font-size:1em;margin-bottom:10px">⏰ Cronok (24h)</h2>
+  <div class="card" style="padding:0;overflow:hidden">
+    <div class="cs-scroll cs-scroll-mobile" id="cron-sidebar-mobile-scroll">
+      <div style="padding:12px;color:var(--muted);font-size:0.85em">Loading…</div>
+    </div>
+  </div>
+</section>
+
 <!-- ── Footer ── -->
 <div class="timestamp">Generated: <span id="gen-timestamp">—</span></div>
+
+</div><!-- /.main-content -->
+
+<!-- ── Cron Sidebar (always visible on desktop) ── -->
+<aside class="cron-sidebar" id="cron-sidebar">
+  <div class="cs-header">
+    <button type="button" class="cs-toggle" id="cron-sidebar-toggle" title="Sidebar összecsukása">◀</button>
+    <span class="cs-title">⏰ Cronok</span>
+    <span class="cs-clock" id="cron-sidebar-clock">—</span>
+  </div>
+  <div class="cs-scroll" id="cron-sidebar-scroll">
+    <div style="padding:12px;color:var(--muted);font-size:0.85em">Loading…</div>
+  </div>
+  <div class="cs-collapsed-icons" id="cron-sidebar-icons"></div>
+</aside>
+
+</div><!-- /.app-layout -->
 
 <!-- ── Tab Routing JS ── -->
 <script>
@@ -875,6 +952,161 @@ if (D.cronGrid && D.cronGrid.length) {
     document.getElementById('ct-now-marker')?.scrollIntoView({behavior:'smooth', block:'center'});
   });
   setInterval(renderCronTimeline, 5000);
+}
+
+// ── Cron Sidebar (compact, always visible) ──
+const SIDEBAR_COLLAPSED_KEY = 'noema-cron-sidebar-collapsed';
+const SIDEBAR_WINDOW_MS = 24 * 60 * 60 * 1000;
+
+function cronSidebarSortKey(c, nowMs) {
+  if (c.nextMs && c.nextMs > nowMs && c.nextMs - nowMs <= SIDEBAR_WINDOW_MS) return c.nextMs;
+  const dm = c.displayMin;
+  if (dm !== null && dm !== undefined && dm < 9999 && !isSpanningSched(c.sched)) return dm;
+  if (c.nextMs) return c.nextMs;
+  return 999999;
+}
+
+function cronSidebarTimeLabel(c) {
+  if (c.nextMs && (isSpanningSched(c.sched) || c.sched === 'auto' || c.displayMin >= 9999)) {
+    const d = new Date(c.nextMs);
+    return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+  }
+  if (c.displayMin < 9999 && !isSpanningSched(c.sched)) return formatTimeLabel(c.displayMin);
+  return '—';
+}
+
+function buildCronSidebarHtml() {
+  if (!D.cronGrid || !D.cronGrid.length) {
+    return '<div style="padding:12px;color:var(--muted);font-size:0.85em">No cron data</div>';
+  }
+
+  const now = new Date();
+  const nowMs = now.getTime();
+  const nowMins = now.getHours() * 60 + now.getMinutes() + now.getSeconds() / 60;
+
+  const enriched = D.cronGrid.map(c => {
+    const displayMin = parseDisplayMinutes(c.sched);
+    const nextMs = computeNextRun(c.sched, c.last, now);
+    return {
+      ...c,
+      displayMin: displayMin === null ? cronSortScore(c) : displayMin,
+      nextMs,
+      sortKey: 0
+    };
+  }).map(c => ({ ...c, sortKey: cronSidebarSortKey(c, nowMs) }));
+
+  let nextUpId = null;
+  let soonest = Infinity;
+  for (const c of enriched) {
+    if (c.nextMs && c.nextMs >= nowMs && c.nextMs < soonest) {
+      soonest = c.nextMs;
+      nextUpId = c.id;
+    }
+  }
+
+  const inWindow = enriched.filter(c => {
+    if (c.nextMs && c.nextMs >= nowMs && c.nextMs - nowMs <= SIDEBAR_WINDOW_MS) return true;
+    if (c.displayMin < 9999 && !isSpanningSched(c.sched) && c.sched !== 'auto') {
+      if (c.displayMin >= nowMins - 120) return true;
+      if (c.displayMin < nowMins) return true;
+    }
+    return false;
+  });
+
+  const items = inWindow.map(c => ({ type: 'cron', sort: c.sortKey, data: c }));
+  items.push({ type: 'now', sort: nowMins, data: null });
+  items.sort((a, b) => a.sort - b.sort || (a.type === 'now' ? 1 : 0) - (b.type === 'now' ? 1 : 0));
+
+  let html = '';
+  for (const item of items) {
+    if (item.type === 'now') {
+      html += `<div class="cr-item now-marker">
+        <div class="cr-now-line">▐▐ NOW ${formatClock(now)} ▐▐</div>
+      </div>`;
+      continue;
+    }
+    const c = item.data;
+    const statusCls = c.status === 'g' ? 'cr-status-g' : c.status === 'r' ? 'cr-status-r' : 'cr-status-y';
+    const isPast = !isSpanningSched(c.sched) && c.sched !== 'auto' && c.displayMin < 9999 && c.displayMin < nowMins
+      && (!c.nextMs || c.nextMs > nowMs + 60000);
+    const isNext = c.id === nextUpId;
+    const timeLabel = cronSidebarTimeLabel(c);
+    const countdown = cronCountdownLabel(c, nowMs);
+    const tip = `${c.name || '—'} — ${c.desc || c.sched || '—'}`.replace(/"/g, '&quot;');
+
+    html += `<div class="cr-item ${statusCls}${isPast ? ' cr-past' : ''}${isNext ? ' cr-next' : ''}" title="${tip}">
+      <div class="cr-row">
+        <span class="cr-time">${timeLabel}</span>
+        <span class="cr-icon">${cronEmoji(c)}</span>
+        <span class="cr-name">${c.name || '—'}</span>
+      </div>
+      <div class="cr-countdown">${countdown}</div>
+    </div>`;
+  }
+
+  return html || '<div style="padding:12px;color:var(--muted);font-size:0.85em">No upcoming crons</div>';
+}
+
+function buildCronSidebarIcons() {
+  if (!D.cronGrid || !D.cronGrid.length) return '';
+  const now = new Date();
+  const nowMs = now.getTime();
+  const upcoming = D.cronGrid
+    .map(c => ({ c, nextMs: computeNextRun(c.sched, c.last, now) }))
+    .filter(x => x.nextMs && x.nextMs >= nowMs && x.nextMs - nowMs <= SIDEBAR_WINDOW_MS)
+    .sort((a, b) => a.nextMs - b.nextMs)
+    .slice(0, 12);
+  return upcoming.map(({ c }) => {
+    const tip = `${c.name || '—'}`.replace(/"/g, '&quot;');
+    return `<button type="button" class="cs-icon-btn" title="${tip}">${cronEmoji(c)}</button>`;
+  }).join('');
+}
+
+function renderCronSidebar() {
+  const scrollEl = document.getElementById('cron-sidebar-scroll');
+  const mobileEl = document.getElementById('cron-sidebar-mobile-scroll');
+  const iconsEl = document.getElementById('cron-sidebar-icons');
+  const clockEl = document.getElementById('cron-sidebar-clock');
+  if (!scrollEl) return;
+
+  const html = buildCronSidebarHtml();
+  scrollEl.innerHTML = html;
+  if (mobileEl) mobileEl.innerHTML = html;
+  if (iconsEl) iconsEl.innerHTML = buildCronSidebarIcons();
+  if (clockEl) clockEl.textContent = formatClock(new Date());
+}
+
+function toggleSidebar() {
+  const sb = document.getElementById('cron-sidebar');
+  const btn = document.getElementById('cron-sidebar-toggle');
+  if (!sb || !btn) return;
+  const collapsed = sb.classList.toggle('collapsed');
+  btn.textContent = collapsed ? '▶' : '◀';
+  btn.title = collapsed ? 'Sidebar kinyitása' : 'Sidebar összecsukása';
+  localStorage.setItem(SIDEBAR_COLLAPSED_KEY, collapsed ? '1' : '0');
+}
+
+function initCronSidebar() {
+  const sb = document.getElementById('cron-sidebar');
+  const btn = document.getElementById('cron-sidebar-toggle');
+  if (!sb || !D.cronGrid || !D.cronGrid.length) return;
+
+  if (localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === '1') {
+    sb.classList.add('collapsed');
+    if (btn) { btn.textContent = '▶'; btn.title = 'Sidebar kinyitása'; }
+  }
+
+  btn?.addEventListener('click', toggleSidebar);
+  renderCronSidebar();
+  setInterval(renderCronSidebar, 30000);
+  setInterval(() => {
+    const clockEl = document.getElementById('cron-sidebar-clock');
+    if (clockEl) clockEl.textContent = formatClock(new Date());
+  }, 1000);
+}
+
+if (D.cronGrid && D.cronGrid.length) {
+  initCronSidebar();
 }
 
 // ── Noema Product Research ──
