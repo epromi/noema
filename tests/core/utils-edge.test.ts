@@ -101,7 +101,7 @@ describe('utils edge cases', () => {
 		it('formats every-ms schedules as hours', () => {
 			expect(formatSchedule({ kind: 'every', everyMs: 7200000 })).toBe('every 2h');
 			expect(formatSchedule({ kind: 'every', everyMs: 900000 })).toBe('every 15m');
-\t		expect(formatSchedule({ kind: 'every', everyMs: 60000 })).toBe('every 1m');
+		expect(formatSchedule({ kind: 'every', everyMs: 60000 })).toBe('every 1m');
 		});
 
 		it('formats expr and at schedules', () => {

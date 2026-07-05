@@ -145,6 +145,8 @@ ${hasDangerousPatterns ? '- ⚠️  DANGEROUS PATTERNS (eval, innerHTML) — rev
 - Use message tool to send Telegram to ${NOTIFY_TARGET}
 - DO NOT modify files outside ${NOEMA_DIR}/src/ and ${NOEMA_DIR}/tests/
 - DO NOT rewrite already-passing code
+- DO NOT modify existing test files that are already passing — only ADD new test files for missing coverage
+- Only modify src/ files for lint/format fixes — don't change logic
 - If auto-fix makes something worse, REVERT the fix
 - MAX 5 minutes total — if you can't fix it in that time, report it as ⚠️
 - ALWAYS send the final Telegram report, even if everything is clean
