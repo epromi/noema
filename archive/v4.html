@@ -151,16 +151,13 @@ h1{font-size:1.3em;margin-bottom:0}.subtitle{color:var(--muted);font-size:0.92em
   .pkg-detail { display:none; }
 
   /* ── Dev Loop Indicator (fixed right-center) ── */
-  #dev-loop-indicator { position:fixed; left:auto; right:16px; top:50%; background:var(--card); border:2px solid var(--border); border-radius:10px; padding:0; min-width:210px; z-index:9999; box-shadow:0 4px 16px rgba(0,0,0,0.35); font-size:0.82em; line-height:1.5; transition:border-color 0.3s; user-select:none; }
+  #dev-loop-indicator { position:fixed; right:16px; top:50%; transform:translateY(-50%); background:var(--card); border:2px solid var(--border); border-radius:10px; padding:12px 16px; min-width:210px; z-index:9999; box-shadow:0 4px 16px rgba(0,0,0,0.35); font-size:0.82em; line-height:1.5; transition:border-color 0.3s; cursor:grab; user-select:none; }
+  #dev-loop-indicator:active { cursor:grabbing; }
   #dev-loop-indicator.idle { border-color:var(--border); }
   #dev-loop-indicator.active { border-color:var(--green); animation:pulse 2s infinite; }
   #dev-loop-indicator.soon { border-color:var(--yellow); }
   @keyframes pulse { 0%,100% { box-shadow:0 4px 16px rgba(0,0,0,0.3); } 50% { box-shadow:0 0 24px rgba(63,185,80,0.3); } }
-  .dli-handle { cursor:grab; padding:6px 16px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; }
-  .dli-handle:active { cursor:grabbing; }
-  .dli-title { font-weight:700; color:var(--accent); font-size:0.85em; }
-  .dli-pin { font-size:0.7em; color:var(--muted); opacity:0.5; }
-  .dli-body { padding:6px 16px 12px 16px; }
+  .dli-title { font-weight:700; color:var(--accent); font-size:0.85em; margin-bottom:4px; }
   .dli-row { display:flex; justify-content:space-between; margin-bottom:2px; }
   .dli-label { color:var(--muted); }
   .dli-val { font-weight:700; }
@@ -170,16 +167,11 @@ h1{font-size:1.3em;margin-bottom:0}.subtitle{color:var(--muted);font-size:0.92em
 <body>
 
 <!-- ── Dev Loop Indicator ── -->
-<div id="dev-loop-indicator" class="idle" style="top:calc(50% - 50px)">
-  <div class="dli-handle" id="dli-handle">
-    <span class="dli-title">⚙️ Dev Job</span>
-    <span class="dli-pin">⠿</span>
-  </div>
-  <div class="dli-body">
-    <div class="dli-row"><span class="dli-label">Következő:</span><span class="dli-val dli-countdown" id="dli-next">—</span></div>
-    <div class="dli-row"><span class="dli-label">Sorban áll:</span><span class="dli-val" id="dli-queue" style="color:var(--muted)">0</span></div>
-    <div class="dli-row" id="dli-running-row" style="display:none"><span class="dli-label">Fut:</span><span class="dli-val" id="dli-running" style="color:var(--green)">—</span></div>
-  </div>
+<div id="dev-loop-indicator" class="idle">
+  <div class="dli-title">⚙️ Dev Job</div>
+  <div class="dli-row"><span class="dli-label">Következő:</span><span class="dli-val dli-countdown" id="dli-next">—</span></div>
+  <div class="dli-row"><span class="dli-label">Sorban áll:</span><span class="dli-val" id="dli-queue" style="color:var(--muted)">0</span></div>
+  <div class="dli-row" id="dli-running-row" style="display:none"><span class="dli-label">Fut:</span><span class="dli-val" id="dli-running" style="color:var(--green)">—</span></div>
 </div>
 
 <!-- ── Header ── -->
@@ -1119,63 +1111,58 @@ function actionBtn(action, id, description, label) {
   setInterval(updateCountdown, 1000);
   setInterval(refresh, 10000);
 
-  // ── Drag to reposition ──
-  const handle = document.getElementById('dli-handle');
+  // ── Drag to reposition (entire panel is draggable) ──
   let dragging = false, startX, startY, startLeft, startTop;
 
   // Restore saved position
-  const saved = localStorage.getItem('dli-pos');
-  if (saved) {
-    try {
-      const [l, t] = JSON.parse(saved);
+  try {
+    const raw = localStorage.getItem('dli-pos');
+    if (raw) {
+      const [l, t] = JSON.parse(raw);
       indicator.style.left = l + 'px';
       indicator.style.top = t + 'px';
       indicator.style.right = 'auto';
-    } catch {}
-  }
+      indicator.style.transform = 'none';
+    }
+  } catch {}
 
   function setPos(left, top) {
-    const bw = window.innerWidth, bh = window.innerHeight;
     const iw = indicator.offsetWidth, ih = indicator.offsetHeight;
-    const clampedLeft = Math.max(0, Math.min(left, bw - iw));
-    const clampedTop = Math.max(0, Math.min(top, bh - ih));
+    const clampedLeft = Math.max(0, Math.min(left, window.innerWidth - iw));
+    const clampedTop = Math.max(0, Math.min(top, window.innerHeight - ih));
     indicator.style.left = clampedLeft + 'px';
     indicator.style.top = clampedTop + 'px';
     indicator.style.right = 'auto';
+    indicator.style.transform = 'none';
     localStorage.setItem('dli-pos', JSON.stringify([clampedLeft, clampedTop]));
   }
 
-  handle.addEventListener('mousedown', e => {
+  function onStart(e) {
     dragging = true;
     const rect = indicator.getBoundingClientRect();
-    startX = e.clientX;
-    startY = e.clientY;
+    startX = e.touches ? e.touches[0].clientX : e.clientX;
+    startY = e.touches ? e.touches[0].clientY : e.clientY;
     startLeft = rect.left;
     startTop = rect.top;
     e.preventDefault();
-  });
+  }
 
-  handle.addEventListener('touchstart', e => {
-    dragging = true;
-    const rect = indicator.getBoundingClientRect();
-    startX = e.touches[0].clientX;
-    startY = e.touches[0].clientY;
-    startLeft = rect.left;
-    startTop = rect.top;
-  }, {passive:true});
-
-  document.addEventListener('mousemove', e => {
+  function onMove(e) {
     if (!dragging) return;
-    setPos(startLeft + (e.clientX - startX), startTop + (e.clientY - startY));
-  });
+    e.preventDefault();
+    const cx = e.touches ? e.touches[0].clientX : e.clientX;
+    const cy = e.touches ? e.touches[0].clientY : e.clientY;
+    setPos(startLeft + (cx - startX), startTop + (cy - startY));
+  }
 
-  document.addEventListener('touchmove', e => {
-    if (!dragging) return;
-    setPos(startLeft + (e.touches[0].clientX - startX), startTop + (e.touches[0].clientY - startY));
-  }, {passive:true});
+  function onEnd() { dragging = false; }
 
-  document.addEventListener('mouseup', () => { dragging = false; });
-  document.addEventListener('touchend', () => { dragging = false; });
+  indicator.addEventListener('mousedown', onStart);
+  indicator.addEventListener('touchstart', onStart, {passive:false});
+  document.addEventListener('mousemove', onMove);
+  document.addEventListener('touchmove', onMove, {passive:false});
+  document.addEventListener('mouseup', onEnd);
+  document.addEventListener('touchend', onEnd);
 })();
 </script>
 </body>
