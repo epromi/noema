@@ -74,12 +74,35 @@ export interface HeartbeatEntry {
   timeout?: number;
 }
 
+/** Session hook runtime state from memory/state/hook-state.json. */
+export interface HookState {
+  reflection?: {
+    threshold?: number;
+    lastTriggered?: string | null;
+    totalRuns?: number;
+    totalSkipped?: number;
+  };
+  kgLookup?: {
+    totalLookups?: number;
+    staleFlags?: number;
+  };
+  rulesCheck?: { enabled?: boolean };
+  contextInjection?: { enabled?: boolean };
+  insightPool?: {
+    enabled?: boolean;
+    totalChecks?: number;
+    totalInsightsFound?: number;
+    lastCheck?: string | null;
+  };
+}
+
 export interface HealthData {
   uptime: string;
   disk: string;
   ram: string;
   gatewayStatus: string;
   heartbeat: HeartbeatEntry[];
+  hookState: HookState;
   modelMappingAge: number;
   updatedAt: number;
   error?: string;

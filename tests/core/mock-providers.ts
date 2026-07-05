@@ -72,6 +72,9 @@ export function createMockProviders(overrides: Partial<AllProviders> = {}): AllP
 				if (path === 'heartbeat-state.json') {
 					return JSON.stringify({ edwin: { consecutiveErrors: 0 } });
 				}
+				if (path === 'hook-state.json') {
+					return JSON.stringify({ rulesCheck: { enabled: true } });
+				}
 				return '{}';
 			},
 			readResearch: async () =>

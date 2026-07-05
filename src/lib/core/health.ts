@@ -1,13 +1,53 @@
+import { join } from "node:path";
 import type { AllProviders } from "$lib/providers/types";
+import { fileAgeDays, workspaceRoot } from "$lib/providers/openclaw";
 import { getProvider } from "$lib/providers";
-import type { HealthData, HeartbeatEntry } from "$lib/types";
+import type { HealthData, HeartbeatEntry, HookState } from "$lib/types";
 import { safeParseJson } from "./utils.js";
+
+/** Parse heartbeat-state.json entries into dashboard rows. */
+export function parseHeartbeatEntries(
+  raw: Record<string, Record<string, unknown>>,
+): HeartbeatEntry[] {
+  return Object.entries(raw).map(([agentId, state]) => ({
+    agentId,
+    consecutiveErrors: Number(state.consecutiveErrors ?? 0),
+    lastError:
+      typeof state.lastError === "string" ? state.lastError : undefined,
+    retriesToday: Number(state.retriesToday ?? 0),
+    timeout: Number(state.timeout ?? 300),
+  }));
+}
+
+/** Classify gateway exec output as online or offline. */
+export function classifyGatewayStatus(raw: string): "online" | "offline" {
+  return raw.includes("offline") ? "offline" : "online";
+}
+
+async function resolveModelMappingAge(
+  providers: AllProviders,
+): Promise<number> {
+  try {
+    const content = await providers.filesystem.readMemory(
+      "agents-model-mapping.md",
+    );
+    if (!content.trim()) return 999;
+    const modelPath = join(
+      workspaceRoot(),
+      "memory",
+      "agents-model-mapping.md",
+    );
+    return await fileAgeDays(modelPath);
+  } catch {
+    return 999;
+  }
+}
 
 export async function getHealth(providers?: AllProviders): Promise<HealthData> {
   const p = providers ?? getProvider();
 
   try {
-    const [uptime, disk, ram, gatewayRaw, heartbeatRaw, modelMapping] =
+    const [uptime, disk, ram, gatewayRaw, heartbeatRaw, hookStateRaw] =
       await Promise.all([
         p.tool
           .execCommand('uptime -p 2>/dev/null || echo "unknown"')
@@ -26,32 +66,23 @@ export async function getHealth(providers?: AllProviders): Promise<HealthData> {
           .execCommand("openclaw gateway status 2>/dev/null || echo offline")
           .catch(() => "offline"),
         p.filesystem.readState("heartbeat-state.json").catch(() => "{}"),
-        p.filesystem.readMemory("agents-model-mapping.md").catch(() => ""),
+        p.filesystem.readState("hook-state.json").catch(() => "{}"),
       ]);
 
     const hb = safeParseJson<Record<string, Record<string, unknown>>>(
       heartbeatRaw,
       {},
     );
-    const heartbeat: HeartbeatEntry[] = Object.entries(hb).map(
-      ([agentId, state]) => ({
-        agentId,
-        consecutiveErrors: Number(state.consecutiveErrors ?? 0),
-        lastError:
-          typeof state.lastError === "string" ? state.lastError : undefined,
-        retriesToday: Number(state.retriesToday ?? 0),
-        timeout: Number(state.timeout ?? 300),
-      }),
-    );
-
-    const modelMappingAge = modelMapping ? 0 : 999;
+    const hookState = safeParseJson<HookState>(hookStateRaw, {});
+    const modelMappingAge = await resolveModelMappingAge(p);
 
     return {
       uptime: uptime.replace(/^up\s+/i, ""),
       disk,
       ram,
-      gatewayStatus: gatewayRaw.includes("offline") ? "offline" : "online",
-      heartbeat,
+      gatewayStatus: classifyGatewayStatus(gatewayRaw),
+      heartbeat: parseHeartbeatEntries(hb),
+      hookState,
       modelMappingAge,
       updatedAt: Date.now(),
     };
@@ -62,6 +93,7 @@ export async function getHealth(providers?: AllProviders): Promise<HealthData> {
       ram: "unknown",
       gatewayStatus: "unknown",
       heartbeat: [],
+      hookState: {},
       modelMappingAge: 999,
       updatedAt: Date.now(),
       error: String(err),
