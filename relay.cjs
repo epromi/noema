@@ -23,6 +23,7 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const { exec } = require('child_process');
 
 const RELAY_PORT = 18998;
 const WORKSPACE = path.join(process.env.HOME || '/home/promi', '.openclaw', 'workspace');
@@ -54,6 +55,13 @@ function writeEntries(entries) {
 
 function nowISO() { return new Date().toISOString(); }
 function log(prefix, msg) { console.log(`[${nowISO().slice(11,19)}] ${prefix} ${msg}`); }
+
+/** Auto-trigger the action processor — eliminates the 2-min timer wait */
+function triggerProcessor() {
+  exec('systemctl --user start dashboard-action-processor.service', (err, stdout, stderr) => {
+    if (err) log('⚠️', 'processor trigger: ' + (stderr || err.message));
+  });
+}
 
 function mimeType(ext) {
   const map = { '.html':'text/html; charset=utf-8', '.js':'application/javascript',
@@ -137,6 +145,7 @@ const server = http.createServer((req, res) => {
           existing.updatedAt = nowISO();
           writeEntries(entries);
           log('✅', `${id}: proposed → queued`);
+          triggerProcessor();
           res.writeHead(200, { ...cors, 'Content-Type': 'application/json' });
           return res.end(JSON.stringify({ ok: true, id, status: 'queued' }));
         } else if (existing.status === 'dead') {
@@ -145,6 +154,7 @@ const server = http.createServer((req, res) => {
           entries.push({ id, action, description: (description || '').substring(0, 200), status: 'pending', ts: nowISO(), updatedAt: nowISO() });
           writeEntries(entries);
           log('♻️', `${id}: dead → pending (recreated)`);
+          triggerProcessor();
           res.writeHead(200, { ...cors, 'Content-Type': 'application/json' });
           return res.end(JSON.stringify({ ok: true, id, status: 'pending' }));
         } else {
@@ -161,6 +171,7 @@ const server = http.createServer((req, res) => {
       entries.push(newEntry);
       writeEntries(entries);
       log('📝', `${action} ${id} → pending`);
+      triggerProcessor();
       res.writeHead(200, { ...cors, 'Content-Type': 'application/json' });
       return res.end(JSON.stringify({ ok: true, id, status: 'pending' }));
     }
@@ -188,7 +199,7 @@ const server = http.createServer((req, res) => {
       return res.end(JSON.stringify({ ok: false, error: `Entry ${id} not found` }));
     }
 
-    // ── GET /log/:pkgId — Cursor output log (tail) ──
+    // ── GET /log/:pkgId — Dev pipeline log (prefer dev-*.log, fallback cursor-*.log) ──
     if (req.method === 'GET' && req.url.startsWith('/log/')) {
       const pkgId = decodeURIComponent(req.url.slice(5));
       const noemaDir = path.join(WORKSPACE, 'projects', 'noema');
@@ -196,8 +207,11 @@ const server = http.createServer((req, res) => {
       let logPath = null;
       if (fs.existsSync(logDir)) {
         const files = fs.readdirSync(logDir).sort().reverse();
-        for (const f of files) {
-          if (f.startsWith(`cursor-${pkgId}`)) { logPath = path.join(logDir, f); break; }
+        for (const prefix of [`dev-${pkgId}`, `cursor-${pkgId}`]) {
+          for (const f of files) {
+            if (f.startsWith(prefix)) { logPath = path.join(logDir, f); break; }
+          }
+          if (logPath) break;
         }
       }
       if (logPath && fs.existsSync(logPath)) {
@@ -206,7 +220,7 @@ const server = http.createServer((req, res) => {
         return res.end(content);
       }
       res.writeHead(200, { ...cors, 'Content-Type': 'text/plain; charset=utf-8' });
-      return res.end('⏳ Cursor agent dolgozik...\n(a log akkor jelenik meg amikor elkezd írni)');
+      return res.end('⏳ Dev pipeline dolgozik...\n(a log akkor jelenik meg amikor elkezd írni)');
     }
 
     // ── GET /running — Check if dev-loop is active ──
