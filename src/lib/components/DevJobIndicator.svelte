@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { browser } from '$app/environment';
 	import { onDestroy, onMount } from 'svelte';
 	import {
 		DEFAULT_RELAY_URL,
@@ -130,6 +131,7 @@
 	});
 
 	onDestroy(() => {
+		if (!browser) return;
 		if (countdownTimer) clearInterval(countdownTimer);
 		if (refreshTimer) clearInterval(refreshTimer);
 		document.removeEventListener('mousemove', onDragMove);

@@ -35,3 +35,4 @@ memory/202[0-9]-*.md
 logs/
 /tmp/
 coverage/
+build
