@@ -46,10 +46,14 @@ function writeEntries(entries) {
     if (fs.existsSync(ACTION_FILE)) fs.unlinkSync(ACTION_FILE);
     return;
   }
-  fs.writeFileSync(ACTION_FILE, entries.map(e => JSON.stringify(e)).join('\n') + '\n', 'utf-8');
+  // Atomic write — prevents corruption from concurrent relay+browser+processor writes
+  const tmp = ACTION_FILE + '.tmp.' + process.pid;
+  fs.writeFileSync(tmp, entries.map(e => JSON.stringify(e)).join('\n') + '\n', 'utf-8');
+  fs.renameSync(tmp, ACTION_FILE);
 }
 
 function nowISO() { return new Date().toISOString(); }
+function log(prefix, msg) { console.log(`[${nowISO().slice(11,19)}] ${prefix} ${msg}`); }
 
 function mimeType(ext) {
   const map = { '.html':'text/html; charset=utf-8', '.js':'application/javascript',
@@ -132,7 +136,7 @@ const server = http.createServer((req, res) => {
           existing.status = 'queued';
           existing.updatedAt = nowISO();
           writeEntries(entries);
-          console.log(`✅ ${id}: proposed → queued`);
+          log('✅', `${id}: proposed → queued`);
           res.writeHead(200, { ...cors, 'Content-Type': 'application/json' });
           return res.end(JSON.stringify({ ok: true, id, status: 'queued' }));
         } else if (existing.status === 'dead') {
@@ -140,12 +144,12 @@ const server = http.createServer((req, res) => {
           entries.splice(entries.indexOf(existing), 1);
           entries.push({ id, action, description: (description || '').substring(0, 200), status: 'pending', ts: nowISO(), updatedAt: nowISO() });
           writeEntries(entries);
-          console.log(`♻️ ${id}: dead → pending (recreated)`);
+          log('♻️', `${id}: dead → pending (recreated)`);
           res.writeHead(200, { ...cors, 'Content-Type': 'application/json' });
           return res.end(JSON.stringify({ ok: true, id, status: 'pending' }));
         } else {
           // Already exists and active — skip
-          console.log(`⏭️ ${id}: már ${existing.status}, skip`);
+          log('⏭️', `${id}: már ${existing.status}, skip`);
           res.writeHead(200, { ...cors, 'Content-Type': 'application/json' });
           return res.end(JSON.stringify({ ok: true, id, status: existing.status, skipped: true }));
         }
@@ -156,7 +160,7 @@ const server = http.createServer((req, res) => {
       const newEntry = { id, action, description: (description || '').substring(0, 200), status: 'pending', ts, updatedAt: ts };
       entries.push(newEntry);
       writeEntries(entries);
-      console.log(`📝 ${action} ${id} → pending`);
+      log('📝', `${action} ${id} → pending`);
       res.writeHead(200, { ...cors, 'Content-Type': 'application/json' });
       return res.end(JSON.stringify({ ok: true, id, status: 'pending' }));
     }
@@ -175,7 +179,7 @@ const server = http.createServer((req, res) => {
         entry.status = status;
         entry.updatedAt = nowISO();
         writeEntries(entries);
-        console.log(`🔄 ${id}: → ${status}`);
+        log('🔄', `${id}: → ${status}`);
         res.writeHead(200, { ...cors, 'Content-Type': 'application/json' });
         return res.end(JSON.stringify({ ok: true, id, status }));
       }

@@ -40,7 +40,10 @@ function writeEntries(entries) {
     if (fs.existsSync(ACTION_FILE)) fs.unlinkSync(ACTION_FILE);
     return;
   }
-  fs.writeFileSync(ACTION_FILE, entries.map(e => JSON.stringify(e)).join('\n') + '\n', 'utf-8');
+  // Atomic write: write to temp file first, then rename
+  const tmp = ACTION_FILE + '.tmp.' + process.pid;
+  fs.writeFileSync(tmp, entries.map(e => JSON.stringify(e)).join('\n') + '\n', 'utf-8');
+  fs.renameSync(tmp, ACTION_FILE);
 }
 
 function nowISO() { return new Date().toISOString(); }
@@ -68,10 +71,11 @@ function runDevLoop(pkgId) {
 
 function regenDashboard() {
   try {
-    execSync('node generate.js', { cwd: NOEMA_DIR, encoding: 'utf8', timeout: 15000 });
+    const result = execSync('node generate.cjs', { cwd: NOEMA_DIR, encoding: 'utf8', timeout: 30000 });
     console.log('   ✅ Dashboard regen OK');
   } catch (e) {
-    console.log(`   ⚠️ Dashboard regen hiba: ${e.message}`);
+    console.log(`   ⚠️  Dashboard regen hiba: ${(e.stderr || e.message).substring(0, 300)}`);
+    if (e.stdout) console.log(`   stdout: ${e.stdout.substring(0, 200)}`);
   }
 }
 

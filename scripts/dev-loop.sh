@@ -142,9 +142,9 @@ cd "$PROJECT_DIR"
 
 # Use read to avoid shell expansion issues with prompt text
 CURSOR_PROMPT=$(cat "$PROMPT_FILE")
-cursor agent --print --force --trust --workspace "$PROJECT_DIR" "$CURSOR_PROMPT" 2>&1 | tee "$PROJECT_DIR/logs/cursor-${PKG_ID}.log"
-
-CURSOR_EXIT="${PIPESTATUS[0]}"
+CURSOR_LOG="$PROJECT_DIR/logs/cursor-${PKG_ID}.log"
+cursor agent --print --force --trust --workspace "$PROJECT_DIR" "$CURSOR_PROMPT" 2>&1 | tee "$CURSOR_LOG" || true
+CURSOR_EXIT=${PIPESTATUS[0]}
 if [ "$CURSOR_EXIT" -ne 0 ]; then
   warn "Cursor exited with code $CURSOR_EXIT"
 fi
@@ -153,15 +153,17 @@ fi
 echo ""
 echo "Checking expected files..."
 MISSING=0
-echo "$EXPECTED_FILES" | while read f; do
-  [ -z "$f" ] && continue
-  if [ -f "$PROJECT_DIR/$f" ]; then
-    ok "  $f"
-  else
-    warn "  $f — NOT CREATED"
-    MISSING=$((MISSING + 1))
-  fi
-done || true
+if [ -n "$EXPECTED_FILES" ]; then
+  while IFS= read -r f; do
+    [ -z "$f" ] && continue
+    if [ -f "$PROJECT_DIR/$f" ]; then
+      ok "  $f"
+    else
+      warn "  $f — NOT CREATED"
+      MISSING=$((MISSING + 1))
+    fi
+  done <<< "$EXPECTED_FILES"
+fi
 
 if [ "$MISSING" -gt 0 ] 2>/dev/null; then
   warn "$MISSING expected file(s) missing — review cursor output"
@@ -249,7 +251,7 @@ for line in c.split('\n'):
         break
 else:
     print('⚠️  PKG-ID not found in INDEX.md')
-" || warn "INDEX.md update failed"
+" || warn "INDEX.md update failed (python3 error)"
 
 # 2. Regenerate dashboard
 echo ""
@@ -260,7 +262,7 @@ node generate.cjs 2>&1 || warn "Dashboard regen failed"
 # 3. Commit status update + dashboard
 git add dev/packages/INDEX.md dashboard.html
 git diff --cached --name-status | head -5
-git commit -m "📊 $PKG_ID done (✅ F5) + dashboard regen" 2>&1
+git commit -m "📊 $PKG_ID done (✅ F5) + dashboard regen" 2>&1 || warn "git commit failed (nothing to stage?)"
 
 # 4. Handle possible race: cron auto-refresh may have pushed in parallel
 # Pull with rebase to keep history clean, then push

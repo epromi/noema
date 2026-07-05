@@ -20,19 +20,19 @@ const ageDays = (f) => {
 const staleLevel = (d) => d >= 14 ? 7 : d >= 7 ? 3 : 0;
 
 // ── System ──
-const uptime = execSync('uptime -p 2>/dev/null || echo "?"',{encoding:'utf8'}).trim().replace('up ','');
-const disk = execSync("df -h / | awk 'NR==2{print $5\" used (\"$3\"/\"$2\")\"}' 2>/dev/null || echo '?'",{encoding:'utf8'}).trim();
-const ram = execSync("free -h | awk 'NR==2{printf \"%s used / %s total\", $3, $2}' 2>/dev/null || echo '?'",{encoding:'utf8'}).trim();
+const uptime = execSync('uptime -p 2>/dev/null || echo "?"',{encoding:'utf8',timeout:3000}).trim().replace('up ','');
+const disk = execSync("df -h / | awk 'NR==2{print $5\" used (\"$3\"/\"$2\")\"}' 2>/dev/null || echo '?'",{encoding:'utf8',timeout:3000}).trim();
+const ram = execSync("free -h | awk 'NR==2{printf \"%s used / %s total\", $3, $2}' 2>/dev/null || echo '?'",{encoding:'utf8',timeout:3000}).trim();
 // System gauge percentages
-const cpuPct = parseFloat(execSync("top -bn1 | grep 'Cpu(s)' | awk '{print 100-$8}'",{encoding:'utf8'}).trim())||0;
-const ramPct = parseInt(execSync("free | awk 'NR==2{printf \"%.0f\", $3*100/$2}'",{encoding:'utf8'}).trim())||0;
-const diskPct = parseInt(execSync("df / | awk 'NR==2{print $5}' 2>/dev/null",{encoding:'utf8'}).replace('%',''))||0;
+const cpuPct = parseFloat(execSync("top -bn1 | grep 'Cpu(s)' | awk '{print 100-$8}'",{encoding:'utf8',timeout:5000}).trim())||0;
+const ramPct = parseInt(execSync("free | awk 'NR==2{printf \"%.0f\", $3*100/$2}'",{encoding:'utf8',timeout:3000}).trim())||0;
+const diskPct = parseInt(execSync("df / | awk 'NR==2{print $5}' 2>/dev/null",{encoding:'utf8',timeout:3000}).replace('%',''))||0;
 function gaugeColor(p) { return p>=90?'r':p>=70?'y':'g'; }
 
 // ── Weather ──
 let weather = null;
 try {
-  const w = JSON.parse(execSync('curl -s --max-time 5 "wttr.in/Budapest?format=j1" 2>/dev/null',{encoding:'utf8'}));
+  const w = JSON.parse(execSync('curl -s --max-time 5 "wttr.in/Budapest?format=j1" 2>/dev/null',{encoding:'utf8',timeout:8000}));
   const c = w.current_condition[0];
   weather = {temp:c.temp_C,desc:c.weatherDesc[0].value,humidity:c.humidity,wind:c.windspeedKmph,icon:''};
 } catch {}
