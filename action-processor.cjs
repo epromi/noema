@@ -134,6 +134,11 @@ async function processActions() {
     const retryInfo = entry.status === 'failed' ? ` [retry ${(entry.retries||0)+1}/${MAX_RETRIES}]` : '';
     console.log(`  🛠️ implement ${pkgId}${retryInfo}...`);
 
+    // Mark as processing so relay excludes from queue count
+    entry.status = 'processing';
+    entry.updatedAt = nowISO();
+    writeEntries(entries); // azonnal flush, hogy a relay lassa
+
     // Direkt futtatás — NEM Alfred-on keresztül
     const result = runDevLoop(pkgId);
 
