@@ -4,7 +4,7 @@
 
 ## Küldetés
 
-A Noema az Alfred agent-ecosystem központi idegrendszere. Valós idejű dashboard, cron orchestráció, és éjszakai öndiagnosztika. Minden adat ide fut be, innen indul minden riasztás, és itt születnek a döntési pontok.
+A Noema az OpenClaw agent-ecosystem központi idegrendszere. Valós idejű dashboard, cron orchestráció, és éjszakai öndiagnosztika. Minden adat ide fut be, innen indul minden riasztás, és itt születnek a döntési pontok.
 
 ## Architektúra
 
