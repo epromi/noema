@@ -226,18 +226,28 @@ const server = http.createServer((req, res) => {
     // ── GET /next-trigger — When will the processor run next? ──
     if (req.method === 'GET' && req.url === '/next-trigger') {
       const { execSync } = require('child_process');
-      let next = null;
-      let queueSize = 0;
+      let next = null, queueSize = 0, lastTrigger = null;
       try {
         const show = execSync(
-          'systemctl --user show dashboard-action-processor.timer --property=NextElapseUSecRealtime --no-pager 2>/dev/null',
+          'systemctl --user show dashboard-action-processor.timer --property=LastTriggerUSec --property=TimersMonotonic --no-pager 2>/dev/null',
           { encoding: 'utf-8', timeout: 2000 }
         );
-        const m = show.match(/NextElapseUSecRealtime=(-?\d+)/);
-        if (m && m[1] > 0) {
-          next = new Date(parseInt(m[1]) / 1000);
+        // Parse LastTriggerUSec (human-readable: "Sun 2026-07-05 16:29:43 CEST")
+        const lm = show.match(/LastTriggerUSec=(.+)/);
+        if (lm) {
+          lastTrigger = new Date(lm[1].trim());
+          // Parse OnUnitInactiveUSec from TimersMonotonic
+          const im = show.match(/OnUnitInactiveUSec=(\d+)(min|s|ms)/);
+          let inactiveMs = 120000; // default 2min
+          if (im) {
+            const val = parseInt(im[1]);
+            if (im[2] === 'min') inactiveMs = val * 60000;
+            else if (im[2] === 's') inactiveMs = val * 1000;
+            else inactiveMs = val;
+          }
+          next = new Date(lastTrigger.getTime() + inactiveMs);
         }
-        // Also count pending queue
+        // Count pending queue
         try {
           const raw = fs.readFileSync(ACTION_FILE, 'utf-8').trim();
           const entries = raw ? raw.split('\n').filter(l => l.trim()).map(l => JSON.parse(l)) : [];
@@ -245,9 +255,10 @@ const server = http.createServer((req, res) => {
         } catch {}
       } catch (e) { log('⚠️', 'timer query: ' + e.message); }
       res.writeHead(200, { ...cors, 'Content-Type': 'application/json' });
-      return res.end(JSON.stringify({ 
-        next: next ? next.toISOString() : null, 
+      return res.end(JSON.stringify({
+        next: next ? next.toISOString() : null,
         nextMs: next ? next.getTime() : 0,
+        lastTrigger: lastTrigger ? lastTrigger.toISOString() : null,
         queue: queueSize,
         now: Date.now()
       }));
