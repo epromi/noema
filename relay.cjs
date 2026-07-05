@@ -223,6 +223,36 @@ const server = http.createServer((req, res) => {
       return res.end('⏳ Dev pipeline dolgozik...\n(a log akkor jelenik meg amikor elkezd írni)');
     }
 
+    // ── GET /next-trigger — When will the processor run next? ──
+    if (req.method === 'GET' && req.url === '/next-trigger') {
+      const { execSync } = require('child_process');
+      let next = null;
+      let queueSize = 0;
+      try {
+        const show = execSync(
+          'systemctl --user show dashboard-action-processor.timer --property=NextElapseUSecRealtime --no-pager 2>/dev/null',
+          { encoding: 'utf-8', timeout: 2000 }
+        );
+        const m = show.match(/NextElapseUSecRealtime=(-?\d+)/);
+        if (m && m[1] > 0) {
+          next = new Date(parseInt(m[1]) / 1000);
+        }
+        // Also count pending queue
+        try {
+          const raw = fs.readFileSync(ACTION_FILE, 'utf-8').trim();
+          const entries = raw ? raw.split('\n').filter(l => l.trim()).map(l => JSON.parse(l)) : [];
+          queueSize = entries.filter(e => e.status === 'queued' || e.status === 'pending').length;
+        } catch {}
+      } catch (e) { log('⚠️', 'timer query: ' + e.message); }
+      res.writeHead(200, { ...cors, 'Content-Type': 'application/json' });
+      return res.end(JSON.stringify({ 
+        next: next ? next.toISOString() : null, 
+        nextMs: next ? next.getTime() : 0,
+        queue: queueSize,
+        now: Date.now()
+      }));
+    }
+
     // ── GET /running — Check if dev-loop is active ──
     if (req.method === 'GET' && req.url === '/running') {
       const { execSync } = require('child_process');

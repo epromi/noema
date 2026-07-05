@@ -411,7 +411,12 @@ h1{font-size:1.3em;margin-bottom:0}.subtitle{color:var(--muted);font-size:0.92em
   </div>
 
   <!-- Development Packages -->
-  <div class="card wide" style="margin-top:14px"><h3>📦 Development Packages</h3>
+  <!-- ⏱️ Processor Timer -->
+  <div id="proc-timer" style="margin-top:14px;padding:8px 14px;border-radius:6px;background:var(--accent);font-size:0.88em;display:flex;align-items:center;justify-content:space-between;border-left:3px solid var(--yellow)">
+    <span id="proc-timer-label" style="color:var(--text2)">⏳ Processor: <span id="proc-timer-status">idle</span></span>
+    <span id="proc-timer-value" style="font-weight:700;color:var(--green);min-width:140px;text-align:right">betöltés…</span>
+  </div>
+  <div class="card wide" style="margin-top:8px"><h3>📦 Development Packages</h3>
     <div id="np-proposallist" style="font-size:0.90em;line-height:1.8">Loading…</div>
   </div>
 </section>
@@ -1009,6 +1014,78 @@ function actionBtn(action, id, description, label) {
   const l = label || '▶';
   return `<button onclick="sendAction('${action}','${id}','${(description||'').replace(/'/g,"\\'").replace(/"/g,'&quot;').substring(0,80)}',this,'${l}')" title="${description||''}" style="cursor:pointer;background:${color};color:#fff;border:none;border-radius:4px;padding:1px 8px;font-size:0.82em;font-weight:700;white-space:nowrap;opacity:0.85;flex-shrink:0">${l}</button>`;
 }
+
+// ── ⏱️ Processor Timer — polls relay for next trigger ──
+(function processorTimer() {
+  const label = document.getElementById('proc-timer-status');
+  const value = document.getElementById('proc-timer-value');
+  const bar   = document.getElementById('proc-timer');
+  if (!label || !value || !bar) return;
+
+  function msToHuman(ms) {
+    if (ms <= 0) return 'most!';
+    const s = Math.floor(ms / 1000);
+    if (s < 60) return s + 's múlva';
+    const m = Math.floor(s / 60);
+    if (m < 60) return m + 'm ' + (s % 60) + 's múlva';
+    return '>1h múlva';
+  }
+
+  function update() {
+    fetch('http://127.0.0.1:18998/next-trigger')
+      .then(r => r.json())
+      .then(d => {
+        if (d.running) {
+          label.textContent = '🖊️  Cursor: ' + d.running;
+          value.textContent = 'folyamatban…';
+          value.style.color = 'var(--blue)';
+          bar.style.borderLeftColor = 'var(--blue)';
+        } else if (d.nextMs) {
+          const diff = d.nextMs - d.now;
+          const extra = d.queue ? ' (' + d.queue + ' a sorban)' : '';
+          if (diff <= 0) {
+            label.textContent = '⚡ Processor: indul';
+            value.textContent = 'most' + extra;
+            value.style.color = 'var(--green)';
+            bar.style.borderLeftColor = 'var(--green)';
+          } else if (diff < 60000) {
+            label.textContent = '🔄 Processor: kövi trigger';
+            value.textContent = msToHuman(diff) + extra;
+            value.style.color = 'var(--yellow)';
+            bar.style.borderLeftColor = 'var(--yellow)';
+          } else {
+            label.textContent = '⏳ Processor: várakozik';
+            value.textContent = msToHuman(diff) + extra;
+            value.style.color = 'var(--text2)';
+            bar.style.borderLeftColor = 'var(--text2)';
+          }
+        } else {
+          label.textContent = '❓ Processor: ismeretlen';
+          value.textContent = 'timer offline?';
+          value.style.color = 'var(--red)';
+          bar.style.borderLeftColor = 'var(--red)';
+        }
+      }).catch(() => {
+        value.textContent = 'relay offline';
+        value.style.color = 'var(--red)';
+      });
+  }
+
+  // Also check if dev-loop is running
+  fetch('http://127.0.0.1:18998/running')
+    .then(r => r.json())
+    .then(d => {
+      if (d.running) {
+        label.textContent = '🖊️  Cursor: ' + d.running;
+        value.textContent = 'folyamatban…';
+        value.style.color = 'var(--blue)';
+        bar.style.borderLeftColor = 'var(--blue)';
+      }
+    }).catch(() => {});
+
+  update();
+  setInterval(update, 5000);
+})();
 
 // ── Font Floor: 15px minimum everywhere ──
 (function enforceMinFont() {

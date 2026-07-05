@@ -67,12 +67,8 @@ mkdir -p "$PROJECT_DIR/logs"
 DEV_LOG="$PROJECT_DIR/logs/dev-${PKG_ID}.log"
 PIPELINE_START=$(date +%s)
 
-log_dev() {
-  echo "[$(date +%H:%M:%S)] $1" >> "$DEV_LOG"
-}
-
-: > "$DEV_LOG"
-log_dev "🚀 Pipeline indult: $PKG_ID"
+source "$PROJECT_DIR/scripts/dev-log.sh"
+dev_log_init "$PKG_ID"
 
 # ═══════════════════════════════════════════════════════════════════════════
 banner "PHASE 1/6: Spec Analysis ($PKG_ID)"
