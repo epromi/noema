@@ -163,9 +163,7 @@ async function loadOttoRuns(
 function parseOttoRun(filename: string, content: string): OttoRunEntry {
   const lines = content.split("\n");
   const title = lines[0]?.replace(/^#\s*/, "") || filename;
-  const date = filename
-    .replace("nightly-review-", "")
-    .replace(".md", "");
+  const date = filename.replace("nightly-review-", "").replace(".md", "");
 
   let summaryStart = 1;
   for (let i = 1; i < lines.length && i < 10; i++) {

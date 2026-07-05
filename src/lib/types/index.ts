@@ -304,11 +304,7 @@ export interface NoemaData {
 }
 
 export type BrainstormSectionKey =
-  | "autoexec"
-  | "autonotify"
-  | "approval"
-  | "weekend"
-  | "backlog";
+  "autoexec" | "autonotify" | "approval" | "weekend" | "backlog";
 
 export type BrainstormItemStatus = "done" | "waiting" | "pending";
 

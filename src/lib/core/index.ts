@@ -19,19 +19,29 @@ export async function getAllData(
   providers?: AllProviders,
 ): Promise<DashboardData> {
   const p = providers ?? getProvider();
-  const [crons, agents, health, h1, calendar, bills, research, brainstorm, noema, actionQueue] =
-    await Promise.all([
-      getCrons(p),
-      getAgents(p),
-      getHealth(p),
-      getH1Data(p),
-      getCalendar(p),
-      getBills(p),
-      getResearch(p),
-      getBrainstorm(p),
-      getNoema(p),
-      getActionQueue(p),
-    ]);
+  const [
+    crons,
+    agents,
+    health,
+    h1,
+    calendar,
+    bills,
+    research,
+    brainstorm,
+    noema,
+    actionQueue,
+  ] = await Promise.all([
+    getCrons(p),
+    getAgents(p),
+    getHealth(p),
+    getH1Data(p),
+    getCalendar(p),
+    getBills(p),
+    getResearch(p),
+    getBrainstorm(p),
+    getNoema(p),
+    getActionQueue(p),
+  ]);
 
   return {
     meta: { loadedAt: Date.now() },

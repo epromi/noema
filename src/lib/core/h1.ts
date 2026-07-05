@@ -73,7 +73,9 @@ interface H1ApiReportRow {
     created_at?: string;
   };
   relationships?: {
-    reporter?: { data?: { attributes?: { signal?: number; reputation?: number } } };
+    reporter?: {
+      data?: { attributes?: { signal?: number; reputation?: number } };
+    };
     program?: { data?: { attributes?: { handle?: string } } };
   };
 }
@@ -112,9 +114,11 @@ export function parseH1Reports(raw: unknown): H1Report[] {
 }
 
 /** Parse balance JSON from h1.sh balance output. */
-export function parseH1Balance(raw: unknown): { amount: number; display: string } {
-  const amount =
-    (raw as { data?: { balance?: number } })?.data?.balance ?? NaN;
+export function parseH1Balance(raw: unknown): {
+  amount: number;
+  display: string;
+} {
+  const amount = (raw as { data?: { balance?: number } })?.data?.balance ?? NaN;
   if (Number.isFinite(amount)) {
     return { amount, display: `$${amount.toFixed(2)}` };
   }
@@ -137,7 +141,9 @@ export function parseH1SignalFromReports(raw: unknown): H1Signal | null {
 }
 
 /** Parse signal/reputation/trial from at-a-glance.md H1 section. */
-export function parseH1FromAtAGlance(atAGlance: string): H1Signal & { open: string } {
+export function parseH1FromAtAGlance(
+  atAGlance: string,
+): H1Signal & { open: string } {
   const hs =
     atAGlance.match(/📊 H1 Dashboard[\s\S]*?(?=\n## |\n---|$)/)?.[0] ??
     atAGlance;
@@ -339,9 +345,7 @@ export function parseRecallTrendFromCortex(
   return trend.sort((a, b) => a.run - b.run).slice(-5);
 }
 
-function parseRecallFraction(
-  recall?: string,
-): { x: number; y: number } | null {
+function parseRecallFraction(recall?: string): { x: number; y: number } | null {
   const match = recall?.match(/(\d+)\/(\d+)/);
   if (!match?.[1] || !match[2]) return null;
   return { x: parseInt(match[1], 10), y: parseInt(match[2], 10) };
@@ -452,10 +456,7 @@ export async function getH1Balance(
 export async function getH1Programs(
   providers?: AllProviders,
 ): Promise<H1Program[]> {
-  if (
-    programsCache &&
-    Date.now() - programsCache.fetchedAt < CACHE_TTL_MS
-  ) {
+  if (programsCache && Date.now() - programsCache.fetchedAt < CACHE_TTL_MS) {
     return programsCache.programs;
   }
 
@@ -488,9 +489,7 @@ export async function getH1ViktorStatus(
   const p = providers ?? getProvider();
   try {
     const [stateRaw, cortexStatus] = await Promise.all([
-      p.filesystem.readResearch(
-        "viktor-benchmark/autoresearch-state.json",
-      ),
+      p.filesystem.readResearch("viktor-benchmark/autoresearch-state.json"),
       p.filesystem.readAgentStatus("cortex").catch(() => ({
         agentId: "cortex",
         content: "",

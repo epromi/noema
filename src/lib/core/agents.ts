@@ -135,8 +135,7 @@ export function summarizeAgentSessions(
   if (stuck > 0) sessionStatus = "stuck";
   else if (active > 0) sessionStatus = "active";
 
-  const uptimeMs =
-    oldestActiveStart != null ? nowMs - oldestActiveStart : 0;
+  const uptimeMs = oldestActiveStart != null ? nowMs - oldestActiveStart : 0;
 
   return {
     active,

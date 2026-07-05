@@ -21,7 +21,9 @@ export function computeHeartbeatHealthScore(consecutiveErrors: number): number {
   return 25;
 }
 
-function isAgentHeartbeatState(state: unknown): state is Record<string, unknown> {
+function isAgentHeartbeatState(
+  state: unknown,
+): state is Record<string, unknown> {
   return typeof state === "object" && state !== null && !Array.isArray(state);
 }
 
