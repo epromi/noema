@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
+<title>Alfred Dashboard</title>
+<style>
+/* ── Design System ── */
+:root {
+  --bg: #0d1117; --card: #161b22; --border: #30363d;
+  --text: #c9d1d9; --muted: #8b949e; --accent: #58a6ff;
+  --green: #3fb950; --yellow: #d2991d; --red: #f85149;
+  --purple: #a371f7; --orange: #db6d28;
+  --g-bg: #1a3a1a; --y-bg: #3a2a0a; --r-bg: #3a0a0a;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;padding:16px 24px;max-width:1200px;margin:0 auto;font-size:18px}
+h1{font-size:1.3em;margin-bottom:0}.subtitle{color:var(--muted);font-size:0.92em;margin-bottom:16px}
+
+/* ── Tabs ── */
+.tab-bar{display:flex;gap:2px;margin-bottom:16px;border-bottom:2px solid var(--border);overflow-x:auto;scrollbar-width:none}
+.tab-bar::-webkit-scrollbar{display:none}
+.tab-btn{padding:8px 14px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.90em;white-space:nowrap;border-bottom:2px solid transparent;margin-bottom:-2px;transition:color .2s,border-color .2s}
+.tab-btn:hover{color:var(--text)}
+.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent)}
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+/* ── Metrics Bar (Grafana-style) ── */
+.metrics-bar{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:20px}
+.mbar{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px 14px;text-align:center}
+.mbar .n{font-size:1.6em;font-weight:700;line-height:1.2}.mbar .l{font-size:0.92em;color:var(--muted);text-transform:uppercase;letter-spacing:0.3px}
+.mbar .sub{font-size:0.88em;color:var(--muted);margin-top:2px}
+
+/* ── Grid ── */
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+.grid-2{grid-template-columns:1fr 1fr}.grid-3{grid-template-columns:1fr 1fr 1fr}
+.card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px}
+.card h3{font-size:0.92em;color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.4px;display:flex;align-items:center;gap:6px}
+.card.wide{grid-column:1/-1}
+
+/* ── Metrics ── */
+.metric{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid rgba(48,54,61,0.4);font-size:0.90em}
+.metric:last-child{border-bottom:none}
+.metric .lbl{color:var(--muted)}.metric .val{font-weight:600;text-align:right}
+.g{color:var(--green)}.y{color:var(--yellow)}.r{color:var(--red)}.p{color:var(--purple)}.o{color:var(--orange)}.a{color:var(--accent)}
+
+/* ── Badges ── */
+.badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:0.88em;font-weight:600}
+.b-ok{background:var(--g-bg);color:var(--green)}.b-w{background:var(--y-bg);color:var(--yellow)}.b-e{background:var(--r-bg);color:var(--red)}.b-p{background:#2a1a4a;color:var(--purple)}
+
+/* ── Avatars ── */
+.av{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;font-size:0.80em;font-weight:700;flex-shrink:0}
+.av-otto{background:#2a1a4a;color:var(--purple)}.av-viktor{background:#112211;color:var(--green)}
+.av-scout{background:var(--y-bg);color:var(--orange)}.av-cortex{background:#1a2a3a;color:var(--accent)}
+.av-hugo{background:#2a1a2a;color:#d2a8ff}.av-edwin{background:#2a3a1a;color:#7ee787}
+.av-porter{background:var(--r-bg);color:#ff7b72}.av-alfred{background:#1a1a3a;color:#79c0ff}
+
+/* ── Agent Status Dot ── */
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex-shrink:0}
+.dot-green{background:var(--green)}.dot-yellow{background:var(--yellow)}.dot-red{background:var(--red)}
+
+/* ── Timeline (GitHub Actions style) ── */
+.timeline{position:relative;padding-left:20px}
+.timeline::before{content:'';position:absolute;left:7px;top:0;bottom:0;width:2px;background:var(--border)}
+.tl-item{position:relative;margin-bottom:14px;padding-left:8px}
+.tl-item::before{content:'';position:absolute;left:-17px;top:4px;width:10px;height:10px;border-radius:50%;background:var(--green);border:2px solid var(--card)}
+.tl-item.tl-warn::before{background:var(--yellow)}.tl-item.tl-err::before{background:var(--red)}
+.tl-head{font-size:0.90em;color:var(--muted);margin-bottom:3px}
+.tl-body{font-size:0.90em;line-height:1.5}
+.tl-sub{font-size:0.88em;color:var(--muted);margin-left:12px;padding:2px 0}
+
+/* ── Heatmap (Vercel style) ── */
+.heatmap{overflow-x:auto}
+.heatmap table{width:100%;border-collapse:collapse;font-size:0.90em}
+.heatmap td,.heatmap th{padding:4px 6px;text-align:center;border:1px solid var(--border)}
+.heatmap th{color:var(--muted);font-weight:400;white-space:nowrap}
+.heatmap .hcell{width:28px;height:22px;border-radius:3px;display:inline-block}
+.hc-g{background:var(--green)}.hc-y{background:var(--yellow)}.hc-r{background:var(--red)}.hc-x{background:var(--border)}
+
+/* ── Kanban (Linear style) ── */
+.kanban{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.kb-col{background:rgba(48,54,61,0.3);border-radius:8px;padding:10px}
+.kb-col h4{font-size:0.90em;color:var(--muted);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:8px}
+.kb-item{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:8px 10px;margin-bottom:6px;font-size:0.92em}
+.kb-item .kb-id{font-family:monospace;color:var(--accent);font-size:0.92em}
+.kb-item .kb-desc{color:var(--text);margin:2px 0}
+.kb-item .kb-meta{color:var(--muted);font-size:0.90em}
+
+/* ── System Gauges ── */
+.gauge{margin:8px 0}.gauge .g-label{display:flex;justify-content:space-between;font-size:0.90em;margin-bottom:3px}
+.gauge .g-bar{height:8px;border-radius:4px;background:var(--border);overflow:hidden}
+.gauge .g-fill{height:100%;border-radius:4px;transition:width .4s}
+.gf-g{background:var(--green)}.gf-y{background:var(--yellow)}.gf-r{background:var(--red)}
+
+/* ── Weather Widget ── */
+.weather{display:flex;align-items:center;gap:12px;padding:10px 0}
+.weather .w-temp{font-size:1.8em;font-weight:700}.weather .w-desc{color:var(--muted);font-size:0.88em}
+.weather .w-meta{display:flex;gap:14px;margin-top:4px;font-size:0.88em;color:var(--muted)}
+
+/* ── H1 Timeline ── */
+.h1tl-item{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(48,54,61,0.3);font-size:0.92em}
+.h1tl-item:last-child{border-bottom:none}
+.h1tl-state{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.h1tl-title{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.h1tl-date{color:var(--muted);font-size:0.92em;white-space:nowrap}
+
+/* ── Cron Pipeline ── */
+.cron-timeline{position:relative;height:42px;background:var(--card);border:1px solid var(--border);border-radius:6px;margin-bottom:12px;overflow:hidden}
+.cron-timeline .tl-track{position:absolute;top:50%;left:30px;right:10px;height:2px;background:var(--border);transform:translateY(-50%)}
+.cron-timeline .tl-tick{position:absolute;top:0;height:100%;width:1px;background:var(--border);opacity:0.5}
+.cron-timeline .tl-label{position:absolute;top:2px;font-size:0.85em;color:var(--muted);transform:translateX(-50%)}
+.cron-timeline .tl-dot{position:absolute;top:50%;width:8px;height:8px;border-radius:50%;transform:translate(-50%,-50%);cursor:pointer;transition:transform 0.15s;z-index:2}
+.cron-timeline .tl-dot:hover{transform:translate(-50%,-50%) scale(1.8);z-index:3}
+.cron-timeline .tl-dot.night{filter:brightness(0.7)}
+.cron-pipeline-table{width:100%;border-collapse:collapse;font-size:0.92em;max-height:500px;overflow-y:auto;display:block}
+.cron-pipeline-table thead{position:sticky;top:0;z-index:2}
+.cron-pipeline-table th{background:var(--card);color:var(--muted);font-weight:600;padding:6px 8px;text-align:left;border-bottom:2px solid var(--border);font-size:0.90em}
+.cron-pipeline-table td{padding:5px 8px;border-bottom:1px solid var(--border);white-space:nowrap}
+.cron-pipeline-table tr:hover td{background:var(--bg)}
+.cron-pipeline-table .group-hdr td{background:var(--card);color:var(--accent);font-weight:700;font-size:0.95em;padding:8px 8px 4px;border-bottom:2px solid var(--accent);letter-spacing:0.5px}
+.cron-pipeline-table .cr-time{font-family:monospace;color:var(--accent);font-weight:600}
+.cron-pipeline-table .cr-sched{color:var(--muted);font-size:0.90em}
+.cron-pipeline-table .cr-dot{width:7px;height:7px;border-radius:50%;display:inline-block}
+.cron-pipeline-table .cr-status{text-align:center;width:30px}
+.stale-0{color:var(--green)}.stale-3{color:var(--yellow)}.stale-7{color:var(--red)}
+.blindspots{font-size:0.90em;color:var(--yellow);line-height:1.6;word-break:break-all}
+
+/* ── Footer ── */
+.timestamp{color:var(--muted);font-size:0.88em;margin-top:24px;padding-top:12px;border-top:1px solid var(--border);text-align:center}
+
+/* ── Responsive ── */
+@media(max-width:800px){
+  .metrics-bar{grid-template-columns:repeat(3,1fr)}
+  .kanban{grid-template-columns:1fr}.grid-2,.grid-3{grid-template-columns:1fr}
+}
+@media(max-width:500px){
+  body{padding:10px}.metrics-bar{grid-template-columns:1fr 1fr}.tab-btn{padding:6px 8px;font-size:0.85em}
+}
+</style>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
+  <div><h1>🧠 Alfred Dashboard</h1><p class="subtitle">OpenClaw Operations Center · <span id="hostname">pop-os</span></p></div>
+  <div style="font-size:0.89em;color:var(--muted);text-align:right"><span id="gen-time">—</span><br>Auto-refresh: 5min</div>
+</div>
+
+<!-- ── Metrics Bar (always visible) ── -->
+<div class="metrics-bar" id="metrics-bar">
+  <div class="mbar"><div class="n" id="m-agents">5/9</div><div class="l">Agents Healthy</div><div class="sub" id="m-agents-sub">4 critical</div></div>
+  <div class="mbar"><div class="n" id="m-audits">37</div><div class="l">Viktor Audits</div><div class="sub" id="m-audits-sub">100% recall</div></div>
+  <div class="mbar"><div class="n" id="m-h1">0</div><div class="l">H1 Open</div><div class="sub" id="m-h1-sub">0 trials</div></div>
+  <div class="mbar"><div class="n" id="m-loops">—</div><div class="l">Open Loops</div><div class="sub" id="m-loops-sub">— critical</div></div>
+  <div class="mbar"><div class="n" id="m-otto">—</div><div class="l">Last Otto Run</div><div class="sub" id="m-otto-sub">—</div></div>
+  <div class="mbar"><div class="n" id="m-brain">—</div><div class="l">🧠 Ideas</div><div class="sub" id="m-brain-sub">pending</div></div>
+</div>
+
+<!-- ── Tab Bar ── -->
+<nav class="tab-bar">
+  <button class="tab-btn active" data-tab="overview">🏠 Overview</button>
+  <button class="tab-btn" data-tab="orchestrator">⚡ Orchestrator</button>
+  <button class="tab-btn" data-tab="agents">🤖 Agents</button>
+  <button class="tab-btn" data-tab="viktor">🧠 Viktor</button>
+  <button class="tab-btn" data-tab="h1">🏴 HackerOne</button>
+  <button class="tab-btn" data-tab="tasks">📋 Tasks</button>
+  <button class="tab-btn" data-tab="brainstorming">🧠 Brainstorm</button>
+  <button class="tab-btn" data-tab="noema">🧠 Noema</button>
+  <button class="tab-btn" data-tab="activity">📊 Activity</button>
+</nav>
+
+<!-- ════════════════ TAB 1: Overview ════════════════ -->
+<section class="tab-content active" id="tab-overview">
+  <div class="grid grid-2">
+    <!-- System Gauges -->
+    <div class="card"><h3>🖥️ System</h3>
+      <div class="gauge"><div class="g-label"><span>CPU</span><span class="" id="g-cpu-val">—</span></div><div class="g-bar"><div class="g-fill" id="g-cpu" style="width:0%"></div></div></div>
+      <div class="gauge"><div class="g-label"><span>RAM</span><span class="" id="g-ram-val">—</span></div><div class="g-bar"><div class="g-fill" id="g-ram" style="width:0%"></div></div></div>
+      <div class="gauge"><div class="g-label"><span>Disk /</span><span class="" id="g-disk-val">—</span></div><div class="g-bar"><div class="g-fill" id="g-disk" style="width:0%"></div></div></div>
+      <div style="font-size:0.88em;color:var(--muted);margin-top:8px">Uptime: <span id="sys-uptime">—</span></div>
+    </div>
+    <!-- Weather + Memory -->
+    <div class="card" id="weather-card"><h3>🌤️ Budapest</h3>
+      <div class="weather"><div class="w-temp" id="w-temp">—</div><div><div class="w-desc" id="w-desc">—</div><div class="w-meta"><span>💧 <span id="w-hum">—</span>%</span><span>💨 <span id="w-wind">—</span>km/h</span></div></div></div>
+      <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">
+        <div class="metric"><span class="lbl">Memory files</span><span class="val" id="mem-files">—</span></div>
+        <div class="metric"><span class="lbl">Daily logs</span><span class="val" id="mem-logs">—</span></div>
+        <div class="metric"><span class="lbl">Last log</span><span class="val a" id="mem-last">—</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Critical Alerts -->
+  <div class="card wide" style="margin-top:14px"><h3>🚨 Critical Alerts</h3>
+    <div id="critical-alerts" style="font-size:0.90em;line-height:1.7">Loading…</div>
+  </div>
+
+  <!-- Projects Summary -->
+  <div class="grid" style="margin-top:14px">
+    <div class="card"><h3>📌 Active Projects</h3>
+      <div class="metric"><span class="lbl">Viktor AR Pipeline</span><span class="val g" id="ov-viktor">—</span></div>
+      <div class="metric"><span class="lbl">H1 Bug Bounty</span><span class="val y" id="proj-h1">—</span></div>
+      <div class="metric"><span class="lbl">Dashboard</span><span class="val p">v4</span></div>
+      <div class="metric"><span class="lbl">Cortex Opt</span><span class="val">Run #1</span></div>
+    </div>
+    <div class="card"><h3>⚠️ Stalled</h3>
+      <div class="metric"><span class="lbl">Sparkl</span><span class="val r">Play Console</span></div>
+      <div class="metric"><span class="lbl">Cortex P2/P4</span><span class="val y">Decision needed</span></div>
+      <div class="metric"><span class="lbl">P3 neg-test</span><span class="val y">Waiting</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════ TAB 2: Orchestrator ════════════════ -->
+<section class="tab-content" id="tab-orchestrator">
+  <!-- Otto Timeline -->
+  <h2 style="color:var(--accent);font-size:1em;margin-bottom:10px">⚡ Otto Nightly Runs</h2>
+  <div class="card" style="max-height:500px;overflow-y:auto">
+    <div class="timeline" id="otto-timeline">Loading…</div>
+  </div>
+
+  <!-- Action Queue Kanban -->
+  <h2 style="color:var(--accent);font-size:1em;margin:18px 0 10px">📋 Action Queue</h2>
+  <div class="kanban" id="action-kanban">
+    <div class="kb-col"><h4>⚡ Auto-resolved</h4><div id="kb-auto">—</div></div>
+    <div class="kb-col"><h4>👔 Alfred</h4><div id="kb-alfred">—</div></div>
+    <div class="kb-col"><h4>🧑 András</h4><div id="kb-andras">—</div></div>
+  </div>
+
+  <!-- Cron Pipeline -->
+  <h2 style="color:var(--accent);font-size:1em;margin:18px 0 10px">⏰ Cron Pipeline (24h)</h2>
+  <div class="cron-timeline" id="cron-timeline"></div>
+  <div class="cron-pipeline-table" id="cron-pipeline">Loading…</div>
+
+  <!-- Noema Product Research -->
+  <h2 style="color:var(--accent);font-size:1em;margin:18px 0 10px">🧠 Noema Product Research</h2>
+  <div class="card" id="dash-research" style="font-size:0.90em;line-height:1.6">Loading…</div>
+
+  <!-- Edwin Recovery -->
+  <div class="grid" style="margin-top:14px">
+    <div class="card"><h3>🔄 Edwin Recovery</h3>
+      <div id="edwin-recovery" style="font-size:0.90em">Loading…</div>
+    </div>
+    <div class="card"><h3>🏕️ Scout Auto-spawn</h3>
+      <div id="scout-spawn" style="font-size:0.90em">Loading…</div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════ TAB 3: Agents ════════════════ -->
+<section class="tab-content" id="tab-agents">
+  <!-- Heatmap -->
+  <div class="card wide" style="margin-bottom:14px"><h3>📅 7-Day Health Heatmap</h3>
+    <div class="heatmap" id="agent-heatmap">Loading…</div>
+  </div>
+
+  <!-- Agent Cards -->
+  <div class="grid" id="agent-cards"></div>
+</section>
+
+<!-- ════════════════ TAB 4: Viktor ════════════════ -->
+<section class="tab-content" id="tab-viktor">
+  <div class="grid">
+    <div class="card"><h3>Pipeline</h3>
+      <div class="metric"><span class="lbl">Total audited</span><span class="val g" id="vp-total">—</span></div>
+      <div class="metric"><span class="lbl">Avg recall</span><span class="val" id="vp-recall">—</span></div>
+      <div class="metric"><span class="lbl">🟢 Active now</span><span class="val a" id="vp-active">—</span></div>
+      <div class="metric"><span class="lbl">⏳ Queued</span><span class="val y" id="vp-pending">—</span></div>
+      <div class="metric"><span class="lbl">❌ Failed (<100%)</span><span class="val r" id="vp-failed">—</span></div>
+      <div class="metric"><span class="lbl">Circuit</span><span class="val" id="vp-circuit">—</span></div>
+    </div>
+    <div class="card"><h3>Quality Control</h3>
+      <div class="metric"><span class="lbl">Negative tests</span><span class="val" id="vp-neg">—</span></div>
+      <div class="metric"><span class="lbl">False positives</span><span class="val" id="vp-fp">—</span></div>
+      <div class="metric"><span class="lbl">Transfer tests</span><span class="val" id="vp-transfer">—</span></div>
+      <div class="metric"><span class="lbl">H1 submitted</span><span class="val" id="vp-h1sub">—</span></div>
+      <div class="metric"><span class="lbl">H1 accepted</span><span class="val g" id="vp-h1acc">—</span></div>
+    </div>
+  </div>
+  <div class="grid" style="margin-top:14px">
+    <div class="card wide"><h3>📈 Recall Trend</h3>
+      <svg id="vp-trend" viewBox="0 0 400 120" style="width:100%;height:120px" xmlns="http://www.w3.org/2000/svg">
+        <line x1="40" y1="10" x2="40" y2="110" stroke="var(--border)" stroke-width="1"/>
+        <line x1="40" y1="110" x2="390" y2="110" stroke="var(--border)" stroke-width="1"/>
+        <line x1="40" y1="35" x2="390" y2="35" stroke="var(--border)" stroke-width="0.5" stroke-dasharray="3,3"/>
+        <line x1="40" y1="60" x2="390" y2="60" stroke="var(--border)" stroke-width="0.5" stroke-dasharray="3,3"/>
+        <line x1="40" y1="85" x2="390" y2="85" stroke="var(--border)" stroke-width="0.5" stroke-dasharray="3,3"/>
+        <text x="35" y="14" fill="var(--muted)" font-size="9" text-anchor="end">100%</text>
+        <text x="35" y="39" fill="var(--muted)" font-size="9" text-anchor="end">90%</text>
+        <text x="35" y="64" fill="var(--muted)" font-size="9" text-anchor="end">80%</text>
+        <text x="35" y="89" fill="var(--muted)" font-size="9" text-anchor="end">70%</text>
+        <text x="35" y="114" fill="var(--muted)" font-size="9" text-anchor="end">60%</text>
+        <polyline id="vp-trend-line" fill="none" stroke="var(--accent)" stroke-width="2.5" points=""/>
+        <g id="vp-trend-dots"></g>
+        <g id="vp-trend-labels"></g>
+      </svg>
+    </div>
+    <div class="card"><h3>⚠️ CWE Blind Spots</h3>
+      <p class="blindspots" id="vp-blind">—</p>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════ TAB 5: HackerOne ════════════════ -->
+<section class="tab-content" id="tab-h1">
+  <div class="grid">
+    <div class="card"><h3>Stats</h3>
+      <div class="metric"><span class="lbl">Open reports</span><span class="val y" id="h1-open">—</span></div>
+      <div class="metric"><span class="lbl">Signal</span><span class="val" id="h1-signal">—</span></div>
+      <div class="metric"><span class="lbl">Reputation</span><span class="val" id="h1-rep">—</span></div>
+      <div class="metric"><span class="lbl">Trial reports</span><span class="val" id="h1-trial">—</span></div>
+    </div>
+    <div class="card"><h3>Active Programs</h3>
+      <div id="h1-programs" style="font-size:0.90em;line-height:1.6">—</div>
+    </div>
+    <div class="card"><h3>Reports</h3>
+      <div class="metric"><span class="lbl">Accepted ($)</span><span class="val g">1 ($50)</span></div>
+      <div class="metric"><span class="lbl">Duplicate</span><span class="val y">12</span></div>
+      <div class="metric"><span class="lbl">N/A</span><span class="val">3</span></div>
+      <div class="metric"><span class="lbl">Total</span><span class="val">18</span></div>
+    </div>
+  </div>
+  <div class="card wide" style="margin-top:14px"><h3>📋 Report Timeline (Last 10)</h3>
+    <div id="h1-timeline" style="font-size:0.90em">Loading…</div>
+  </div>
+</section>
+
+<!-- ════════════════ TAB 6: Tasks ════════════════ -->
+<section class="tab-content" id="tab-tasks">
+  <div class="grid">
+    <div class="card wide"><h3>🔓 Open Loops</h3>
+      <div id="open-loops" style="font-size:0.90em;line-height:2">Loading…</div>
+    </div>
+    <div class="card"><h3>💰 Bills</h3>
+      <div id="bills" style="font-size:0.90em;line-height:1.8">Loading…</div>
+    </div>
+    <div class="card"><h3>🏢 Work (air-gap)</h3>
+      <div class="metric"><span class="lbl">RCA/ECK</span><span class="val">e-cégkapu</span></div>
+      <div class="metric"><span class="lbl">Perbit</span><span class="val">—</span></div>
+      <div class="metric"><span class="lbl">ITM Planning</span><span class="val">—</span></div>
+      <div class="metric"><span class="lbl">Kiber-kóstoló</span><span class="val">—</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════ TAB 8: Brainstorming ════════════════ -->
+<section class="tab-content" id="tab-brainstorming">
+  <div class="grid" id="brainstorm-grid">
+    <!-- Filled by JS -->
+  </div>
+  <div class="card wide" style="margin-top:14px;font-size:0.92em;color:var(--muted);text-align:center" id="brain-legend">
+    Source: memory/brainstorming/action-tracker.md · Items not seen here are invisible → they rot.
+  </div>
+</section>
+
+<!-- ════════════════ TAB: Noema 🧠 ════════════════ -->
+<section class="tab-content" id="tab-noema">
+  <!-- Product Identity -->
+  <div class="card wide"><h3>🧠 Noema — System Intelligence Dashboard</h3>
+    <p style="font-size:0.92em;color:var(--muted);line-height:1.6">
+      <strong>noēma</strong> (görög: νόημα) — észlelet, gondolat, értelem.
+      Az Alfred agent-ecosystem központi idegrendszere. Valós idejű monitoring, cron orchestráció,
+      és éjszakai öndiagnosztika. Ez a Noema saját termékoldala — a dashboardot a dashboard mutatja be.
+    </p>
+  </div>
+
+  <!-- Product Health -->
+  <div class="metrics-bar" style="margin-top:14px">
+    <div class="mbar"><div class="n" id="np-health">—</div><div class="l">Product Health</div><div class="sub" id="np-health-sub"></div></div>
+    <div class="mbar"><div class="n" id="np-crons">—</div><div class="l">Crons Healthy</div><div class="sub">3 Noema crons</div></div>
+    <div class="mbar"><div class="n" id="np-qascore">—</div><div class="l">QA Score</div><div class="sub" id="np-qascore-sub"></div></div>
+    <div class="mbar"><div class="n" id="np-proposals">—</div><div class="l">Proposals</div><div class="sub" id="np-proposals-sub"></div></div>
+  </div>
+
+  <!-- Architecture + Code Metrics -->
+  <div class="grid grid-2" style="margin-top:14px">
+    <div class="card"><h3>📐 Architecture</h3>
+      <pre style="font-size:0.88em;color:var(--accent);background:var(--bg);padding:10px;border-radius:6px;overflow-x:auto;line-height:1.5" id="np-arch">—</pre>
+    </div>
+    <div class="card"><h3>📏 Code Metrics</h3>
+      <div id="np-codemetrics" style="font-size:0.90em;line-height:1.8">Loading…</div>
+    </div>
+  </div>
+
+  <!-- Product Crons -->
+  <div class="card wide" style="margin-top:14px"><h3>⏰ Project Crons</h3>
+    <div id="np-cronlist" style="font-size:0.90em;line-height:1.8">Loading…</div>
+  </div>
+
+  <!-- Recent Changes + QA Report -->
+  <div class="grid grid-2" style="margin-top:14px">
+    <div class="card"><h3>📋 Recent Changes</h3>
+      <div id="np-changelog" style="font-size:0.90em;max-height:300px;overflow-y:auto">Loading…</div>
+    </div>
+    <div class="card"><h3>🧪 Last QA Report</h3>
+      <div id="np-qareport" style="font-size:0.90em;max-height:300px;overflow-y:auto">Loading…</div>
+    </div>
+  </div>
+
+  <!-- Development Packages -->
+  <div class="card wide" style="margin-top:14px"><h3>📦 Development Packages</h3>
+    <div id="np-proposallist" style="font-size:0.90em;line-height:1.8">Loading…</div>
+  </div>
+</section>
+
+<!-- ════════════════ TAB 7: Activity ════════════════ -->
+<section class="tab-content" id="tab-activity">
+  <div class="grid grid-2">
+    <div class="card"><h3>📝 Daily Log Streak</h3>
+      <div id="log-streak" style="font-size:0.90em;line-height:1.8">Loading…</div>
+    </div>
+    <div class="card"><h3>🧪 Research Activity</h3>
+      <div id="research-activity" style="font-size:0.90em;line-height:1.8">Loading…</div>
+    </div>
+  </div>
+  <div class="card wide" style="margin-top:14px"><h3>📜 Key Decisions (Recent)</h3>
+    <div id="key-decisions" style="font-size:0.90em;line-height:1.7">Loading…</div>
+  </div>
+</section>
+
+<!-- ── Footer ── -->
+<div class="timestamp">Generated: <span id="gen-timestamp">—</span></div>
+
+<!-- ── Tab Routing JS ── -->
+<script>
+(function(){
+  const tabs = document.querySelectorAll('.tab-btn');
+  const contents = document.querySelectorAll('.tab-content');
+
+  function activate(hash) {
+    const target = hash ? hash.replace('#','') : 'overview';
+    tabs.forEach(t => t.classList.toggle('active', t.dataset.tab === target));
+    contents.forEach(c => c.classList.toggle('active', c.id === 'tab-' + target));
+  }
+
+  tabs.forEach(btn => btn.addEventListener('click', () => {
+    history.replaceState(null, '', '#' + btn.dataset.tab);
+    activate(btn.dataset.tab);
+  }));
+
+  activate(window.location.hash);
+  window.addEventListener('hashchange', () => activate(window.location.hash));
+})();
+</script>
+
+<!-- ── Dynamic Data Injection (filled by generate.sh) ── -->
+<script>
+// DATA_PLACEHOLDER — replaced by generate.sh with JSON payload
+const D = JSON.parse('{"generated":"2026-07-05 09:44:16 Europe/Budapest","system":{"hostname":"pop-os","uptime":"2 weeks, 4 hours, 3 minutes","disk":"45% used (196G/460G)","ram":"9.8Gi used / 15Gi total","memFiles":55753,"dailyLogs":67,"lastDaily":"2026-07-05","cpuPct":11.1,"ramPct":64,"diskPct":45,"cpuColor":"g","ramColor":"g","diskColor":"g"},"weather":{"temp":"22","desc":"Light rain","humidity":"46","wind":"22","icon":""},"alerts":[{"id":"open-loops-critical","severity":"critical","text":"2 🔴 Open Loops — 14+ days stale"},{"id":"agents-stale","severity":"critical","text":"1 agents critically stale: Viktor"},{"id":"h1-trial-gate","severity":"warning","text":"H1 trial reports: 0 — Signal gating blocks new programs"}],"metrics":{"agentsHealthy":"7/8","agentsCritical":"1 critical","viktorAudits":42,"viktorRecall":76,"h1Open":"?","h1Trials":"0","openLoops":3,"loopsCritical":2,"lastOtto":"#undefined","ottoStatus":"✅ OK"},"edwinRecovery":{"lastError":"—","consecutive":0,"retriesToday":0,"timeout":300,"status":"<span class=\\"badge b-ok\\">OK</span>"},"scoutSpawn":{"lastSpawn":"2026-07-03","lastCount":"—","autoSpawn":true},"timeline":[{"title":"Nightly Memory Audit — 2026-07-05","time":"2026-07-05","summary":"## ⚡ Critical (needs attention before morning) - 🔴 **Porter status.md 54d stale**: Cron IS running (porter-latest-triage.md shows Jul 4 activity) but status.md not updated since 05-12. Documentation ","steps":[],"status":"ok"},{"title":"Otto 🗄️ Nightly Review #52","time":"2026-07-04","summary":"## Pre-flight - ✅ agents/back-office/status.md read — run #51 Core Analysis (07-04 03:00) - ✅ memory/state/nightly-core-output.md read — Core Analysis #51 complete","steps":[],"status":"ok"},{"title":"Otto 🗄️ Nightly Review #53","time":"2026-07-04-v2","summary":"## Pre-flight - ✅ agents/back-office/status.md read — run #52 Full Compilation (07-04 03:35) - ✅ memory/state/nightly-core-output.md read — Core Analysis #51 complete (07-04 03:00)","steps":[],"status":"ok"},{"title":"Otto 🗄️ Nightly Review #50","time":"2026-07-03","summary":"## Pre-flight - ✅ agents/back-office/status.md read — last run #49 Core Analysis (07-03 03:04) - ✅ memory/state/nightly-core-output.md read — Core Analysis #49 with N+1 through N+9","steps":[],"status":"ok"},{"title":"Otto 🗄️ Nightly Review #48","time":"2026-07-02","summary":"## Pre-flight - ✅ agents/back-office/status.md read — last run #47 Compilation (07-01 03:35) - ✅ memory/state/nightly-core-output.md read — Core Analysis #48 (07-02 03:05) with N+1 through N+6","steps":[],"status":"ok"}],"dashboardResearch":null,"cronGrid":[{"id":"37dff63d","name":"Daytime Fact Sync","status":"g","last":"15h ago","next":"in 16m","agent":"alfred","sched":"12,15,18,21","desc":"📋 Fact consolidation from daily logs into SSOT files"},{"id":"b17b3b17","name":"Edwin CCM (7-23)","status":"r","last":"44m ago","next":"in 16m","agent":"edwin","sched":"07-23 hourly","desc":"👁️ Cross-domain pattern detection — 6 pattern types, silence by default"},{"id":"dc91353b","name":"Porter Hourly Triage","status":"r","last":"34m ago","next":"in 16m","agent":"porter","sched":"06-23 hourly","desc":"🚪 Gmail scan: categorize, bill detection → calendar+tasks"},{"id":"cbc7d5d6","name":"Noema Refresh (2h)","status":"g","last":"56m ago","next":"in 1h","agent":"alfred","sched":"—","desc":"—"},{"id":"ce68a9f5","name":"Mid-day Proactive Compact","status":"g","last":"23h ago","next":"in 1h","agent":"alfred","sched":"auto","desc":"🗜️ Mid-day session compaction"},{"id":"38448605","name":"Hugo Repo Prep","status":"g","last":"16h ago","next":"in 8h","agent":"alfred","sched":"20:00 daily","desc":"📚 Advisory → answer key preparation for Viktor audits"},{"id":"a9cc051f","name":"Weekly Strategic Brief","status":"g","last":"7d ago","next":"in 8h","agent":"edwin","sched":"20:00 Sun","desc":"📊 Edwin weekly strategy briefing"},{"id":"d014fe23","name":"KG Extractor","status":"g","last":"15h ago","next":"in 9h","agent":"system","sched":"21:00 daily","desc":"🧩 Knowledge graph extraction from daily logs"},{"id":"f2dcd659","name":"Proactive Evening Compact","status":"g","last":"14h ago","next":"in 10h","agent":"alfred","sched":"auto","desc":"🗜️ Evening session compaction"},{"id":"bf90e36a","name":"Idle Brainstorming Trigger","status":"r","last":"14h ago","next":"in 10h","agent":"main","sched":"22:00 daily","desc":"💡 Research-backed action item generation (Flash)"},{"id":"7dea3686","name":"Nightly Backup","status":"g","last":"11h ago","next":"in 11h","agent":"main","sched":"23:05 daily","desc":"💾 File-level backup (rsync to dated folder)"},{"id":"3b4ea5d3","name":"Noema Product Research","status":"r","last":"11h ago","next":"in 13h","agent":"alfred","sched":"—","desc":"—"},{"id":"0306bef4","name":"Autoresearch Orchestrator","status":"r","last":"10h ago","next":"in 14h","agent":"alfred","sched":"01:30 daily","desc":"🧠 Viktor benchmark loop — spawns Viktor for blind repo audits, tracks recall stats"},{"id":"627c32f6","name":"Nightly Hacker Intel","status":"g","last":"10h ago","next":"in 14h","agent":"albert","sched":"01:30 daily","desc":"🔍 Albert — CVE/exploit intelligence gathering, H1 program scanning"},{"id":"f55af5a9","name":"Autoexecutor A (02:00)","status":"g","last":"9h ago","next":"in 14h","agent":"alfred","sched":"02:00 daily","desc":"⚡ Action tracker AUTOEXECUTE items (Flash) — off-peak 00-03"},{"id":"745964aa","name":"Nightly Staff Review (Core)","status":"g","last":"9h ago","next":"in 15h","agent":"alfred","sched":"02:30 daily","desc":"🗄️ Memory audit + agent status + KG consistency check"},{"id":"eed1df55","name":"Noema Nightly QA","status":"g","last":"—","next":"in 15h","agent":"alfred","sched":"—","desc":"—"},{"id":"7394914b","name":"Proactive Compaction","status":"g","last":"8h ago","next":"in 16h","agent":"alfred","sched":"auto","desc":"🗜️ Session context compaction (automatic trigger)"},{"id":"fa7c7d61","name":"Edwin Morning Study","status":"g","last":"7h ago","next":"in 17h","agent":"alfred","sched":"05:00 daily","desc":"📚 Capability research: news, self-improvement, local context"},{"id":"c10105c3","name":"Nightly Staff Review (Compile)","status":"g","last":"6h ago","next":"in 18h","agent":"alfred","sched":"06:00 daily","desc":"🗄️ Nightly review → Telegram (bilingual metrics + explanation)"},{"id":"79c16201","name":"Morning Backup","status":"g","last":"5h ago","next":"in 19h","agent":"main","sched":"07:05 daily","desc":"💾 Workspace snapshot backup (rsync)"},{"id":"e5966519","name":"Autoexecutor B (07:00)","status":"g","last":"5h ago","next":"in 19h","agent":"alfred","sched":"07:00 daily","desc":"⚡ Action tracker AUTOEXECUTE items (Flash) — off-peak 06-08"},{"id":"9e96c028","name":"Cortex Pipeline Optimizer","status":"g","last":"1d ago","next":"in 2d","agent":"alfred","sched":"06:30 /3d","desc":"🧠 System optimization proposals for Viktor pipeline + agent fleet"},{"id":"831c3764","name":"Stand-up Prep (Tuesday)","status":"g","last":"5d ago","next":"in 2d","agent":"main","sched":"15:30 Tue","desc":"📋 Tuesday scrum stand-up preparation"},{"id":"62d790f0","name":"Alíz zsebpénz emlékeztető","status":"g","last":"3d ago","next":"in 4d","agent":"alfred","sched":"16:00 Thu","desc":"💰 Alíz weekly pocket money reminder"},{"id":"537a90f5","name":"Stand-up Prep (Friday)","status":"g","last":"2d ago","next":"in 5d","agent":"main","sched":"15:30 Fri","desc":"📋 Friday scrum stand-up preparation"},{"id":"df971df6","name":"Week in Review (Friday)","status":"g","last":"2d ago","next":"in 5d","agent":"main","sched":"17:00 Fri","desc":"📊 Weekly review + metrics compilation"},{"id":"650fd4a9","name":"KG Weekly Validation","status":"g","last":"2h ago","next":"in 7d","agent":"otto","sched":"10:00 Sun","desc":"🧩 Knowledge graph weekly audit + dedup"}],"h1Timeline":[{"id":"3721908","title":"Information Disclosure: Internal GCP service URL exposed in public shared-actions repository","state":"resolved","stateColor":"g","created":"2026-05-08","triaged":"2026-05-11","bounty":"💰","days":57},{"id":"3721944","title":"frankfurt-stage.8x8.vc: Information Disclosure: Internal HAProxy hostname and infrastructure details exposed via HTTP response headers","state":"not-applicable","stateColor":"r","created":"2026-05-08","triaged":"—","bounty":"","days":57},{"id":"3731194","title":"Missing Authentication on SignerService gRPC — Unauthenticated Validator Signing Oracle (CWE-306)","state":"duplicate","stateColor":"p","created":"2026-05-12","triaged":"—","bounty":"","days":53},{"id":"3732041","title":"EnclaveService gRPC Server Binds to 0.0.0.0 with Unauthenticated Attestation Endpoint (CWE-1327)","state":"duplicate","stateColor":"p","created":"2026-05-13","triaged":"—","bounty":"","days":53},{"id":"3732488","title":"Exposed Sentry DSN in wallettg.net JS bundle allows cross-origin event injection","state":"duplicate","stateColor":"p","created":"2026-05-13","triaged":"—","bounty":"","days":52},{"id":"3733374","title":"ECRecover Precompile Returns (true, empty) on ALL Errors — Fail-Open via catch(Throwable)","state":"not-applicable","stateColor":"r","created":"2026-05-13","triaged":"—","bounty":"","days":52},{"id":"3733551","title":"Default AuthzModeDisabled + Unauthenticated gRPC Services Exposes 31 Critical Internal Methods to Anonymous Access","state":"duplicate","stateColor":"p","created":"2026-05-13","triaged":"—","bounty":"","days":52},{"id":"3736492","title":"BLS Identity Element (Point at Infinity) Accepted as Valid Public Key in chia_rs","state":"duplicate","stateColor":"p","created":"2026-05-14","triaged":"—","bounty":"","days":51},{"id":"3736550","title":"clvm_rs: max_cost==0 Interpreted as Cost::MAX (Unlimited Budget) Instead of Rejection","state":"duplicate","stateColor":"p","created":"2026-05-14","triaged":"—","bounty":"","days":51},{"id":"3740209","title":"DiskProver: Division by zero (SIGFPE) with k=0 plot file","state":"duplicate","stateColor":"p","created":"2026-05-16","triaged":"—","bounty":"","days":49}],"actionQueue":{"auto":[],"alfred":[],"andras":[{"id":"decide_ol004","desc":"8x8 appeal 52d — abandon or escalate? (+22d past H1 30-day appeal window) 🚩","meta":"[07-02] P1"},{"id":"otto_auto_resolution","desc":"3 decisions: (1) Otto kaphat-e cron tool-t, (2) action-queue JSON formátum, (3) Edwin timeout recovery policy","meta":"[07-02] P2"},{"id":"weekend_tasks","desc":"Google Cloud billing check + Sparkl Store Listing — TODAY júl 5! 🔥 DUE TODAY","meta":"[07-02] P3"}]},"agentHeatmap":{"columns":["2026-06-29","2026-06-30","2026-07-01","2026-07-02","2026-07-03","2026-07-04","2026-07-05"],"rows":[{"name":"Otto 🗄️","cells":["x","x","g","g","g","g","g"]},{"name":"Viktor 🛡️","cells":["x","x","x","g","g","g","g"]},{"name":"Scout 🏕️","cells":["x","x","x","g","g","g","g"]},{"name":"Porter 🚪","cells":["g","x","g","g","g","g","g"]},{"name":"Edwin 🚀","cells":["x","x","g","g","g","g","g"]},{"name":"Hugo 📚","cells":["x","x","g","x","g","x","x"]},{"name":"Cortex 🧠","cells":["x","x","g","g","g","g","g"]},{"name":"Alfred 👔","cells":["x","x","g","g","g","g","g"]}]},"agents":[{"id":"otto","name":"Otto","emoji":"🗄️","status":"green","statusText":"Active","staleLevel":0,"lastRun":"0d ago","schedule":"03:00 + 03:35","role":"Back Office — Nightly compilation + KG","extra":""},{"id":"viktor","name":"Viktor","emoji":"🛡️","status":"red","statusText":"Stale (15d)","staleLevel":7,"lastRun":"15d ago","schedule":"On-demand","role":"Security Analyst — Repo audit pipeline","extra":"<div class=\\"metric\\"><span class=\\"lbl r\\">⚠ Stale</span><span class=\\"val r\\">15d without update</span></div>"},{"id":"scout","name":"Scout","emoji":"🏕️","status":"green","statusText":"Active","staleLevel":0,"lastRun":"2d ago","schedule":"On-demand (auto-spawn)","role":"Intel — H1 program discovery","extra":""},{"id":"porter","name":"Porter","emoji":"🚪","status":"green","statusText":"Active","staleLevel":0,"lastRun":"0d ago","schedule":"06-23 hourly","role":"Email Triage — Gmail filtering","extra":""},{"id":"edwin","name":"Edwin","emoji":"🚀","status":"green","statusText":"Active","staleLevel":0,"lastRun":"0d ago","schedule":"09:00 daily","role":"Jarvis Driver — Events + monitoring","extra":""},{"id":"hugo","name":"Hugo","emoji":"📚","status":"green","statusText":"Active","staleLevel":0,"lastRun":"1d ago","schedule":"20:00 nightly","role":"Repo Prep — Advisory → answer keys","extra":""},{"id":"cortex","name":"Cortex","emoji":"🧠","status":"green","statusText":"Active","staleLevel":0,"lastRun":"0d ago","schedule":"06:30 /3d","role":"Optimizer — System tuning","extra":""},{"id":"alfred","name":"Alfred","emoji":"👔","status":"green","statusText":"Active","staleLevel":0,"lastRun":"0d ago","schedule":"Active (main)","role":"Chief of Staff — Orchestration","extra":""}],"viktor":{"total":42,"recall":76,"pending":3,"active":0,"activeLabel":"ar-20260704-2255-1-r1","failed":9,"circuit":"Normal","negDone":1,"negFP":0,"transfer":0,"h1Submitted":2,"h1Accepted":1,"blind":"CWE-116, CWE-1284, CWE-1395, CWE-178, CWE-184, CWE-185, CWE-20, CWE-22, CWE-284, CWE-285, CWE-287, CWE-290, CWE-327, CWE-345, CWE-352","recallTrend":[{"run":1,"date":"2026-07-01","recall":100},{"run":2,"date":"2026-07-04","recall":95.6}]},"h1":{"open":"?","signal":"-2.0","reputation":"82","trial":"0","programs":"Ruby | BBP | SC: ruby/ruby (C) | ⭐ PRIMARY<br>Rails | VDP | SC: rails/rails (Ruby) | Secondary"},"openLoops":[{"id":"OL-002","desc":"🚗 Jogosítvány megújítás (2026 vége)","age":"2026-05-04","severity":"green"},{"id":"OL-004","desc":"🔁 8x8 #3721944 appeal","age":"2026-05-14","severity":"red"},{"id":"OL-008","desc":"🏛️ H1 Residency Verification (4× rejected)","age":"2026-06-15","severity":"red"}],"bills":[{"id":"bill-1","desc":"💰 Maradék: 61 520 Ft (~júl 13-17 között)","status":"💰"},{"id":"bill-2","desc":"**💰 Tábor maradék: 61 520 Ft** (Momart, júl 27-31 turnus)","status":"💰"},{"id":"bill-3","desc":"**💰 Alíz zsebpénz — 2 000 Ft minden páratlan hét csütörtök/péntek** ⏰ (2026-06-21)","status":"💰"}],"brainstorming":{"sections":[{"key":"autoexec","label":"⚡ AUTOEXECUTE","color":"var(--green)","bgColor":"var(--g-bg)","desc":"Alfred executes, no approval needed","items":[{"id":"BA-01","done":true,"waiting":false,"desc":"Model→agent mapping dokumentum → `memory/agents-model-mapping.md`","source":"Jul 4","age":"0d"},{"id":"BA-02","done":true,"waiting":false,"desc":"KG Extractor hírfolyam bekötés → Otto AGENTS.md §1b","source":"Jul 4","age":"0d"},{"id":"BA-03","done":true,"waiting":false,"desc":"Scout Recon Queue → `agents/scout/recon-queue.md` + SOUL.md Step 0 frissítve","source":"Jul 4","age":"0d"},{"id":"BA-04","done":true,"waiting":false,"desc":"Scout \\"Never\\" bug: `/i` flag már ott volt","source":"Jul 3","age":"0d"},{"id":"BA-05","done":true,"waiting":false,"desc":"Action queue parser: regex már a helyes formátumon","source":"Jul 3","age":"0d"}]},{"key":"autonotify","label":"🔔 AUTO_NOTIFY","color":"var(--accent)","bgColor":"#1a2a3a","desc":"Alfred executes + reports, András sees result","items":[{"id":"BN-01","done":false,"waiting":false,"desc":"No-Signal BBP programok scan (R92 → 38 program) — H1 drought unlock","source":"Jul 3","age":"0d"},{"id":"BN-02","done":false,"waiting":false,"desc":"Matomo OAuth2 célzott Viktor audit","source":"Jul 2","age":"1d"}]},{"key":"approval","label":"✋ APPROVAL NEEDED","color":"var(--yellow)","bgColor":"var(--y-bg)","desc":"András decides before work starts","items":[{"id":"AP-01","done":false,"waiting":true,"desc":"Heti Scout cron engedélyezése?","source":"Jul 2 + Jul 3","age":"1d"},{"id":"AP-02","done":false,"waiting":true,"desc":"OL-004 8x8 appeal: abandon vagy utolsó follow-up?","source":"Open loop","age":"50d"}]},{"key":"weekend","label":"🔧 WEEKEND BUILD","color":"var(--purple)","bgColor":"#2a1a4a","desc":"András builds, 2-4h","items":[{"id":"WB-01","done":false,"waiting":false,"desc":"H1 AI-assisted recon pipeline (OpenClaw: recon→analysis→report)","source":"May 9","age":"55d"},{"id":"WB-02","done":false,"waiting":false,"desc":"Dashboard v4 enhancement — UX polish, mobile layout, widget ideas","source":"Jul 4","age":"0d"}]},{"key":"backlog","label":"📋 BACKLOG","color":"var(--muted)","desc":"Interesting, not now","items":[]}],"pending":6},"logStreak":"🟢 2026-06-22<br>🟢 2026-06-23<br>🟢 2026-06-24<br>🔴 2026-06-25<br>🔴 2026-06-26<br>🔴 2026-06-27<br>🟢 2026-06-28<br>🟢 2026-06-29<br>🟢 2026-06-30<br>🟢 2026-07-01<br>🟢 2026-07-02<br>🟢 2026-07-03<br>🟢 2026-07-04<br>🟢 2026-07-05","researchActivity":"📄 768 research files<br>🆕 97 in last 7 days<br>📂 active + archive","keyDecisions":"📅 2026-07-05 — ## 🧠 Noema Product Project (10:00-11:30) [9]<br>📅 2026-07-05 — ### Decision Log<br>📅 2026-07-05 — ## 🧠 Noema Product Project (10:00-12:00) [9]<br>📅 2026-07-04 — ### Cron Scheduling Megareform [9]<br>📅 2026-07-04 — ### Naptár Reform — Google Calendar SSOT [10]<br>📅 2026-07-04 — ### Edwin Restauráció — Continuous Context Monitor [10]<br>📅 2026-07-03 — **Decision**: Flash enabled on Porter + Edwin crons (~$5-7/month savings). NOT on Viktor/Otto/Alfred/Hugo/Cortex.<br>📅 2026-07-03 — ### Döntések összehasonlítása — 11/11 azonos","noema":{"healthScore":85,"healthLabel":"376 LOC · 5 fájl · 3 cron","cronsHealthy":0,"cronsTotal":3,"cronHealth":0,"qaLatest":"⏳","qaLabel":"első futás ma 03:00","qaScore":"?","activeProposals":13,"proposalsLabel":"13 csomag","architecture":"  generate.js ──► dashboard.html\\n   (0.0KB)       (80.5KB)\\n       ▲                  │\\n  22+ data srcs      HTTP :8080\\n       │                  │\\n  relay.js ◄── Browser gombok\\n   (8.1KB)          :18998\\n       │\\n  action-processor.js\\n   (5.8KB)      10p timer\\n       │\\n  Gateway API ──► Alfred","codeMetrics":"\\n      <div class=\\"metric\\"><span class=\\"lbl\\">generate.js</span><span class=\\"val\\">0 sor · 0.0KB</span></div>\\n      <div class=\\"metric\\"><span class=\\"lbl\\">relay.js</span><span class=\\"val\\">199 sor · 8.1KB</span></div>\\n      <div class=\\"metric\\"><span class=\\"lbl\\">action-processor.js</span><span class=\\"val\\">177 sor · 5.8KB</span></div>\\n      <div class=\\"metric\\"><span class=\\"lbl\\">dashboard.html (kimenet)</span><span class=\\"val\\">80.5KB</span></div>\\n      <div class=\\"metric\\" style=\\"border-top:1px solid var(--border);margin-top:4px;padding-top:4px\\"><span class=\\"lbl\\">Összes forráskód</span><span class=\\"val a\\">376 sor · 13.9KB</span></div>","projectCrons":"<span style=\\"color:var(--muted)\\">Cron lekérdezés sikertelen</span>","changelog":"<div style=\\"margin-bottom:8px\\"><strong style=\\"color:var(--accent)\\">2026-07-05</strong><br><span style=\\"color:var(--muted);font-size:0.88em\\">### Noema Rebrand</span><br><span style=\\"color:var(--muted);font-size:0.88em\\">- Projekt hivatalosan átnevezve **Noema**-ra</span><br><span style=\\"color:var(--muted);font-size:0.88em\\">- `projects/dashboard/` → `projects/noema/`, fájlok átnevezve, systemd + cron frissítve</span><br><span style=\\"color:var(--muted);font-size:0.88em\\">- Backward compat symlinkek megtartva</span></div><div style=\\"margin-bottom:8px\\"><strong style=\\"color:var(--accent)\\">2026-07-04</strong><br><span style=\\"color:var(--muted);font-size:0.88em\\">### Interaktív Gombok</span><br><span style=\\"color:var(--muted);font-size:0.88em\\">- Böngésző gombok → relay.js (HTTP :18998) → JSONL → action-processor.js (10p) → Alfred</span><br><span style=\\"color:var(--muted);font-size:0.88em\\">- 8 action típus: implement, done, escalate, restart, trigger, investigate, activate, paid</span><br><span style=\\"color:var(--muted);font-size:0.88em\\">- Systemd: dashboard-relay.service + dashboard-action-processor.timer</span></div><div style=\\"margin-bottom:8px\\"><strong style=\\"color:var(--accent)\\">2026-07-03</strong><br><span style=\\"color:var(--muted);font-size:0.88em\\">### Dashboard v4</span><br><span style=\\"color:var(--muted);font-size:0.88em\\">- Card grid → grouped table + 24h timeline strip</span><br><span style=\\"color:var(--muted);font-size:0.88em\\">- 5 csoport: ÉJSZAKA, REGGEL, EGÉSZ NAP, NAPPAL, ESTE</span><br><span style=\\"color:var(--muted);font-size:0.88em\\">- Cron detail: 30+ entry részletes leírással</span></div>","qaReport":"⏳ Első Noema QA futás ma éjjel 03:00-kor. Még nincs adat.","proposals":"<div style=\\"font-size:0.88em;padding:6px 8px;margin-bottom:3px;background:var(--card);border-left:3px solid var(--accent);border-radius:3px;line-height:1.5;display:flex;align-items:center;gap:8px\\"><span style=\\"flex:1\\"><strong>PKG-001</strong> SvelteKit Scaffold <span style=\\"color:var(--accent);font-weight:700;font-size:0.82em\\">L</span> <span style=\\"color:var(--muted);font-size:0.82em\\"></span></span><button onclick=\\"sendAction(\'implement\',\'PKG-001\',\'PKG-001: SvelteKit Scaffold\',this,\'▶ Mehet\')\\" style=\\"cursor:pointer;background:var(--green);color:#fff;border:none;border-radius:4px;padding:2px 10px;font-size:0.82em;font-weight:700;white-space:nowrap;flex-shrink:0\\">▶ Mehet</button></div><div style=\\"font-size:0.88em;padding:6px 8px;margin-bottom:3px;background:var(--card);border-left:3px solid var(--accent);border-radius:3px;line-height:1.5;display:flex;align-items:center;gap:8px\\"><span style=\\"flex:1\\"><strong>PKG-013</strong> **Provider Abstraction Layer** 🧱 <span style=\\"color:var(--yellow);font-weight:700;font-size:0.82em\\">M</span> <span style=\\"color:var(--muted);font-size:0.82em\\">→ PKG-001</span></span><button onclick=\\"sendAction(\'implement\',\'PKG-013\',\'PKG-013: **Provider Abstraction Layer** 🧱\',this,\'▶ Mehet\')\\" style=\\"cursor:pointer;background:var(--green);color:#fff;border:none;border-radius:4px;padding:2px 10px;font-size:0.82em;font-weight:700;white-space:nowrap;flex-shrink:0\\">▶ Mehet</button></div><div style=\\"font-size:0.88em;padding:6px 8px;margin-bottom:3px;background:var(--card);border-left:3px solid var(--accent);border-radius:3px;line-height:1.5;display:flex;align-items:center;gap:8px\\"><span style=\\"flex:1\\"><strong>PKG-002</strong> Core: Cron Data <span style=\\"color:var(--green);font-weight:700;font-size:0.82em\\">S</span> <span style=\\"color:var(--muted);font-size:0.82em\\">→ PKG-013</span></span><button onclick=\\"sendAction(\'implement\',\'PKG-002\',\'PKG-002: Core: Cron Data\',this,\'▶ Mehet\')\\" style=\\"cursor:pointer;background:var(--green);color:#fff;border:none;border-radius:4px;padding:2px 10px;font-size:0.82em;font-weight:700;white-space:nowrap;flex-shrink:0\\">▶ Mehet</button></div><div style=\\"font-size:0.88em;padding:6px 8px;margin-bottom:3px;background:var(--card);border-left:3px solid var(--accent);border-radius:3px;line-height:1.5;display:flex;align-items:center;gap:8px\\"><span style=\\"flex:1\\"><strong>PKG-003</strong> Core: Agent Data <span style=\\"color:var(--green);font-weight:700;font-size:0.82em\\">S</span> <span style=\\"color:var(--muted);font-size:0.82em\\">→ PKG-013</span></span><button onclick=\\"sendAction(\'implement\',\'PKG-003\',\'PKG-003: Core: Agent Data\',this,\'▶ Mehet\')\\" style=\\"cursor:pointer;background:var(--green);color:#fff;border:none;border-radius:4px;padding:2px 10px;font-size:0.82em;font-weight:700;white-space:nowrap;flex-shrink:0\\">▶ Mehet</button></div><div style=\\"font-size:0.88em;padding:6px 8px;margin-bottom:3px;background:var(--card);border-left:3px solid var(--accent);border-radius:3px;line-height:1.5;display:flex;align-items:center;gap:8px\\"><span style=\\"flex:1\\"><strong>PKG-004</strong> Core: Health & Heartbeat <span style=\\"color:var(--green);font-weight:700;font-size:0.82em\\">S</span> <span style=\\"color:var(--muted);font-size:0.82em\\">→ PKG-013</span></span><button onclick=\\"sendAction(\'implement\',\'PKG-004\',\'PKG-004: Core: Health & Heartbeat\',this,\'▶ Mehet\')\\" style=\\"cursor:pointer;background:var(--green);color:#fff;border:none;border-radius:4px;padding:2px 10px;font-size:0.82em;font-weight:700;white-space:nowrap;flex-shrink:0\\">▶ Mehet</button></div><div style=\\"font-size:0.88em;padding:6px 8px;margin-bottom:3px;background:var(--card);border-left:3px solid var(--accent);border-radius:3px;line-height:1.5;display:flex;align-items:center;gap:8px\\"><span style=\\"flex:1\\"><strong>PKG-005</strong> Core: H1 Data <span style=\\"color:var(--yellow);font-weight:700;font-size:0.82em\\">M</span> <span style=\\"color:var(--muted);font-size:0.82em\\">→ PKG-013</span></span><button onclick=\\"sendAction(\'implement\',\'PKG-005\',\'PKG-005: Core: H1 Data\',this,\'▶ Mehet\')\\" style=\\"cursor:pointer;background:var(--green);color:#fff;border:none;border-radius:4px;padding:2px 10px;font-size:0.82em;font-weight:700;white-space:nowrap;flex-shrink:0\\">▶ Mehet</button></div><div style=\\"font-size:0.88em;padding:6px 8px;margin-bottom:3px;background:var(--card);border-left:3px solid var(--accent);border-radius:3px;line-height:1.5;display:flex;align-items:center;gap:8px\\"><span style=\\"flex:1\\"><strong>PKG-006</strong> Logs Viewer Tab <span style=\\"color:var(--green);font-weight:700;font-size:0.82em\\">S</span> <span style=\\"color:var(--muted);font-size:0.82em\\">→ PKG-001+002</span></span><button onclick=\\"sendAction(\'implement\',\'PKG-006\',\'PKG-006: Logs Viewer Tab\',this,\'▶ Mehet\')\\" style=\\"cursor:pointer;background:var(--green);color:#fff;border:none;border-radius:4px;padding:2px 10px;font-size:0.82em;font-weight:700;white-space:nowrap;flex-shrink:0\\">▶ Mehet</button></div><div style=\\"font-size:0.88em;padding:6px 8px;margin-bottom:3px;background:var(--card);border-left:3px solid var(--accent);border-radius:3px;line-height:1.5;display:flex;align-items:center;gap:8px\\"><span style=\\"flex:1\\"><strong>PKG-007</strong> Audit Trail <span style=\\"color:var(--yellow);font-weight:700;font-size:0.82em\\">M</span> <span style=\\"color:var(--muted);font-size:0.82em\\">→ PKG-001+003</span></span><button onclick=\\"sendAction(\'implement\',\'PKG-007\',\'PKG-007: Audit Trail\',this,\'▶ Mehet\')\\" style=\\"cursor:pointer;background:var(--green);color:#fff;border:none;border-radius:4px;padding:2px 10px;font-size:0.82em;font-weight:700;white-space:nowrap;flex-shrink:0\\">▶ Mehet</button></div><div style=\\"font-size:0.88em;padding:6px 8px;margin-bottom:3px;background:var(--card);border-left:3px solid var(--accent);border-radius:3px;line-height:1.5;display:flex;align-items:center;gap:8px\\"><span style=\\"flex:1\\"><strong>PKG-008</strong> Cron Health Timeline <span style=\\"color:var(--green);font-weight:700;font-size:0.82em\\">S</span> <span style=\\"color:var(--muted);font-size:0.82em\\">→ PKG-001+002</span></span><button onclick=\\"sendAction(\'implement\',\'PKG-008\',\'PKG-008: Cron Health Timeline\',this,\'▶ Mehet\')\\" style=\\"cursor:pointer;background:var(--green);color:#fff;border:none;border-radius:4px;padding:2px 10px;font-size:0.82em;font-weight:700;white-space:nowrap;flex-shrink:0\\">▶ Mehet</button></div><div style=\\"font-size:0.88em;padding:6px 8px;margin-bottom:3px;background:var(--card);border-left:3px solid var(--accent);border-radius:3px;line-height:1.5;display:flex;align-items:center;gap:8px\\"><span style=\\"flex:1\\"><strong>PKG-009</strong> SSE Live Updates <span style=\\"color:var(--yellow);font-weight:700;font-size:0.82em\\">M</span> <span style=\\"color:var(--muted);font-size:0.82em\\">→ PKG-001+002+003</span></span><button onclick=\\"sendAction(\'implement\',\'PKG-009\',\'PKG-009: SSE Live Updates\',this,\'▶ Mehet\')\\" style=\\"cursor:pointer;background:var(--green);color:#fff;border:none;border-radius:4px;padding:2px 10px;font-size:0.82em;font-weight:700;white-space:nowrap;flex-shrink:0\\">▶ Mehet</button></div><div style=\\"font-size:0.88em;padding:6px 8px;margin-bottom:3px;background:var(--card);border-left:3px solid var(--accent);border-radius:3px;line-height:1.5;display:flex;align-items:center;gap:8px\\"><span style=\\"flex:1\\"><strong>PKG-010</strong> **Agent Decision Trace** <span style=\\"color:var(--accent);font-weight:700;font-size:0.82em\\">L</span> <span style=\\"color:var(--muted);font-size:0.82em\\">→ PKG-001+003</span></span><button onclick=\\"sendAction(\'implement\',\'PKG-010\',\'PKG-010: **Agent Decision Trace**\',this,\'▶ Mehet\')\\" style=\\"cursor:pointer;background:var(--green);color:#fff;border:none;border-radius:4px;padding:2px 10px;font-size:0.82em;font-weight:700;white-space:nowrap;flex-shrink:0\\">▶ Mehet</button></div><div style=\\"font-size:0.88em;padding:6px 8px;margin-bottom:3px;background:var(--card);border-left:3px solid var(--accent);border-radius:3px;line-height:1.5;display:flex;align-items:center;gap:8px\\"><span style=\\"flex:1\\"><strong>PKG-011</strong> Session Health Scoring <span style=\\"color:var(--yellow);font-weight:700;font-size:0.82em\\">M</span> <span style=\\"color:var(--muted);font-size:0.82em\\">→ PKG-003</span></span><button onclick=\\"sendAction(\'implement\',\'PKG-011\',\'PKG-011: Session Health Scoring\',this,\'▶ Mehet\')\\" style=\\"cursor:pointer;background:var(--green);color:#fff;border:none;border-radius:4px;padding:2px 10px;font-size:0.82em;font-weight:700;white-space:nowrap;flex-shrink:0\\">▶ Mehet</button></div><div style=\\"font-size:0.88em;padding:6px 8px;margin-bottom:3px;background:var(--card);border-left:3px solid var(--accent);border-radius:3px;line-height:1.5;display:flex;align-items:center;gap:8px\\"><span style=\\"flex:1\\"><strong>PKG-012</strong> OTel Export (opcionális) <span style=\\"color:var(--green);font-weight:700;font-size:0.82em\\">S</span> <span style=\\"color:var(--muted);font-size:0.82em\\">→ PKG-002..005</span></span><button onclick=\\"sendAction(\'implement\',\'PKG-012\',\'PKG-012: OTel Export (opcionális)\',this,\'▶ Mehet\')\\" style=\\"cursor:pointer;background:var(--green);color:#fff;border:none;border-radius:4px;padding:2px 10px;font-size:0.82em;font-weight:700;white-space:nowrap;flex-shrink:0\\">▶ Mehet</button></div>"}}');
+
+// ── Metrics Bar ──
+if(D.metrics){
+  const m = D.metrics;
+  document.getElementById('m-agents').textContent = m.agentsHealthy || '—';
+  document.getElementById('m-agents-sub').textContent = m.agentsCritical || '—';
+  document.getElementById('m-audits').textContent = m.viktorAudits || '—';
+  document.getElementById('m-audits-sub').textContent = (m.viktorRecall || '—') + '% recall';
+  const ovV = document.getElementById('ov-viktor');
+  if (ovV) ovV.textContent = (m.viktorAudits||'—')+' repos, '+(m.viktorRecall||'—')+'% recall';
+  document.getElementById('m-h1').textContent = m.h1Open || '—';
+  document.getElementById('m-h1-sub').textContent = (m.h1Trials || '—') + ' trials';
+  document.getElementById('m-loops').textContent = m.openLoops || '—';
+  document.getElementById('m-loops-sub').textContent = (m.loopsCritical || '—') + ' critical';
+  document.getElementById('m-otto').textContent = m.lastOtto || '—';
+  document.getElementById('m-otto-sub').textContent = m.ottoStatus || '—';
+}
+
+// ── System ──
+if(D.system){
+  document.getElementById('sys-uptime').textContent = D.system.uptime || '—';
+  document.getElementById('mem-files').textContent = D.system.memFiles || '—';
+  document.getElementById('mem-logs').textContent = D.system.dailyLogs || '—';
+  document.getElementById('mem-last').textContent = D.system.lastDaily || '—';
+  document.getElementById('hostname').textContent = D.system.hostname || 'pop-os';
+  // System gauges
+  const setGauge = (id,pct,color) => {
+    const el = document.getElementById(id); el.style.width = Math.min(pct,100)+'%'; el.className = 'g-fill gf-'+color;
+  };
+  setGauge('g-cpu',D.system.cpuPct||0,D.system.cpuColor||'g');
+  setGauge('g-ram',D.system.ramPct||0,D.system.ramColor||'g');
+  setGauge('g-disk',D.system.diskPct||0,D.system.diskColor||'g');
+  document.getElementById('g-cpu-val').textContent = (D.system.cpuPct||0)+'%';
+  document.getElementById('g-ram-val').textContent = (D.system.ramPct||0)+'%';
+  document.getElementById('g-disk-val').textContent = (D.system.diskPct||0)+'%';
+}
+
+// ── Weather ──
+if(D.weather){
+  const w = D.weather;
+  document.getElementById('w-temp').textContent = w.temp+'°C';
+  document.getElementById('w-desc').textContent = w.desc||'';
+  document.getElementById('w-hum').textContent = w.humidity;
+  document.getElementById('w-wind').textContent = w.wind;
+} else {
+  const wc = document.getElementById('weather-card');
+  const memSection = wc.innerHTML.split('border-top:1px solid var(--border)')[1] || '';
+  wc.innerHTML = '<h3>🌤️ Budapest</h3><div style="color:var(--muted);padding:10px 0">Weather unavailable</div><div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">' + (memSection ? memSection : '') + '</div>';
+}
+
+// ── Projects Summary ──
+if(D.h1) {
+  document.getElementById('proj-h1').textContent = '⛔ Signal '+(D.h1.signal||'?')+' · '+(D.h1.trial||'?')+' trials';
+}
+
+// ── Timestamps ──
+document.getElementById('gen-time').textContent = D.generated || '—';
+document.getElementById('gen-timestamp').textContent = (D.generated || '—') + ' · Auto-refresh: 5min';
+
+// ── Critical Alerts ──
+if(D.alerts && D.alerts.length) {
+  document.getElementById('critical-alerts').innerHTML = D.alerts.map(a =>
+    `<div style="display:flex;align-items:center;gap:8px"><span class="badge ${a.severity==='critical'?'b-e':'b-w'}">${a.severity}</span> <span style="flex:1">${a.text}</span>${actionBtn('investigate',a.id||('alert-'+Math.random().toString(36).slice(2,8)),a.text,'🔍')}</div>`
+  ).join('');
+} else {
+  document.getElementById('critical-alerts').textContent = '✅ No critical alerts';
+}
+
+// ── Otto Timeline ──
+if(D.timeline && D.timeline.length) {
+  document.getElementById('otto-timeline').innerHTML = D.timeline.map(entry =>
+    `<div class="tl-item ${entry.status==='ok'?'':'tl-warn'}">
+      <div class="tl-head">${entry.title} <span style="color:var(--muted)">${entry.time}</span></div>
+      <div class="tl-body">${entry.summary||''}</div>
+      ${(entry.steps||[]).map(s=>`<div class="tl-sub">${s.status} ${s.label}</div>`).join('')}
+    </div>`
+  ).join('');
+} else {
+  document.getElementById('otto-timeline').textContent = 'No timeline data';
+}
+
+// ── Action Queue Kanban ──
+function renderKanbanItems(items, showBtn) {
+  if(!items || !items.length) return '—';
+  return items.map(i => {
+    const btn = showBtn ? actionBtn('done', i.id||'', i.desc||'', '✅') : '';
+    return `<div class="kb-item"><div class="kb-id">${i.id||''}</div><div class="kb-desc">${i.desc||''}</div><div class="kb-meta">${i.meta||''} ${btn}</div></div>`;
+  }).join('');
+}
+if(D.actionQueue) {
+  document.getElementById('kb-auto').innerHTML = renderKanbanItems(D.actionQueue.auto);
+  document.getElementById('kb-alfred').innerHTML = renderKanbanItems(D.actionQueue.alfred);
+  document.getElementById('kb-andras').innerHTML = renderKanbanItems(D.actionQueue.andras, true);
+}
+
+// ── Edwin Recovery ──
+if(D.edwinRecovery) {
+  const er = D.edwinRecovery;
+  document.getElementById('edwin-recovery').innerHTML =
+    `<div class="metric"><span class="lbl">Last error</span><span class="val r">${er.lastError||'—'}</span></div>
+     <div class="metric"><span class="lbl">Consecutive</span><span class="val">${er.consecutive||0}</span></div>
+     <div class="metric"><span class="lbl">Retries today</span><span class="val">${er.retriesToday||0}</span></div>
+     <div class="metric"><span class="lbl">Timeout</span><span class="val">${er.timeout||300}s</span></div>
+     <div class="metric"><span class="lbl">Status</span><span class="val">${er.status||'—'}</span></div>
+     <div style="margin-top:6px">${actionBtn('trigger','edwin','Edwin manual trigger','⚡ Edwin most')}</div>`;
+}
+
+// ── Scout Auto-spawn ──
+if(D.scoutSpawn) {
+  const ss = D.scoutSpawn;
+  document.getElementById('scout-spawn').innerHTML =
+    `<div class="metric"><span class="lbl">Last spawn</span><span class="val">${ss.lastSpawn||'Never'}</span></div>
+     <div class="metric"><span class="lbl">Last candidate count</span><span class="val">${ss.lastCount||'—'}</span></div>
+     <div class="metric"><span class="lbl">Auto-spawn</span><span class="val">${ss.autoSpawn?'Active ✅':'Inactive'}</span></div>
+     <div style="margin-top:6px">${actionBtn('trigger','scout','Scout manual spawn','🏕️ Scout most')}</div>`;
+}
+
+// ── Agent Heatmap ──
+if(D.agentHeatmap) {
+  const ah = D.agentHeatmap;
+  let html = '<table><tr><th>Agent</th>';
+  ah.columns.forEach(c => html += `<th>${c}</th>`);
+  html += '</tr>';
+  ah.rows.forEach(row => {
+    html += `<tr><td style="text-align:left;font-weight:500">${row.name}</td>`;
+    row.cells.forEach(cell => {
+      html += `<td><span class="hcell hc-${cell}"></span></td>`;
+    });
+    html += '</tr>';
+  });
+  html += '</table>';
+  document.getElementById('agent-heatmap').innerHTML = html;
+}
+
+// ── Agent Cards ──
+if(D.agents && D.agents.length) {
+  document.getElementById('agent-cards').innerHTML = D.agents.map(a =>
+    `<div class="card">
+      <h3><span class="av av-${a.id||'alfred'}">${(a.name||'?')[0]}</span> ${a.name||'—'} ${a.emoji||''} — ${a.role||''}</h3>
+      <div class="metric"><span class="lbl">Status</span><span class="val"><span class="dot dot-${a.status||'yellow'}"></span> ${a.statusText||'—'}</span></div>
+      <div class="metric"><span class="lbl">Last run</span><span class="val stale-${a.staleLevel||'0'}">${a.lastRun||'—'}</span></div>
+      <div class="metric"><span class="lbl">Schedule</span><span class="val">${a.schedule||'—'}</span></div>
+      ${a.extra||''}
+    </div>`
+  ).join('');
+}
+
+// ── Viktor Pipeline ──
+if(D.viktor) {
+  const v = D.viktor;
+  document.getElementById('vp-total').textContent = (v.total||'—') + ' repos';
+  const recallColor = (v.recall||0)>=90?'g':(v.recall||0)>=70?'y':'r';
+  document.getElementById('vp-recall').innerHTML = `<span class="${recallColor}">${v.recall||'—'}%</span>`;
+  if (v.active) {
+    document.getElementById('vp-active').innerHTML = `<span class="p">${v.activeLabel||'running'}</span>`;
+  } else {
+    document.getElementById('vp-active').textContent = '—';
+  }
+  document.getElementById('vp-pending').textContent = (v.pending||'—') + ' ready';
+  document.getElementById('vp-failed').textContent = v.failed||'—';
+  document.getElementById('vp-circuit').innerHTML = v.circuit==='TRIPPED'
+    ? '<span class="badge b-e">TRIPPED</span>'
+    : '<span class="badge b-ok">Normal</span>';
+  document.getElementById('vp-neg').textContent = v.negDone||'—';
+  document.getElementById('vp-fp').textContent = v.negFP||'—';
+  document.getElementById('vp-transfer').textContent = v.transfer||'—';
+  document.getElementById('vp-h1sub').textContent = v.h1Submitted||'—';
+  document.getElementById('vp-h1acc').textContent = v.h1Accepted||'—';
+  document.getElementById('vp-blind').textContent = v.blind||'—';
+  // Recall trend SVG
+  const trend = v.recallTrend||[];
+  if (trend.length>1) {
+    const trendSvg = document.getElementById('vp-trend-line');
+    const dotsG = document.getElementById('vp-trend-dots');
+    const labelsG = document.getElementById('vp-trend-labels');
+    const yMin=60, yMax=100, yRange=yMax-yMin;
+    const xMin=40, xMax=390, xRange=xMax-xMin;
+    const pts = trend.map((p,i) => {
+      const x = xMin + (i/(trend.length-1))*xRange;
+      const y = 10 + (yMax-p.recall)/yRange*100;
+      return {x,y,recall:p.recall,date:p.date,run:p.run};
+    });
+    trendSvg.setAttribute('points', pts.map(p=>p.x+','+p.y).join(' '));
+    dotsG.innerHTML = pts.map(p =>
+      `<circle cx="${p.x}" cy="${p.y}" r="4" fill="var(--accent)"><title>Run #${p.run}: ${p.recall}% (${p.date})</title></circle>`
+    ).join('');
+    labelsG.innerHTML = pts.map(p =>
+      `<text x="${p.x}" y="122" fill="var(--muted)" font-size="8" text-anchor="middle">R${p.run}</text>`
+    ).join('');
+  } else {
+    document.getElementById('vp-trend').parentElement.querySelector('h3').innerHTML =
+      '📈 Recall Trend <span style="color:var(--muted);font-weight:400;font-size:0.85em">— need ≥2 Cortex runs</span>';
+  }
+}
+
+// ── HackerOne ──
+if(D.h1) {
+  document.getElementById('h1-open').textContent = D.h1.open||'—';
+  document.getElementById('h1-signal').textContent = D.h1.signal||'—';
+  document.getElementById('h1-rep').textContent = D.h1.reputation||'—';
+  document.getElementById('h1-trial').textContent = D.h1.trial||'—';
+  document.getElementById('h1-programs').innerHTML = D.h1.programs||'—';
+}
+
+// ── Cron Pipeline (Timeline + Table) ──
+if(D.cronGrid && D.cronGrid.length) {
+  const icons = {alfred:'👔',porter:'🚪',edwin:'🚀',scout:'🏕️',viktor:'🛡️',otto:'🗄️',albert:'🔍',cortex:'🧠',hugo:'📚',main:'🏠',system:'🤖'};
+  // Parse schedule to minutes-since-midnight for timeline
+  const parseTime = (sched) => {
+    if (!sched || sched==='—'||sched==='auto') return null;
+    // "01:30 daily", "06-23 hourly", "04:30 /3d", "every 2h", "12,15,18,21"
+    const hm = sched.match(/(\d{1,2}):(\d{2})/);
+    if (hm) return parseInt(hm[1])*60+parseInt(hm[2]);
+    // "06-23 hourly" → use first hour
+    const range = sched.match(/^(\d{1,2})-/);
+    if (range) return parseInt(range[1])*60;
+    // "12,15,18,21" → use first
+    const comma = sched.match(/^(\d{1,2}),/);
+    if (comma) return parseInt(comma[1])*60;
+    return null;
+  };
+  // Timeline
+  const tlWidth = '100%';
+  let tlDots = '';
+  for (const c of D.cronGrid) {
+    const m = parseTime(c.sched);
+    if (m === null) continue;
+    const left = (m/1440*100).toFixed(1);
+    const isNight = m < 360 || m > 1320; // before 06:00 or after 22:00
+    const color = c.status==='g'?'var(--green)':c.status==='r'?'var(--red)':'var(--yellow)';
+    tlDots += `<div class="tl-dot${isNight?' night':''}" style="left:${left}%;background:${color}" title="${c.name}: ${c.sched}"></div>`;
+  }
+  // Tick marks
+  let tlTicks = '';
+  for (let h=0;h<=24;h+=2) {
+    const left = (h/24*100).toFixed(1);
+    tlTicks += `<div class="tl-tick" style="left:${left}%"></div><div class="tl-label" style="left:${left}%">${String(h).padStart(2,'0')}:00</div>`;
+  }
+  document.getElementById('cron-timeline').innerHTML = tlTicks+'<div class="tl-track"></div>'+tlDots;
+  
+  // Detect spanning schedules (ranges or multi-time)
+  const isSpanning = (sched) => {
+    if (!sched || sched==='—'||sched==='auto') return false;
+    if (/^\d{1,2}-\d{1,2}/.test(sched)) return true; // "06-23 hourly"
+    if ((sched.match(/,/g)||[]).length >= 2) return true; // "12,15,18,21"
+    return false;
+  };
+  // Sort by time: spanning items between REGGEL and NAPPAL
+  const sortScore = (c) => {
+    const m = parseTime(c.sched) ?? 9999;
+    if (isSpanning(c.sched)) return 400; // between 360-480 (REGGEL) and 480+ (NAPPAL)
+    return m;
+  };
+  const sorted = [...D.cronGrid].sort((a,b) => sortScore(a)-sortScore(b));
+  // Group by period
+  const periods = [
+    {label:'🌙 ÉJSZAKA (00:00–06:00)', min:0, max:360},
+    {label:'🌅 REGGEL (06:00–08:00)', min:360, max:480},
+    {label:'🌐 EGÉSZ NAP (több időpont / range)', spanning:true},
+    {label:'☀️ NAPPAL (08:00–18:00)', min:480, max:1080},
+    {label:'🌆 ESTE (18:00–24:00)', min:1080, max:1440},
+    {label:'🔄 AUTOMATIKUS (nincs fix idő)', min:9999, max:Infinity}
+  ];
+  let rows = '';
+  for (const p of periods) {
+    const group = sorted.filter(c => {
+      if (p.spanning) return isSpanning(c.sched);
+      if (isSpanning(c.sched)) return false; // spanning → only in EGÉSZ NAP
+      const m = parseTime(c.sched);
+      const t = m === null ? 9999 : m;
+      return t >= p.min && t < p.max;
+    });
+    if (group.length === 0) continue;
+    rows += `<tr class="group-hdr"><td colspan="6">${p.label} (${group.length})</td></tr>`;
+    for (const c of group) {
+      const color = c.status==='g'?'var(--green)':c.status==='r'?'var(--red)':'var(--yellow)';
+      rows += `<tr>
+        <td class="cr-time">${c.sched||'—'}</td>
+        <td>${c.name||'—'}</td>
+        <td>${icons[c.agent]||'🤖'} ${c.agent}</td>
+        <td class="cr-sched">${c.desc||'—'}</td>
+        <td style="font-size:0.90em;color:var(--muted)">${c.last||'—'}</td>
+        <td class="cr-status"><span class="cr-dot" style="background:${color}"></span></td>
+      </tr>`;
+    }
+  }
+  document.getElementById('cron-pipeline').innerHTML = 
+    `<table style="width:100%"><thead><tr><th>⏱️</th><th>Cron</th><th>Agent</th><th>Leírás</th><th>Utolsó</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+// ── Noema Product Research ──
+if(D.dashboardResearch && !D.dashboardResearch.error) {
+  const dr = D.dashboardResearch;
+  let html = `<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+    <span style="font-weight:700;color:var(--accent)">${dr.date}</span>
+    <span class="badge b-ok">🔧 ${dr.autoFixCount} AUTO-FIX</span>`;
+  if (dr.proposeCount) html += `<span class="badge b-w">📋 ${dr.proposeCount} PROPOSE</span>`;
+  if (dr.ideaCount) html += `<span class="badge b-p">💡 ${dr.ideaCount} IDEA</span>`;
+  html += `<span style="margin-left:auto;color:var(--muted);font-size:0.85em">📄 ${dr.latestFile}</span></div>`;
+  if (dr.proposals && dr.proposals.length) {
+    html += `<div style="display:flex;flex-direction:column;gap:4px;margin-top:6px">`;
+    let pi = 0;
+    for (const p of dr.proposals) {
+      pi++;
+      const pColor = p.priority==='🔴'?'var(--red)':p.priority==='🟡'?'var(--yellow)':'var(--muted)';
+      const pid = p.id || `P-${pi}`;
+      html += `<div style="font-size:0.88em;padding:4px 8px;background:var(--card);border-left:3px solid ${pColor};border-radius:3px;line-height:1.5;display:flex;align-items:flex-start;gap:8px"><span style="flex:1">${p.priority} ${p.finding}</span>${proposalBtn(p)}</div>`;
+    }
+    html += `</div>`;
+  }
+  document.getElementById('dash-research').innerHTML = html;
+} else {
+  document.getElementById('dash-research').innerHTML = `<span style="color:var(--muted)">⏳ Első futás holnap 01:00-kor. Még nincs adat.</span>`;
+}
+
+// ── H1 Timeline ──
+if(D.h1Timeline && D.h1Timeline.length) {
+  document.getElementById('h1-timeline').innerHTML = D.h1Timeline.map(r =>
+    `<div class="h1tl-item">
+      <span class="h1tl-state" style="background:var(--${r.stateColor==='g'?'green':r.stateColor==='y'?'yellow':r.stateColor==='r'?'red':r.stateColor==='p'?'purple':'accent'})"></span>
+      <span class="badge b-${r.stateColor==='g'?'ok':r.stateColor==='r'?'e':r.stateColor==='p'?'p':'w'}">${r.state}</span>
+      <span class="h1tl-title" title="${r.title}">${(r.title||'').substring(0,60)}</span>
+      <span class="h1tl-date">${r.created} ${r.bounty||''}</span>
+    </div>`
+  ).join('');
+} else {
+  document.getElementById('h1-timeline').textContent = 'No report data';
+}
+
+// ── Open Loops ──
+if(D.openLoops && D.openLoops.length) {
+  document.getElementById('open-loops').innerHTML = D.openLoops.map(ol =>
+    `<div style="display:flex;align-items:center;gap:8px"><span class="badge ${ol.severity==='red'?'b-e':ol.severity==='yellow'?'b-w':'b-ok'}">${ol.id}</span> <span style="flex:1">${ol.desc} <span style="color:var(--muted)">(${ol.age})</span></span>${ol.severity!=='green' ? actionBtn('escalate',ol.id,ol.desc,'🔥') : ''}</div>`
+  ).join('');
+}
+
+// ── Bills ──
+if(D.bills && D.bills.length) {
+  document.getElementById('bills').innerHTML = D.bills.map(b =>
+    `<div style="display:flex;align-items:center;gap:8px"><span style="flex:1">${b.status} ${b.desc}</span>${actionBtn('paid',b.id||b.desc.substring(0,20),b.desc,'💰')}</div>`
+  ).join('');
+}
+
+// ── Daily Log Streak ──
+if(D.logStreak) {
+  document.getElementById('log-streak').innerHTML = D.logStreak;
+}
+
+// ── Research Activity ──
+if(D.researchActivity) {
+  document.getElementById('research-activity').innerHTML = D.researchActivity;
+}
+
+// ── Brainstorming Action Tracker ──
+if(D.brainstorming && D.brainstorming.sections) {
+  const bs = D.brainstorming;
+  // Metrics bar
+  document.getElementById('m-brain').textContent = bs.pending || '0';
+  document.getElementById('m-brain-sub').textContent = 'pending';
+  
+  // Grid
+  let bhtml = '';
+  bs.sections.forEach(s => {
+    if (!s.items || !s.items.length) return;
+    bhtml += `<div class="card" style="border-left:3px solid ${s.color}">
+      <h3 style="color:${s.color}">${s.label}</h3>
+      <div style="font-size:0.92em;color:var(--muted);margin-bottom:6px">${s.desc}</div>`;
+    s.items.forEach(it => {
+      const statusIcon = it.done ? '✅' : it.waiting ? '⏳' : '⬜';
+      const bg = it.done ? '' : (s.bgColor ? `background:${s.bgColor};padding:4px 8px;border-radius:4px;margin:4px 0;` : 'padding:4px 0;');
+      const activateBtn = (!it.done) ? actionBtn('activate',it.id,it.desc,'▶') : '';
+      bhtml += `<div style="${bg}font-size:0.92em;display:flex;gap:6px;align-items:flex-start;line-height:1.4">
+        <span style="flex-shrink:0;font-size:0.89em">${statusIcon}</span>
+        <span style="flex:1">
+          <span style="font-family:monospace;color:var(--accent);font-size:0.92em">${it.id}</span>
+          ${it.desc}
+          <span style="color:var(--muted);font-size:0.92em;display:block">${it.source} · ${it.age}</span>
+        </span>
+        ${activateBtn}
+      </div>`;
+    });
+    bhtml += '</div>';
+  });
+  document.getElementById('brainstorm-grid').innerHTML = bhtml || '<div class="card wide" style="text-align:center;color:var(--muted)">No brainstorming items tracked. Run the brainstorming cron to populate.</div>';
+}
+
+// ── Key Decisions ──
+if(D.keyDecisions) {
+  document.getElementById('key-decisions').innerHTML = D.keyDecisions;
+}
+
+// ── 🧠 Noema Product Page ──
+if(D.noema) {
+  const np = D.noema;
+  
+  // Product Health metrics
+  const healthColor = np.healthScore>=90?'g':np.healthScore>=70?'y':'r';
+  document.getElementById('np-health').innerHTML = `<span class="${healthColor}">${np.healthScore||'—'}%</span>`;
+  document.getElementById('np-health-sub').textContent = np.healthLabel||'';
+  document.getElementById('np-crons').innerHTML = `<span class="${np.cronHealth===1?'g':np.cronHealth===0?'r':'y'}">${np.cronsHealthy||'—'}/${np.cronsTotal||'—'}</span>`;
+  document.getElementById('np-qascore').innerHTML = `<span class="${np.qaScore||'?'}">${np.qaLatest||'—'}</span>`;
+  document.getElementById('np-qascore-sub').textContent = np.qaLabel||'';
+  document.getElementById('np-proposals').textContent = np.activeProposals||'—';
+  document.getElementById('np-proposals-sub').textContent = np.proposalsLabel||'';
+
+  // Architecture diagram
+  document.getElementById('np-arch').textContent = np.architecture||'—';
+
+  // Code metrics
+  document.getElementById('np-codemetrics').innerHTML = np.codeMetrics||'—';
+
+  // Project Crons
+  document.getElementById('np-cronlist').innerHTML = np.projectCrons||'—';
+
+  // CHANGELOG
+  document.getElementById('np-changelog').innerHTML = np.changelog||'—';
+
+  // QA Report
+  document.getElementById('np-qareport').innerHTML = np.qaReport||'⏳ Első QA futás ma 03:00-kor. Még nincs adat.';
+
+  // Active Proposals
+  document.getElementById('np-proposallist').innerHTML = np.proposals||'⏳ Nincs aktív proposal. A Research cron (01:00) generálja őket.';
+}
+
+// ── Dashboard Interactive Actions (Direct to Alfred) ──
+function sendAction(action, id, description, btn, label) {
+  const origLabel = label || '▶';
+  btn.textContent = '⏳ ...';
+  btn.disabled = true;
+  btn.style.opacity = '0.6';
+  fetch('http://127.0.0.1:18998/action', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action, id, description: description || '' })
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.ok) {
+      if (action === 'implement') {
+        // Proposal approved → stays queued
+        btn.textContent = '⏳ Sorban';
+        btn.style.background = 'var(--yellow)';
+        btn.disabled = true;
+        btn.style.opacity = '0.7';
+      } else {
+        btn.textContent = '✅';
+        btn.style.background = 'var(--accent)';
+        setTimeout(() => { btn.textContent = origLabel; btn.style.background = 'var(--green)'; btn.disabled = false; btn.style.opacity = '0.85'; }, 3000);
+      }
+    } else {
+      btn.textContent = '❌';
+      btn.style.background = 'var(--red)';
+      setTimeout(() => { btn.textContent = origLabel; btn.style.background = 'var(--green)'; btn.disabled = false; btn.style.opacity = '0.85'; }, 2000);
+    }
+  })
+  .catch(() => {
+    btn.textContent = '🔌';
+    btn.style.background = 'var(--yellow)';
+    setTimeout(() => { btn.textContent = origLabel; btn.style.background = 'var(--green)'; btn.disabled = false; btn.style.opacity = '0.85'; }, 2000);
+  });
+}
+
+function proposalBtn(p) {
+  const s = p.status || 'proposed';
+  const desc = (p.finding||'').replace(/'/g,"\\'").replace(/"/g,'&quot;').substring(0,80);
+  const ts = p.updatedAt ? ' title="'+s+' since '+p.updatedAt.substring(0,16)+'"' : ' title="'+s+'"';
+  if (s === 'done') return `<span style="font-size:0.82em;color:var(--green);flex-shrink:0">✅ Kész</span>`;
+  if (s === 'processing') return `<span style="font-size:0.82em;color:var(--accent);flex-shrink:0;opacity:0.7">⏳ Folyamatban</span>`;
+  if (s === 'queued' || s === 'sent') return `<span style="font-size:0.82em;color:var(--yellow);flex-shrink:0;opacity:0.7">⏳ Sorban</span>`;
+  if (s === 'failed' || s === 'dead') return `<span style="font-size:0.82em;color:var(--red);flex-shrink:0">❌ Hiba</span>`;
+  // proposed → active button
+  return `<button onclick="sendAction('implement','${p.id}','${desc}',this,'▶ Mehet')"${ts} style="cursor:pointer;background:var(--green);color:#fff;border:none;border-radius:4px;padding:1px 8px;font-size:0.82em;font-weight:700;white-space:nowrap;opacity:0.85;flex-shrink:0">▶ Mehet</button>`;
+}
+
+function actionBtn(action, id, description, label) {
+  const colors = { implement:'var(--green)', done:'var(--green)', investigate:'var(--accent)',
+    escalate:'var(--red)', restart:'var(--yellow)', trigger:'var(--orange)', activate:'var(--accent)', paid:'var(--green)' };
+  const color = colors[action] || 'var(--green)';
+  const l = label || '▶';
+  return `<button onclick="sendAction('${action}','${id}','${(description||'').replace(/'/g,"\\'").replace(/"/g,'&quot;').substring(0,80)}',this,'${l}')" title="${description||''}" style="cursor:pointer;background:${color};color:#fff;border:none;border-radius:4px;padding:1px 8px;font-size:0.82em;font-weight:700;white-space:nowrap;opacity:0.85;flex-shrink:0">${l}</button>`;
+}
+
+// ── Font Floor: 15px minimum everywhere ──
+(function enforceMinFont() {
+  const MIN = 15;
+  document.querySelectorAll('*').forEach(el => {
+    const fs = parseFloat(getComputedStyle(el).fontSize);
+    if (fs && fs < MIN && el.textContent.trim()) {
+      el.style.fontSize = MIN + 'px';
+    }
+  });
+})();
+</script>
+</body>
+</html>
