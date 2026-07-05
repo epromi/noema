@@ -13,7 +13,6 @@
     { id: 'brainstorm', label: '🧠 Brainstorm' },
     { id: 'bills', label: '📋 Bills' },
     { id: 'research', label: '🔬 Research' },
-    { id: 'activity', label: '📊 Activity' },
     { id: 'noema', label: '🧠 Noema' }
   ] as const;
 

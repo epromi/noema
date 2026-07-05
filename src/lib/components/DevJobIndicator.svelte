@@ -5,7 +5,7 @@
 		formatDevJobCountdown,
 		getDevJobIndicatorState,
 		getDevJobStatus
-	} from '$lib/core/noema';
+	} from '$lib/core/noema-devjob';
 	import type { DevJobStatus } from '$lib/types';
 
 	const REFRESH_MS = 10_000;
