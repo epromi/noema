@@ -1,5 +1,7 @@
 <script lang="ts">
-  import { getContext, onDestroy } from "svelte";
+  import { browser } from "$app/environment";
+  import { getContext, onDestroy, onMount } from "svelte";
+  import type { DashboardData } from "$lib/types";
   import type { PageData } from "./$types";
   import Overview from "$lib/components/tabs/Overview.svelte";
   import Agents from "$lib/components/tabs/Agents.svelte";
@@ -18,7 +20,37 @@
   const RELAY_URL = "/api";
   const LOG_POLL_MS = 3000;
 
-  let { data }: { data: PageData } = $props();
+  let { data: serverData }: { data: PageData } = $props();
+
+  let sseData = $state<DashboardData | null>(null);
+
+  const data = $derived(
+    sseData ? { ...serverData, ...sseData } : serverData,
+  );
+
+  $effect(() => {
+    serverData;
+    sseData = null;
+  });
+
+  onMount(() => {
+    if (!browser) return;
+
+    const es = new EventSource("/api/events");
+
+    es.onmessage = (event) => {
+      if (!event.data || event.data.startsWith(":")) return;
+      try {
+        sseData = JSON.parse(event.data) as DashboardData;
+      } catch {
+        /* ignore malformed SSE payloads */
+      }
+    };
+
+    return () => {
+      es.close();
+    };
+  });
 
   const tabContext = getContext<{ current: string }>("noema-active-tab");
 
@@ -82,7 +114,8 @@
     setState(pkgId, { implementState: "running" });
 
     try {
-      const res = await fetch(`${RELAY_URL}/action`, {
+      // ⚠️ window.fetch → bypass SvelteKit auto-invalidation on POST
+      const res = await window.fetch(`${RELAY_URL}/action`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

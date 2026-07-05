@@ -217,7 +217,8 @@
     actionBtnStates = { ...actionBtnStates, [key]: "loading" };
 
     try {
-      const res = await fetch(`${RELAY_URL}/action`, {
+      // ⚠️ window.fetch → bypass SvelteKit auto-invalidation on POST
+      const res = await window.fetch(`${RELAY_URL}/action`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action, id, description }),

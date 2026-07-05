@@ -9,3 +9,33 @@
 **F0**: spec | **F1**: sse.ts (client set, broadcast, auto cleanup), events route (SSE stream) | **F2**: frontend EventSource integration | **F3**: collector hook (broadcast after each cycle) | **F4**: test (EventSource működik, reconnect) | **F5**: merge
 
 > ⚠️ Függ: PKG-001 (scaffold) + legalább 2 core modul kell a teszteléshez
+
+
+## 🎯 Mit
+
+_Placeholder — to be filled._
+
+
+## 📐 Scope
+
+_Placeholder — to be filled._
+
+
+## Mit érint
+
+_Placeholder — to be filled._
+
+
+## Mit NEM érint
+
+_Placeholder — to be filled._
+
+
+## Fázisok
+
+_Placeholder — to be filled._
+
+
+## ✅ Acceptance Criteria
+
+_Placeholder — to be filled._
