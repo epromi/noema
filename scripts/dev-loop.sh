@@ -58,6 +58,12 @@ fi
 # ─── Bootstrap ─────────────────────────────────────────────────────────────
 bash "$SCRIPT_DIR/dev-loop-bootstrap.sh" || warn "Bootstrap warnings (continuing)"
 
+# Extract short PKG-ID for INDEX.md matching (PKG-001-sveltekit-scaffold → PKG-001)
+SHORT_ID=$(echo "$PKG_ID" | grep -oP '^PKG-\d{3}' || echo "$PKG_ID")
+
+# Ensure log directory exists
+mkdir -p "$PROJECT_DIR/logs"
+
 # ═══════════════════════════════════════════════════════════════════════════
 banner "PHASE 1/6: Spec Analysis ($PKG_ID)"
 # ═══════════════════════════════════════════════════════════════════════════
@@ -129,14 +135,14 @@ banner "PHASE 4/6: Cursor Agent"
 # ═══════════════════════════════════════════════════════════════════════════
 
 echo "Running cursor agent..."
-echo "Log: /tmp/noema-cursor-output-${PKG_ID}.log"
+echo "Log: $PROJECT_DIR/logs/cursor-${PKG_ID}.log"
 echo ""
 
 cd "$PROJECT_DIR"
 
 # Use read to avoid shell expansion issues with prompt text
 CURSOR_PROMPT=$(cat "$PROMPT_FILE")
-cursor agent --print --force --trust --workspace "$PROJECT_DIR" "$CURSOR_PROMPT" 2>&1 | tee "/tmp/noema-cursor-output-${PKG_ID}.log"
+cursor agent --print --force --trust --workspace "$PROJECT_DIR" "$CURSOR_PROMPT" 2>&1 | tee "$PROJECT_DIR/logs/cursor-${PKG_ID}.log"
 
 CURSOR_EXIT="${PIPESTATUS[0]}"
 if [ "$CURSOR_EXIT" -ne 0 ]; then
@@ -224,13 +230,13 @@ ok "Implementation pushed — $PKG_ID"
 banner "PHASE 6b: Status Update (INDEX.md + Dashboard)"
 # ═══════════════════════════════════════════════════════════════════════
 
-# 1. Mark package as done in INDEX.md
+# 1. Mark package as done in INDEX.md (uses SHORT_ID: $SHORT_ID)
 INDEX_MD="$PROJECT_DIR/dev/packages/INDEX.md"
 echo "Updating $INDEX_MD..."
 python3 -c "
 f = '$INDEX_MD'
 c = open(f).read()
-pkg = '$PKG_ID'
+pkg = '$SHORT_ID'
 for line in c.split('\n'):
     if line.startswith('| ' + pkg + ' '):
         cols = line.split('|')
