@@ -7,10 +7,12 @@
     { id: 'agents', label: '🤖 Agents' },
     { id: 'crons', label: '⏰ Crons' },
     { id: 'orchestrator', label: '⚡ Orchestrator' },
+    { id: 'h1', label: '🏴 HackerOne' },
+    { id: 'viktor', label: '🛡️ Viktor' },
     { id: 'brainstorm', label: '🧠 Brainstorm' },
     { id: 'bills', label: '📋 Bills' },
     { id: 'research', label: '🔬 Research' },
-    { id: 'kpis', label: '📊 KPIs' },
+    { id: 'activity', label: '📊 Activity' },
     { id: 'noema', label: '🧠 Noema' }
   ] as const;
 

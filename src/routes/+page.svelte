@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { getContext, onDestroy } from 'svelte';
 	import type { PageData } from './$types';
+	import Overview from '$lib/components/tabs/Overview.svelte';
 	import Noema from '$lib/components/tabs/Noema.svelte';
 	import type { ImplementState } from '$lib/types';
 
@@ -111,12 +112,22 @@
 			stopLogPoll(pkgId);
 		}
 	});
+
+	const activeTab = $derived(tabContext?.current ?? 'overview');
 </script>
 
 <main class="dashboard-main">
 	<h2 class="sr-only">Noema 🧠</h2>
 
-	{#if tabContext?.current === 'noema'}
+	{#if activeTab === 'overview'}
+		<Overview
+			crons={data.crons}
+			agents={data.agents}
+			health={data.health}
+			h1={data.h1}
+			hostname={data.hostname}
+		/>
+	{:else if activeTab === 'noema'}
 		<Noema
 			packages={data.devPackages.packages}
 			{packageStates}
@@ -125,10 +136,8 @@
 		/>
 	{:else}
 		<div class="dashboard-placeholder">
-			<p><strong>Noema 🧠</strong> — SvelteKit scaffold ready.</p>
-			<p>Active tab: {tabContext?.current ?? 'overview'}</p>
-			<p>Loaded at: {new Date(data.loadedAt).toLocaleString()}</p>
-			<p>Tab components arrive in PKG-002+.</p>
+			<p><strong>{activeTab}</strong> tab — coming in a future package.</p>
+			<p class="muted">Loaded at: {new Date(data.meta.loadedAt).toLocaleString()}</p>
 		</div>
 	{/if}
 </main>
@@ -151,10 +160,13 @@
 		background: var(--card);
 		border: 1px solid var(--border);
 		border-radius: 8px;
-		color: var(--muted);
+		color: var(--text);
+		text-align: center;
 	}
 
-	.dashboard-placeholder p + p {
+	.dashboard-placeholder .muted {
+		color: var(--muted);
+		font-size: 0.88em;
 		margin-top: 8px;
 	}
 </style>

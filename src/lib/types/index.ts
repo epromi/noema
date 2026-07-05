@@ -280,3 +280,9 @@ export interface DashboardData {
   research: ResearchData;
   noema: NoemaData;
 }
+
+/** SSR page load payload (+page.server.ts → +page.svelte). */
+export interface NoemaPageData extends DashboardData {
+  devPackages: DevPackagesData;
+  hostname: string;
+}

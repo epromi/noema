@@ -1,11 +1,192 @@
-import { getDevPackages } from "$lib/core/dev-loop-log";
+import { getAllData, getDevPackages } from "$lib/core";
+import { getProvider } from "$lib/providers";
+import type {
+  AgentData,
+  BillsData,
+  CalendarData,
+  CronData,
+  DashboardData,
+  DevPackagesData,
+  H1Data,
+  HealthData,
+  NoemaData,
+  ResearchData,
+} from "$lib/types";
 import type { PageServerLoad } from "./$types";
 
-export const load: PageServerLoad = async () => {
-  const devPackages = await getDevPackages();
+function emptyCrons(): CronData {
+  return {
+    crons: [],
+    healthy: 0,
+    total: 0,
+    byGroup: {
+      NIGHT: { total: 0, healthy: 0 },
+      MORNING: { total: 0, healthy: 0 },
+      DAYTIME: { total: 0, healthy: 0 },
+      EVENING: { total: 0, healthy: 0 },
+      SPANNING: { total: 0, healthy: 0 },
+    },
+    updatedAt: Date.now(),
+    error: "No data",
+  };
+}
+
+function emptyAgents(): AgentData {
+  return {
+    agents: [],
+    online: 0,
+    total: 0,
+    stale: 0,
+    updatedAt: Date.now(),
+    error: "No data",
+  };
+}
+
+function emptyHealth(): HealthData {
+  return {
+    uptime: "N/A",
+    disk: "N/A",
+    ram: "N/A",
+    gatewayStatus: "unknown",
+    heartbeat: [],
+    hookState: {},
+    modelMappingAge: 999,
+    updatedAt: Date.now(),
+    error: "No data",
+  };
+}
+
+function emptyH1(): H1Data {
+  return {
+    stats: {
+      open: "N/A",
+      signal: "N/A",
+      reputation: "N/A",
+      trial: "N/A",
+      totalReports: 0,
+      resolved: 0,
+      duplicates: 0,
+      pending: 0,
+      notApplicable: 0,
+    },
+    balance: "N/A",
+    balanceAmount: 0,
+    programs: "N/A",
+    programList: [],
+    reports: [],
+    signal: { signal: "N/A", reputation: "N/A", trial: "N/A" },
+    viktor: {
+      totalCompleted: 0,
+      recall: 0,
+      h1Submitted: 0,
+      h1Accepted: 0,
+      activeLabel: "N/A",
+      circuit: "N/A",
+    },
+    updatedAt: Date.now(),
+    error: "No data",
+  };
+}
+
+function emptyCalendar(): CalendarData {
+  return { events: [], upcoming: 0, updatedAt: Date.now(), error: "No data" };
+}
+
+function emptyBills(): BillsData {
+  return { bills: [], openLoops: [], updatedAt: Date.now(), error: "No data" };
+}
+
+function emptyResearch(): ResearchData {
+  return {
+    totalFiles: 0,
+    recentFiles: 0,
+    latestDate: "N/A",
+    proposals: [],
+    autoFixCount: 0,
+    proposeCount: 0,
+    updatedAt: Date.now(),
+    error: "No data",
+  };
+}
+
+function emptyNoema(): NoemaData {
+  return {
+    metrics: {
+      healthScore: 0,
+      cronsHealthy: 0,
+      cronsTotal: 0,
+      totalLoc: 0,
+      activeProposals: 0,
+    },
+    changelog: "",
+    architecture: "",
+    updatedAt: Date.now(),
+    error: "No data",
+  };
+}
+
+function emptyDevPackages(): DevPackagesData {
+  return { packages: [], updatedAt: Date.now(), error: "No data" };
+}
+
+/** Ensure every core module section is present and arrays are never null. */
+function validatePageData(data: Partial<DashboardData>): DashboardData {
+  const crons = data.crons ?? emptyCrons();
+  const agents = data.agents ?? emptyAgents();
 
   return {
-    loadedAt: Date.now(),
-    devPackages,
+    meta: data.meta ?? { loadedAt: Date.now() },
+    crons: {
+      ...crons,
+      crons: crons.crons ?? [],
+    },
+    agents: {
+      ...agents,
+      agents: agents.agents ?? [],
+    },
+    health: data.health ?? emptyHealth(),
+    h1: {
+      ...(data.h1 ?? emptyH1()),
+      programList: data.h1?.programList ?? [],
+      reports: data.h1?.reports ?? [],
+    },
+    calendar: {
+      ...(data.calendar ?? emptyCalendar()),
+      events: data.calendar?.events ?? [],
+    },
+    bills: {
+      ...(data.bills ?? emptyBills()),
+      bills: data.bills?.bills ?? [],
+      openLoops: data.bills?.openLoops ?? [],
+    },
+    research: {
+      ...(data.research ?? emptyResearch()),
+      proposals: data.research?.proposals ?? [],
+    },
+    noema: data.noema ?? emptyNoema(),
+  };
+}
+
+export const load: PageServerLoad = async () => {
+  const providers = getProvider();
+
+  const [dashboard, devPackages, hostnameRaw] = await Promise.all([
+    getAllData(providers),
+    getDevPackages(providers),
+    providers.tool
+      .execCommand('hostname 2>/dev/null || echo "N/A"')
+      .catch(() => "N/A"),
+  ]);
+
+  const validated = validatePageData(dashboard);
+  const devPackagesSafe = devPackages ?? emptyDevPackages();
+
+  return {
+    ...validated,
+    devPackages: {
+      ...devPackagesSafe,
+      packages: devPackagesSafe.packages ?? [],
+    },
+    hostname: hostnameRaw.trim() || "N/A",
   };
 };
