@@ -1,7 +1,7 @@
 // Browser-safe — NO Node.js imports. Used by DevJobIndicator.svelte client component.
 import type { DevJobStatus } from "$lib/types";
 
-export const DEFAULT_RELAY_URL = "http://127.0.0.1:18998";
+export const DEFAULT_RELAY_URL = "/api";
 export type DevJobIndicatorState = "idle" | "soon" | "active" | "offline";
 
 export interface DevJobCountdown {

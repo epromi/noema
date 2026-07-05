@@ -13,6 +13,7 @@ import type {
   ResearchData,
   ActionQueueData,
   BrainstormData,
+  LogData,
 } from "$lib/types";
 import type { PageServerLoad } from "./$types";
 
@@ -156,6 +157,16 @@ function emptyDevPackages(): DevPackagesData {
   return { packages: [], updatedAt: Date.now(), error: "No data" };
 }
 
+function emptyLogs(): LogData {
+  return {
+    entries: [],
+    total: 0,
+    counts: { error: 0, warn: 0, info: 0, other: 0 },
+    updatedAt: Date.now(),
+    error: "No data",
+  };
+}
+
 /** Ensure every core module section is present and arrays are never null. */
 function validatePageData(data: Partial<DashboardData>): DashboardData {
   const crons = data.crons ?? emptyCrons();
@@ -201,6 +212,10 @@ function validatePageData(data: Partial<DashboardData>): DashboardData {
       auto: data.actionQueue?.auto ?? [],
       alfred: data.actionQueue?.alfred ?? [],
       andras: data.actionQueue?.andras ?? [],
+    },
+    logs: {
+      ...(data.logs ?? emptyLogs()),
+      entries: data.logs?.entries ?? [],
     },
   };
 }

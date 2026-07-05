@@ -40,6 +40,7 @@ describe("index (getAllData)", () => {
     expect(data.brainstorm).toBeDefined();
     expect(data.noema).toBeDefined();
     expect(data.actionQueue).toBeDefined();
+    expect(data.logs).toBeDefined();
   }, 15000);
 
   it("named exports are callable", async () => {

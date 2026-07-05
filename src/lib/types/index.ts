@@ -374,6 +374,34 @@ export interface DashboardMeta {
   loadedAt: number;
 }
 
+export type LogLevel = "ERROR" | "WARN" | "INFO" | "DEBUG" | "OTHER";
+
+export type LogFilter = "all" | "errors" | "warnings";
+
+export interface LogEntry {
+  lineNum: number;
+  raw: string;
+  level: LogLevel;
+  timestamp?: string;
+  message: string;
+  source?: string;
+}
+
+export interface LogCounts {
+  error: number;
+  warn: number;
+  info: number;
+  other: number;
+}
+
+export interface LogData {
+  entries: LogEntry[];
+  total: number;
+  counts: LogCounts;
+  updatedAt: number;
+  error?: string;
+}
+
 export interface DashboardData {
   meta: DashboardMeta;
   crons: CronData;
@@ -386,6 +414,7 @@ export interface DashboardData {
   brainstorm: BrainstormData;
   noema: NoemaData;
   actionQueue: ActionQueueData;
+  logs: LogData;
 }
 
 /** SSR page load payload (+page.server.ts → +page.svelte). */

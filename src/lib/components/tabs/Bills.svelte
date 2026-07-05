@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { BillEntry, BillsData, OpenLoop } from '$lib/types';
 
-	const RELAY_URL = 'http://127.0.0.1:18998';
+	const RELAY_URL = '/api';
 
 	let { bills }: { bills: BillsData } = $props();
 
