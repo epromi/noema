@@ -21,7 +21,7 @@
 | PKG-022 | Agents + Crons Tabs | ✅ F5 | — | M | ✅ kész | PKG-021 |
 | PKG-021 | Data Pipeline + Overview Tab | ✅ F5 | — | L | ✅ kész | PKG-001..005 |
 | PKG-020 | Action Queue — Több választási lehetőség | ⏭️ (absorbed by PKG-023) | — | M | — | — |
-| PKG-019 | Cron Sidebar — Mindig látható oldalsáv | ❌ (reverted, wrong target) | F-07 P1 | M | — | PKG-001+017 |
+| PKG-019 | Cron Sidebar — Mindig látható oldalsáv | ✅ F5 | F-07 P1 | M | ✅ kész | PKG-001+017 |
 | PKG-018 | Log Panel Auto-Refresh Fix | ✅ F5 | — | S | ✅ kész | PKG-014+016 |
 | PKG-017 | Cron Timeline + Processor Timer | ✅ F5 | F-07 P1 | M | ✅ kész | PKG-001+002 |
 | PKG-006 | Logs Viewer Tab | ✅ F5 | F-05 P1 | S | ✅ kész | PKG-001+002 |
