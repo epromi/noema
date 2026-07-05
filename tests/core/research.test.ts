@@ -1,0 +1,45 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { getResearch } from '$lib/core/research';
+import { createMockProviders } from './mock-providers';
+
+vi.mock('node:fs/promises', async (importOriginal) => {
+	const actual = await importOriginal<typeof import('node:fs/promises')>();
+	return {
+		...actual,
+		readdir: vi.fn(async (dir: string, options?: { withFileTypes?: boolean }) => {
+			const d = String(dir);
+			if (options?.withFileTypes) {
+				if (d.endsWith('memory/research/noema') || d.endsWith('research/noema')) {
+					return [{ name: '2026-07-05.md', isDirectory: () => false }] as unknown as Awaited<
+						ReturnType<typeof actual.readdir>
+					>;
+				}
+				if (d.endsWith('memory/research')) {
+					return [{ name: 'noema', isDirectory: () => true }] as unknown as Awaited<
+						ReturnType<typeof actual.readdir>
+					>;
+				}
+				return [];
+			}
+			if (d.endsWith('memory/research/noema') || d.endsWith('research/noema')) {
+				return ['2026-07-05.md'] as unknown as Awaited<ReturnType<typeof actual.readdir>>;
+			}
+			return [] as unknown as Awaited<ReturnType<typeof actual.readdir>>;
+		}),
+		stat: vi.fn(async () => ({ mtimeMs: Date.now() }))
+	};
+});
+
+describe('research', () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+	});
+
+	it('getResearch returns research stats via provider', async () => {
+		const data = await getResearch(createMockProviders());
+		expect(data.latestDate).toBe('2026-07-05');
+		expect(data.proposals.length).toBeGreaterThan(0);
+		expect(data.proposals[0]?.id).toBe('P-1');
+		expect(data.updatedAt).toBeGreaterThan(0);
+	});
+});

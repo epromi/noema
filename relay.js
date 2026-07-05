@@ -184,9 +184,43 @@ const server = http.createServer((req, res) => {
       return res.end(JSON.stringify({ ok: false, error: `Entry ${id} not found` }));
     }
 
+    // ── GET /log/:pkgId — Cursor output log (tail) ──
+    if (req.method === 'GET' && req.url.startsWith('/log/')) {
+      const pkgId = decodeURIComponent(req.url.slice(5));
+      const noemaDir = path.join(WORKSPACE, 'projects', 'noema');
+      const logDir = path.join(noemaDir, 'logs');
+      let logPath = null;
+      if (fs.existsSync(logDir)) {
+        const files = fs.readdirSync(logDir).sort().reverse();
+        for (const f of files) {
+          if (f.startsWith(`cursor-${pkgId}`)) { logPath = path.join(logDir, f); break; }
+        }
+      }
+      if (logPath && fs.existsSync(logPath)) {
+        const content = fs.readFileSync(logPath, 'utf-8').slice(-8000);
+        res.writeHead(200, { ...cors, 'Content-Type': 'text/plain; charset=utf-8' });
+        return res.end(content);
+      }
+      res.writeHead(200, { ...cors, 'Content-Type': 'text/plain; charset=utf-8' });
+      return res.end('⏳ Cursor agent dolgozik...\n(a log akkor jelenik meg amikor elkezd írni)');
+    }
+
+    // ── GET /running — Check if dev-loop is active ──
+    if (req.method === 'GET' && req.url === '/running') {
+      const { execSync } = require('child_process');
+      let running = null;
+      try {
+        const ps = execSync('ps aux | grep -E "dev-loop\\.sh|action-processor" | grep -v grep', { encoding: 'utf-8', timeout: 2000 });
+        const match = ps.match(/dev-loop\.sh\s+(PKG-\d+(?:-\S+)?)/);
+        running = match ? match[1] : null;
+      } catch {}
+      res.writeHead(200, { ...cors, 'Content-Type': 'application/json' });
+      return res.end(JSON.stringify({ running }));
+    }
+
     // ── 404 ──
     res.writeHead(404, { ...cors, 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: 'Not found. Use GET / GET /health POST /action POST /action/update' }));
+    res.end(JSON.stringify({ error: 'Not found. GET / /health /log/:pkg /running, POST /action /action/update' }));
   });
 });
 

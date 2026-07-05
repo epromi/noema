@@ -10,20 +10,32 @@
 ┌─────────────────────────────────────────────────────────────┐
 │                   lib/core/ (FRAMEWORK-AGNOSTIC)             │
 │                                                              │
-│  collector.js  ← Periódikus adatgyűjtés (cron → timer)      │
-│  crons.js      ← openclaw cron list → parsed data           │
-│  agents.js     ← Agent státuszok, sessions                  │
-│  h1.js         ← HackerOne API (programs, earnings)         │
-│  calendar.js   ← Google Calendar (gog)                      │
-│  bills.js      ← Számlák, open loop-ok (tasks.md)           │
-│  research.js   ← Research státusz, KG                       │
-│  action-queue.js← Action queue feldolgozás                  │
-│  health.js     ← Heartbeat, model mapping                   │
-│  noema.js      ← Noema saját metrikák                       │
-│  index.js      ← Egyesített API: getAllData()               │
+│  crons.ts      ← provider.cron.listCrons() → parsed data    │
+│  agents.ts     ← provider.session + provider.filesystem     │
+│  h1.ts         ← provider.tool.h1Command()                    │
+│  calendar.ts   ← provider.tool.gogCommand()                 │
+│  bills.ts      ← provider.filesystem.readMemory()           │
+│  research.ts   ← provider.filesystem.readResearch()         │
+│  health.ts     ← provider.filesystem + provider.tool        │
+│  noema.ts      ← provider.cron + filesystem                 │
+│  index.ts      ← getAllData()                               │
 │                                                              │
-│  ⚠️ ZERO Svelte import. Tiszta Node.js.                     │
-│  ⚠️ Minden függvény async. Minden visszatérés plain object. │
+│  ⚠️ ZERO Svelte import. SOHA nem hív OpenClaw API-t közvetlenül. │
+│  ⚠️ Minden külső hívás → lib/providers/ adapteren keresztül. │
+└───────────────────────┬─────────────────────────────────────┘
+                        │
+                        │ getProvider()
+                        ▼
+┌─────────────────────────────────────────────────────────────┐
+│              lib/providers/ (ADAPTER LAYER)                  │
+│                                                              │
+│  types.ts              ← CronProvider, SessionProvider, ...  │
+│  openclaw.ts           ← OpenClaw CLI implementáció           │
+│  openclaw-singleton.ts ← Production singleton instance       │
+│  index.ts              ← getProvider() factory               │
+│                     (NOEMA_PROVIDER=openclaw, default)       │
+│                                                              │
+│  Jövőbeli: new-framework.ts ← új adapter, core változatlan │
 └───────────────────────┬─────────────────────────────────────┘
                         │
                         │ import
@@ -87,18 +99,22 @@ noema-v2/
 │   │
 │   └── lib/
 │       ├── core/              ← ⭐ FRAMEWORK-AGNOSTIC
-│       │   ├── index.js       # getAllData() — egyesített
-│       │   ├── collector.js   # Periódikus gyűjtés + cache
-│       │   ├── crons.js       # openclaw cron list
-│       │   ├── agents.js      # Agent státusz + sessions
-│       │   ├── h1.js          # HackerOne API
-│       │   ├── calendar.js    # Google Calendar
-│       │   ├── bills.js       # Számlák, open loop-ok
-│       │   ├── research.js    # Research + KG
-│       │   ├── action-queue.js# Action queue
-│       │   ├── health.js      # Heartbeat, model mapping
-│       │   ├── noema.js       # Noema metrikák
-│       │   └── utils.js       # Közös segédfüggvények
+│       │   ├── index.ts       # getAllData() — egyesített
+│       │   ├── utils.ts       # classifyCronGroup, parseMarkdownTable
+│       │   ├── crons.ts       # CronProvider → parsed cron data
+│       │   ├── agents.ts      # SessionProvider + filesystem
+│       │   ├── h1.ts          # ToolProvider (h1.sh)
+│       │   ├── calendar.ts    # ToolProvider (gog)
+│       │   ├── bills.ts       # FilesystemProvider (tasks.md)
+│       │   ├── research.ts    # FilesystemProvider (research/)
+│       │   ├── health.ts      # FilesystemProvider + ToolProvider
+│       │   └── noema.ts       # Noema product metrikák
+│       │
+│       ├── providers/         ← ⭐ ADAPTER LAYER (OpenClaw → interface)
+│       │   ├── types.ts       # CronProvider, SessionProvider, ...
+│       │   ├── openclaw.ts    # OpenClaw CLI implementáció
+│       │   ├── openclaw-singleton.ts
+│       │   └── index.ts       # getProvider() factory
 │       │
 │       ├── server/            ← SvelteKit-specifikus wrapper-ek
 │       │   ├── cache.js       # In-memory cache + TTL
@@ -146,24 +162,25 @@ noema-v2/
 Minden core modul ezt a mintát követi:
 
 ```js
-// lib/core/crons.js
+// lib/core/crons.ts
 /**
- * @returns {Promise<{crons: Cron[], healthy: number, total: number, updatedAt: number}>}
+ * @returns {Promise<CronData>}
  */
-export async function getCrons() {
-  const raw = await exec('openclaw cron list --json');
-  const crons = JSON.parse(raw);
+export async function getCrons(providers?: AllProviders) {
+  const p = providers ?? getProvider();
+  const jobs = await p.cron.listCrons();
   // ... parse, classify (NIGHT/MORNING/DAYTIME/EVENING)
-  return {
-    crons: classifiedCrons,
-    healthy: crons.filter(c => c.lastResult === 'ok').length,
-    total: crons.length,
-    updatedAt: Date.now()
-  };
+  return { crons: classifiedCrons, healthy, total, updatedAt: Date.now() };
 }
 ```
 
-**Szabályok:**
+**Provider szabályok:**
+1. `lib/core/` SOHA nem hív `exec('openclaw ...')` — csak `provider.*` metódusokat
+2. OpenClaw CLI változás → csak `lib/providers/openclaw.ts` frissül
+3. Új framework → új adapter + `NOEMA_PROVIDER=<name>` env var
+4. Tesztelés → mock provider injektálás: `getCrons(mockProviders)`
+
+**Core szabályok:**
 1. Minden export async függvény
 2. Visszatérési érték mindig plain JS object (JSON-serializable)
 3. NULL és undefined helyett default értékek (üres tömb, 0, "unknown")
