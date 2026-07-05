@@ -6,6 +6,8 @@
 	import Crons from '$lib/components/tabs/Crons.svelte';
 	import Orchestrator from '$lib/components/tabs/Orchestrator.svelte';
 	import Noema from '$lib/components/tabs/Noema.svelte';
+	import H1 from '$lib/components/tabs/H1.svelte';
+	import Viktor from '$lib/components/tabs/Viktor.svelte';
 	import type { ImplementState } from '$lib/types';
 
 	const RELAY_URL = 'http://127.0.0.1:18998';
@@ -143,6 +145,10 @@
 			onImplement={handleImplement}
 			onLogToggle={handleLogToggle}
 		/>
+	{:else if activeTab === 'h1'}
+		<H1 h1={data.h1} />
+	{:else if activeTab === 'viktor'}
+		<Viktor viktor={data.h1.viktor} />
 	{:else if activeTab === 'noema'}
 		<Noema
 			packages={data.devPackages.packages}

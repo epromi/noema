@@ -14,7 +14,10 @@ import {
 	parseH1Reports,
 	parseH1SignalFromReports,
 	parseH1FromAtAGlance,
-	parseH1ViktorStatus
+	parseH1ViktorStatus,
+	parseScoutPrograms,
+	enrichProgramsWithScout,
+	parseRecallTrendFromCortex
 } from '$lib/core/h1';
 import { createMockProviders } from './mock-providers';
 
@@ -88,11 +91,21 @@ const SAMPLE_VIKTOR_STATE = {
 	activeLabel: 'crossplane',
 	circuitBreaker: { tripped: false },
 	transferValidation: { h1FindingsSubmitted: 3, h1FindingsAccepted: 1 },
+	cweDiversity: { blindSpots: ['CWE-200', 'CWE-327'] },
 	repos: [
 		{ status: 'done', recallX: 3, recallY: 4 },
-		{ status: 'done', recallX: 2, recallY: 2 }
+		{ status: 'done', recallX: 2, recallY: 2 },
+		{ status: 'ready', name: 'chisel', language: 'Go', round: 0 },
+		{ status: 'done', recall: '0/1', name: 'failed-repo' }
 	]
 };
+
+const SAMPLE_CORTEX_STATUS = `## Run #1 Summary (2026-07-01)
+| Avg recall | 100% |
+
+## Run #2 Summary (2026-07-04)
+| Avg recall | 95.6% |
+`;
 
 function createH1Mock(overrides: Parameters<typeof createMockProviders>[0] = {}) {
 	let programsCalls = 0;
@@ -126,8 +139,10 @@ function createH1Mock(overrides: Parameters<typeof createMockProviders>[0] = {})
 				agentId,
 				content:
 					agentId === 'scout'
-						? '## Accessible Programs\n| Type | Handle |\n|---|---|\n| BBP | ruby |'
-						: '',
+						? '## Accessible Programs\n| Handle | Type | Scope | Recommended |\n| Ruby | BBP | SC: ruby/ruby | ⭐ PRIMARY |\n| Rails | VDP | SC: rails/rails | Secondary |'
+						: agentId === 'cortex'
+							? SAMPLE_CORTEX_STATUS
+							: '',
 				path: `/tmp/${agentId}`
 			}),
 			readState: async () => '{}',
@@ -213,14 +228,48 @@ describe('h1 parsers', () => {
 	});
 
 	it('parseH1ViktorStatus computes recall and transfer stats', () => {
-		expect(parseH1ViktorStatus(SAMPLE_VIKTOR_STATE)).toEqual({
+		const trend = [{ run: 1, date: '2026-07-01', recall: 100 }];
+		expect(parseH1ViktorStatus(SAMPLE_VIKTOR_STATE, trend)).toEqual({
 			totalCompleted: 42,
 			recall: 83,
 			h1Submitted: 3,
 			h1Accepted: 1,
 			activeLabel: 'crossplane',
-			circuit: 'Normal'
+			circuit: 'Normal',
+			pending: 1,
+			failed: 2,
+			recallTrend: trend,
+			blindSpots: ['CWE-200', 'CWE-327'],
+			pendingRepos: [{ name: 'chisel', priority: 'Go', age: 'new' }]
 		});
+	});
+
+	it('parseScoutPrograms extracts PRIMARY flag and scope', () => {
+		const scout =
+			'## Accessible Programs\n| Handle | Type | Scope | Recommended |\n| Ruby | BBP | SC: ruby/ruby | ⭐ PRIMARY |';
+		const map = parseScoutPrograms(scout);
+		expect(map.get('ruby')).toEqual({
+			programType: 'BBP',
+			scopeType: 'SC: ruby/ruby',
+			primary: true,
+			recommended: '⭐ PRIMARY'
+		});
+	});
+
+	it('enrichProgramsWithScout merges scout metadata onto API programs', () => {
+		const programs = parseH1Programs(SAMPLE_PROGRAMS_JSON);
+		const enriched = enrichProgramsWithScout(
+			programs,
+			'## Accessible Programs\n| Handle | Type | Scope | Recommended |\n| ruby | BBP | SC: ruby/ruby | ⭐ PRIMARY |'
+		);
+		expect(enriched[0]?.primary).toBe(true);
+		expect(enriched[0]?.scopeType).toBe('SC: ruby/ruby');
+	});
+
+	it('parseRecallTrendFromCortex extracts last runs', () => {
+		const trend = parseRecallTrendFromCortex(SAMPLE_CORTEX_STATUS);
+		expect(trend).toHaveLength(2);
+		expect(trend[1]?.recall).toBe(95.6);
 	});
 });
 
@@ -269,6 +318,8 @@ describe('h1 providers', () => {
 		expect(data.programList).toHaveLength(2);
 		expect(data.programs).toContain('accessible programs');
 		expect(data.viktor.recall).toBe(83);
+		expect(data.viktor.recallTrend.length).toBeGreaterThan(0);
+		expect(data.programList[0]?.primary).toBe(true);
 		expect(data.updatedAt).toBeGreaterThan(0);
 	});
 

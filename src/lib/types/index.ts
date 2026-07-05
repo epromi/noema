@@ -118,6 +118,24 @@ export interface H1Program {
   name: string;
   offersBounties: boolean;
   submissionState: string;
+  /** BBP / VDP from Scout table */
+  programType?: string;
+  scopeType?: string;
+  bountyRange?: string;
+  /** ⭐ PRIMARY when Scout marks recommended as PRIMARY */
+  primary?: boolean;
+}
+
+export interface H1RecallTrendPoint {
+  run: number;
+  date: string;
+  recall: number;
+}
+
+export interface H1PendingRepo {
+  name: string;
+  priority: string;
+  age: string;
 }
 
 export interface H1Report {
@@ -154,6 +172,11 @@ export interface H1ViktorStatus {
   h1Accepted: number;
   activeLabel: string;
   circuit: string;
+  pending: number;
+  failed: number;
+  recallTrend: H1RecallTrendPoint[];
+  blindSpots: string[];
+  pendingRepos: H1PendingRepo[];
 }
 
 export interface H1Data {

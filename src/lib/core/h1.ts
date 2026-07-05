@@ -2,7 +2,9 @@ import type { AllProviders } from "$lib/providers/types";
 import { getProvider } from "$lib/providers";
 import type {
   H1Data,
+  H1PendingRepo,
   H1Program,
+  H1RecallTrendPoint,
   H1Report,
   H1Signal,
   H1Stats,
@@ -238,17 +240,163 @@ function formatProgramsSummary(
   return "⛔ Signal limited programs";
 }
 
+/** Parse Scout accessible-programs markdown table. */
+export function parseScoutPrograms(scoutContent: string): Map<
+  string,
+  {
+    programType: string;
+    scopeType: string;
+    primary: boolean;
+    recommended: string;
+  }
+> {
+  const map = new Map<
+    string,
+    {
+      programType: string;
+      scopeType: string;
+      primary: boolean;
+      recommended: string;
+    }
+  >();
+
+  let inTable = false;
+  for (const line of scoutContent.split("\n")) {
+    if (/^## Accessible Programs/.test(line)) {
+      inTable = true;
+      continue;
+    }
+    if (inTable && /^## /.test(line)) break;
+    if (!inTable || !/^\|.*\|.*\|/.test(line)) continue;
+    if (line.includes("---") || line.includes("Handle")) continue;
+
+    const cells = line
+      .replace(/^\|\s*/, "")
+      .replace(/\s*\|\s*$/, "")
+      .split("|")
+      .map((c) => c.trim());
+    if (cells.length < 3) continue;
+
+    const handle = cells[0]?.toLowerCase() ?? "";
+    const programType = cells[1] ?? "—";
+    const scopeType = cells[2] ?? "—";
+    const recommended = cells[3] ?? "";
+    const primary = /PRIMARY/i.test(recommended);
+
+    if (handle) {
+      map.set(handle, { programType, scopeType, primary, recommended });
+    }
+  }
+
+  return map;
+}
+
+/** Enrich API program rows with Scout table metadata. */
+export function enrichProgramsWithScout(
+  programs: H1Program[],
+  scoutContent: string,
+): H1Program[] {
+  const scout = parseScoutPrograms(scoutContent);
+  return programs.map((program) => {
+    const meta = scout.get(program.handle.toLowerCase());
+    if (!meta) {
+      return {
+        ...program,
+        programType: program.offersBounties ? "BBP" : "VDP",
+        scopeType: "—",
+        bountyRange: program.offersBounties ? "BBP" : "Non-BBP",
+      };
+    }
+    return {
+      ...program,
+      programType: meta.programType,
+      scopeType: meta.scopeType,
+      bountyRange: meta.programType,
+      primary: meta.primary,
+    };
+  });
+}
+
+/** Parse recall trend from Cortex status markdown (last 5 runs). */
+export function parseRecallTrendFromCortex(
+  cortexContent: string,
+): H1RecallTrendPoint[] {
+  const trend: H1RecallTrendPoint[] = [];
+  const runBlocks = cortexContent.split(/(?=## Run #\d+ Summary)/g);
+
+  for (const block of runBlocks) {
+    const rm = block.match(/Run #(\d+)[\s\S]*?(\d{4}-\d{2}-\d{2})/);
+    const pct = block.match(/Avg recall\s*\|\s*(\d+\.?\d*)%/);
+    if (rm?.[1] && rm[2] && pct?.[1]) {
+      trend.push({
+        run: parseInt(rm[1], 10),
+        date: rm[2],
+        recall: parseFloat(pct[1]),
+      });
+    }
+  }
+
+  return trend.sort((a, b) => a.run - b.run).slice(-5);
+}
+
+function parseRecallFraction(
+  recall?: string,
+): { x: number; y: number } | null {
+  const match = recall?.match(/(\d+)\/(\d+)/);
+  if (!match?.[1] || !match[2]) return null;
+  return { x: parseInt(match[1], 10), y: parseInt(match[2], 10) };
+}
+
+function repoFailed(repo: {
+  recall?: string;
+  recallX?: number;
+  recallY?: number;
+}): boolean {
+  if (repo.recallX != null && repo.recallY != null && repo.recallY > 0) {
+    return repo.recallX < repo.recallY;
+  }
+  const frac = parseRecallFraction(repo.recall);
+  return frac != null && frac.y > 0 && frac.x < frac.y;
+}
+
+const EMPTY_VIKTOR: H1ViktorStatus = {
+  totalCompleted: 0,
+  recall: 0,
+  h1Submitted: 0,
+  h1Accepted: 0,
+  activeLabel: "",
+  circuit: "Normal",
+  pending: 0,
+  failed: 0,
+  recallTrend: [],
+  blindSpots: [],
+  pendingRepos: [],
+};
+
 /** Parse Viktor autoresearch pipeline state. */
-export function parseH1ViktorStatus(raw: unknown): H1ViktorStatus {
+export function parseH1ViktorStatus(
+  raw: unknown,
+  recallTrend: H1RecallTrendPoint[] = [],
+): H1ViktorStatus {
   const state = raw as {
     totalCompleted?: number;
-    repos?: Array<{ status?: string; recallX?: number; recallY?: number }>;
+    repos?: Array<{
+      name?: string;
+      status?: string;
+      recall?: string;
+      recallX?: number;
+      recallY?: number;
+      type?: string;
+      language?: string;
+      round?: number;
+    }>;
     activeLabel?: string;
     circuitBreaker?: { tripped?: boolean };
     transferValidation?: {
       h1FindingsSubmitted?: number;
       h1FindingsAccepted?: number;
     };
+    cweDiversity?: { blindSpots?: string[] };
   };
 
   const repos = state.repos ?? [];
@@ -262,6 +410,17 @@ export function parseH1ViktorStatus(raw: unknown): H1ViktorStatus {
     recall = y > 0 ? Math.round((x / y) * 100) : 0;
   }
 
+  const pendingRepos: H1PendingRepo[] = repos
+    .filter((r) => r.status === "ready" || r.status === "pending")
+    .map((r) => ({
+      name: r.name ?? "unknown",
+      priority: r.language ?? r.type ?? "—",
+      age: (r.round ?? 0) === 0 ? "new" : `${r.round} rounds`,
+    }));
+
+  const failed = repos.filter((r) => repoFailed(r)).length;
+  const blindSpots = state.cweDiversity?.blindSpots ?? [];
+
   return {
     totalCompleted:
       state.totalCompleted ?? repos.filter((r) => r.status === "done").length,
@@ -270,6 +429,11 @@ export function parseH1ViktorStatus(raw: unknown): H1ViktorStatus {
     h1Accepted: state.transferValidation?.h1FindingsAccepted ?? 0,
     activeLabel: state.activeLabel ?? "",
     circuit: state.circuitBreaker?.tripped ? "TRIPPED" : "Normal",
+    pending: pendingRepos.length,
+    failed,
+    recallTrend,
+    blindSpots,
+    pendingRepos,
   };
 }
 
@@ -323,19 +487,20 @@ export async function getH1ViktorStatus(
 ): Promise<H1ViktorStatus> {
   const p = providers ?? getProvider();
   try {
-    const raw = await p.filesystem.readResearch(
-      "viktor-benchmark/autoresearch-state.json",
-    );
-    return parseH1ViktorStatus(safeParseJson(raw, {}));
+    const [stateRaw, cortexStatus] = await Promise.all([
+      p.filesystem.readResearch(
+        "viktor-benchmark/autoresearch-state.json",
+      ),
+      p.filesystem.readAgentStatus("cortex").catch(() => ({
+        agentId: "cortex",
+        content: "",
+        path: "",
+      })),
+    ]);
+    const recallTrend = parseRecallTrendFromCortex(cortexStatus.content);
+    return parseH1ViktorStatus(safeParseJson(stateRaw, {}), recallTrend);
   } catch {
-    return {
-      totalCompleted: 0,
-      recall: 0,
-      h1Submitted: 0,
-      h1Accepted: 0,
-      activeLabel: "",
-      circuit: "Normal",
-    };
+    return { ...EMPTY_VIKTOR };
   }
 }
 
@@ -360,11 +525,13 @@ export async function getH1Data(providers?: AllProviders): Promise<H1Data> {
     const stats = getH1Stats(reports, signalData, signalData.open);
 
     let programsSummary = formatProgramsSummary(programs, "");
+    let enrichedPrograms = programs;
     try {
       const scout = await p.filesystem.readAgentStatus("scout");
       programsSummary = formatProgramsSummary(programs, scout.content);
+      enrichedPrograms = enrichProgramsWithScout(programs, scout.content);
     } catch {
-      programsSummary = formatProgramsSummary(programs, "");
+      enrichedPrograms = enrichProgramsWithScout(programs, "");
     }
 
     return {
@@ -372,7 +539,7 @@ export async function getH1Data(providers?: AllProviders): Promise<H1Data> {
       balance: balanceResult.display,
       balanceAmount: balanceResult.amount,
       programs: programsSummary,
-      programList: programs,
+      programList: enrichedPrograms,
       reports,
       signal: {
         signal: signalData.signal,
@@ -408,6 +575,11 @@ export async function getH1Data(providers?: AllProviders): Promise<H1Data> {
         h1Accepted: 0,
         activeLabel: "",
         circuit: "Normal",
+        pending: 0,
+        failed: 0,
+        recallTrend: [],
+        blindSpots: [],
+        pendingRepos: [],
       },
       updatedAt: Date.now(),
       error: String(err),
