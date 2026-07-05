@@ -37,6 +37,91 @@ import { onMount } from 'svelte';  // SOHA!
 
 ---
 
+## 🚨 KÖTELEZŐ: Csomag+Fázis Fejlesztési Módszertan
+
+**MINDEN komplex fejlesztés jól definiált csomagokban és fázisokban történik.**
+
+Nincs "nagy bang" változtatás. Nincs "majd közben kitaláljuk". Nincs egyszerre 10 fájlt érintő refaktor spec nélkül.
+
+### Csomag Struktúra
+
+Minden fejlesztési csomag (package) a `dev/packages/` mappában él:
+
+```
+dev/packages/
+└── PKG-XXX-rovidnev/
+    ├── spec.md        ← Mit csinálunk, miért, mi a scope
+    ├── plan.md        ← Hogyan csináljuk, milyen fájlokat érint
+    ├── phases.md      ← Fázisonkénti bontás, checkpoints
+    ├── todo.md        ← Aktuális TODO lista (checkbox)
+    └── log.md         ← Napló: mi történt, döntések, problémák
+```
+
+### Fázisok (minden csomagra)
+
+| Fázis | Név | Input | Output | Időtartam |
+|-------|-----|-------|--------|-----------|
+| **F0** | Specifikáció | Feature request, roadmap | `spec.md` + `plan.md` | 10-30 perc |
+| **F1** | Core implementáció | spec, típusdefiníciók | Core modul(ok) + tesztek | 30-90 perc |
+| **F2** | UI implementáció | Core modulok | Svelte komponens(ek) | 30-90 perc |
+| **F3** | Integráció | Core + UI | API route, collector regisztrálás | 15-30 perc |
+| **F4** | Tesztelés | Teljes feature | `pnpm check && pnpm build` zöld | 15-30 perc |
+| **F5** | Review & Merge | Build output, diff | Git commit + push | 10 perc |
+
+### Szabályok
+
+1. **Egy csomag = egy jól körülhatárolt scope** — ha 3+ tab-ot érint, túl nagy
+2. **Minden fázis végén checkpoint** — `pnpm check` nem dobhat warning-ot
+3. **Fázisonként max 5 fájl módosítás** — ha több kell, bontsd kisebb csomagra
+4. **F0 ELŐTT nincs kód** — előbb spec, utána kód
+5. **F5 UTÁN a csomag le van zárva** — új változtatás = új csomag
+6. **todo.md checkbox-ok** — minden fázisban 3-8 konkrét, kipipálható feladat
+
+### Csomag Méret Szabályok
+
+| Méret | Fájlok | Idő | Példa |
+|-------|--------|-----|-------|
+| **S** (small) | 1-2 fájl | 30-60 perc | Új MetricCard komponens |
+| **M** (medium) | 3-5 fájl | 1-3 óra | Új tab (core + komponens + regisztrálás) |
+| **L** (large) | 6-10 fájl | 3-6 óra | Új alrendszer (SSE, action system) |
+| **XL** — TILOS | — | — | Bontsd M vagy L csomagokra |
+
+### Példa Csomag
+
+```markdown
+# PKG-001: Logs Viewer Tab
+
+## F0 — Spec
+- [x] spec.md: Logs Viewer funkcionalitás definiálva
+- [x] plan.md: lib/core/logs.ts + Logs.svelte + regisztrálás
+- [x] phases.md: 6 fázis, becsült idő: 2.5 óra (M)
+
+## F1 — Core
+- [x] lib/types/index.ts: LogEntry, LogData típusok
+- [x] lib/core/logs.ts: getLogs() — tail -500 ~/.openclaw/logs/
+- [x] tests/core/logs.test.ts: 3 teszteset
+- [x] pnpm check ZÖLD
+
+## F2 — UI
+- [x] Logs.svelte: színkódolt sorok, filter gombok
+- [x] +page.svelte: tab felvétele
+- [x] pnpm check ZÖLD
+
+## F3 — Integráció
+- [x] lib/core/collector.ts: getLogs() regisztrálása
+- [x] lib/core/index.ts: getAllData() frissítése
+- [x] pnpm check ZÖLD
+
+## F4 — Teszt
+- [x] pnpm test ZÖLD
+- [x] pnpm build ZÖLD
+- [x] Manuális: böngészőben filter működik
+
+## F5 — Merge
+- [x] Git commit: "🧠 feat: Logs Viewer tab (PKG-001)"
+- [x] Push
+```
+
 ## Fájlstruktúra
 
 ```
