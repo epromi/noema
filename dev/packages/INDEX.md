@@ -6,7 +6,7 @@
 
 | PKG | Név | Fázis | Roadmap | Méret | Becsült idő | Függőség |
 |-----|-----|-------|---------|-------|-------------|----------|
-| PKG-001 | SvelteKit Scaffold | 📋 F0 | — | L | 1.5-2h | — |
+| PKG-001 | SvelteKit Scaffold | ✅ F5 | — | L | ✅ kész | — |
 | PKG-013 | **Provider Abstraction Layer** 🧱 | 📋 F0 | F-23 P1 | M | 2-3h | PKG-001 |
 | PKG-002 | Core: Cron Data | 📋 F0 | — | S | 0.5-1h | PKG-013 |
 | PKG-003 | Core: Agent Data | 📋 F0 | — | S | 0.5-1h | PKG-013 |
