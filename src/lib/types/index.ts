@@ -303,6 +303,40 @@ export interface NoemaData {
   error?: string;
 }
 
+export type BrainstormSectionKey =
+  | "autoexec"
+  | "autonotify"
+  | "approval"
+  | "weekend"
+  | "backlog";
+
+export type BrainstormItemStatus = "done" | "waiting" | "pending";
+
+export interface BrainstormItem {
+  id: string;
+  name: string;
+  status: BrainstormItemStatus;
+  done: boolean;
+  source?: string;
+  age?: string;
+}
+
+export interface BrainstormSection {
+  key: BrainstormSectionKey;
+  label: string;
+  desc: string;
+  color: string;
+  bgColor?: string;
+  items: BrainstormItem[];
+}
+
+export interface BrainstormData {
+  sections: BrainstormSection[];
+  pending: number;
+  updatedAt: number;
+  error?: string;
+}
+
 export interface DevPackageEntry {
   id: string;
   name: string;
@@ -344,6 +378,7 @@ export interface DashboardData {
   calendar: CalendarData;
   bills: BillsData;
   research: ResearchData;
+  brainstorm: BrainstormData;
   noema: NoemaData;
   actionQueue: ActionQueueData;
 }

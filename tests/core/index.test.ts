@@ -37,6 +37,7 @@ describe('index (getAllData)', () => {
 		expect(data.calendar).toBeDefined();
 		expect(data.bills).toBeDefined();
 		expect(data.research).toBeDefined();
+		expect(data.brainstorm).toBeDefined();
 		expect(data.noema).toBeDefined();
 		expect(data.actionQueue).toBeDefined();
 	}, 15000);

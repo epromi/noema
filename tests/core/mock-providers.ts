@@ -65,6 +65,19 @@ Summary line one.`;
 				if (path === 'logistics/tasks.md') {
 					return `## 🔓 Open Loops\n| ID | Desc | Owner | Last | Status |\n|---|---|---|---|---|\n| OL-001 | Test loop | Alfred | 2026-07-01 | 🟢 Active |\n\n- [ ] 💰 Számla 5000 Ft maradék`;
 				}
+				if (path === 'brainstorming/action-tracker.md') {
+					return `# Brainstorming Action Tracker
+## ⚡ AUTOEXECUTE (Alfred, no approval needed)
+| # | Status | Item | Source | Age |
+| BA-01 | ✅ DONE | Done item | Jul 4 | 0d |
+| BA-02 | ⬜ TODO | Pending item | Jul 3 | 1d |
+## 🔔 AUTO_NOTIFY (Alfred executes + reports, András sees result)
+| # | Status | Item | Source | Age |
+| BN-01 | ⏳ PENDING | Waiting item | Jul 2 | 2d |
+## 📋 BACKLOG (Interesting, not now)
+| # | Item | Source |
+| BL-01 | Backlog idea | Jul 2 |`;
+				}
 				if (path === 'agents-model-mapping.md') return '# models';
 				return '';
 			},

@@ -6,6 +6,9 @@
 	import Crons from '$lib/components/tabs/Crons.svelte';
 	import Orchestrator from '$lib/components/tabs/Orchestrator.svelte';
 	import Noema from '$lib/components/tabs/Noema.svelte';
+	import Brainstorm from '$lib/components/tabs/Brainstorm.svelte';
+	import Bills from '$lib/components/tabs/Bills.svelte';
+	import Research from '$lib/components/tabs/Research.svelte';
 	import H1 from '$lib/components/tabs/H1.svelte';
 	import Viktor from '$lib/components/tabs/Viktor.svelte';
 	import type { ImplementState } from '$lib/types';
@@ -149,6 +152,12 @@
 		<H1 h1={data.h1} />
 	{:else if activeTab === 'viktor'}
 		<Viktor viktor={data.h1.viktor} />
+	{:else if activeTab === 'brainstorm'}
+		<Brainstorm brainstorm={data.brainstorm} />
+	{:else if activeTab === 'bills'}
+		<Bills bills={data.bills} />
+	{:else if activeTab === 'research'}
+		<Research research={data.research} />
 	{:else if activeTab === 'noema'}
 		<Noema
 			packages={data.devPackages.packages}

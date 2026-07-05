@@ -12,6 +12,7 @@ import type {
   NoemaData,
   ResearchData,
   ActionQueueData,
+  BrainstormData,
 } from "$lib/types";
 import type { PageServerLoad } from "./$types";
 
@@ -126,6 +127,15 @@ function emptyActionQueue(): ActionQueueData {
   };
 }
 
+function emptyBrainstorm(): BrainstormData {
+  return {
+    sections: [],
+    pending: 0,
+    updatedAt: Date.now(),
+    error: "No data",
+  };
+}
+
 function emptyNoema(): NoemaData {
   return {
     metrics: {
@@ -180,6 +190,10 @@ function validatePageData(data: Partial<DashboardData>): DashboardData {
       ...(data.research ?? emptyResearch()),
       proposals: data.research?.proposals ?? [],
       ottoRuns: data.research?.ottoRuns ?? [],
+    },
+    brainstorm: {
+      ...(data.brainstorm ?? emptyBrainstorm()),
+      sections: data.brainstorm?.sections ?? [],
     },
     noema: data.noema ?? emptyNoema(),
     actionQueue: {

@@ -7,7 +7,7 @@ import { getCalendar } from "./calendar.js";
 import { getCrons } from "./crons.js";
 import { getH1Data } from "./h1.js";
 import { getHealth } from "./health.js";
-import { getNoema, getActionQueue } from "./noema.js";
+import { getNoema, getActionQueue, getBrainstorm } from "./noema.js";
 import { getResearch } from "./research.js";
 import {
   getDevLoopLog,
@@ -19,7 +19,7 @@ export async function getAllData(
   providers?: AllProviders,
 ): Promise<DashboardData> {
   const p = providers ?? getProvider();
-  const [crons, agents, health, h1, calendar, bills, research, noema, actionQueue] =
+  const [crons, agents, health, h1, calendar, bills, research, brainstorm, noema, actionQueue] =
     await Promise.all([
       getCrons(p),
       getAgents(p),
@@ -28,6 +28,7 @@ export async function getAllData(
       getCalendar(p),
       getBills(p),
       getResearch(p),
+      getBrainstorm(p),
       getNoema(p),
       getActionQueue(p),
     ]);
@@ -41,6 +42,7 @@ export async function getAllData(
     calendar,
     bills,
     research,
+    brainstorm,
     noema,
     actionQueue,
   };
@@ -55,6 +57,7 @@ export {
   getHealth,
   getNoema,
   getActionQueue,
+  getBrainstorm,
   getResearch,
   getDevLoopLog,
   getRunningDevLoop,

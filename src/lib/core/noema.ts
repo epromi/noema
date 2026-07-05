@@ -3,7 +3,16 @@ import { join } from "node:path";
 import type { AllProviders } from "$lib/providers/types";
 import { workspaceRoot } from "$lib/providers/openclaw";
 import { getProvider } from "$lib/providers";
-import type { ActionQueueData, ActionQueueItem, DashboardActionType, NoemaData } from "$lib/types";
+import type {
+  ActionQueueData,
+  ActionQueueItem,
+  BrainstormData,
+  BrainstormItem,
+  BrainstormSection,
+  BrainstormSectionKey,
+  DashboardActionType,
+  NoemaData,
+} from "$lib/types";
 
 const NOEMA_CRON_IDS = ["cbc7d5d6", "3b4ea5d3", "eed1df55"];
 
@@ -265,4 +274,170 @@ function parseMultiActions(
     };
   }
   return { cleanDesc: text, actions: DEFAULT_ACTIONS[column] };
+}
+
+const BRAINSTORM_SECTION_META: Record<
+  BrainstormSectionKey,
+  Omit<BrainstormSection, "key" | "items">
+> = {
+  autoexec: {
+    label: "⚡ AUTOEXECUTE",
+    desc: "Alfred executes, no approval needed",
+    color: "var(--green)",
+    bgColor: "var(--g-bg)",
+  },
+  autonotify: {
+    label: "🔔 AUTO_NOTIFY",
+    desc: "Alfred executes + reports, András sees result",
+    color: "var(--accent)",
+    bgColor: "#1a2a3a",
+  },
+  approval: {
+    label: "✋ APPROVAL NEEDED",
+    desc: "András decides before work starts",
+    color: "var(--yellow)",
+    bgColor: "var(--y-bg)",
+  },
+  weekend: {
+    label: "🔧 WEEKEND BUILD",
+    desc: "András builds, 2-4h",
+    color: "var(--purple)",
+    bgColor: "#2a1a4a",
+  },
+  backlog: {
+    label: "📋 BACKLOG",
+    desc: "Interesting, not now",
+    color: "var(--muted)",
+  },
+};
+
+const BRAINSTORM_SECTION_ORDER: BrainstormSectionKey[] = [
+  "autoexec",
+  "autonotify",
+  "approval",
+  "weekend",
+  "backlog",
+];
+
+function parseBrainstormStatus(
+  emoji: string,
+): Pick<BrainstormItem, "status" | "done"> {
+  if (emoji === "✅") return { status: "done", done: true };
+  if (emoji === "⏳") return { status: "waiting", done: false };
+  return { status: "pending", done: false };
+}
+
+function parseBrainstormLine(
+  line: string,
+  section: BrainstormSectionKey,
+): BrainstormItem | null {
+  const standard = line.match(
+    /^\|\s*(BA-\d+|BN-\d+|AP-\d+|WB-\d+)\s*\|\s*(⬜|✅|⏳|🔄)\s*[^|]*\|\s*(.+?)\s*\|\s*(.+?)\s*\|\s*(\S+)/,
+  );
+  if (standard) {
+    const { status, done } = parseBrainstormStatus(standard[2] ?? "⬜");
+    return {
+      id: standard[1] ?? "",
+      name: (standard[3] ?? "").trim().substring(0, 100),
+      status,
+      done,
+      source: (standard[4] ?? "").trim().substring(0, 80),
+      age: standard[5],
+    };
+  }
+
+  if (section === "backlog") {
+    const backlog = line.match(/^\|\s*(BL-\d+)\s*\|\s*(.+?)\s*\|\s*(.+?)\s*\|/);
+    if (backlog) {
+      return {
+        id: backlog[1] ?? "",
+        name: (backlog[2] ?? "").trim().substring(0, 100),
+        status: "pending",
+        done: false,
+        source: (backlog[3] ?? "").trim().substring(0, 80),
+      };
+    }
+  }
+
+  return null;
+}
+
+/** Parse memory/brainstorming/action-tracker.md into categorized sections. */
+export async function getBrainstorm(
+  providers?: AllProviders,
+): Promise<BrainstormData> {
+  const p = providers ?? getProvider();
+  const itemsBySection: Record<BrainstormSectionKey, BrainstormItem[]> = {
+    autoexec: [],
+    autonotify: [],
+    approval: [],
+    weekend: [],
+    backlog: [],
+  };
+  let pending = 0;
+
+  try {
+    const tracker = await p.filesystem.readMemory(
+      "brainstorming/action-tracker.md",
+    );
+    let section: BrainstormSectionKey | "" = "";
+
+    for (const line of tracker.split("\n")) {
+      if (line.match(/^## ⚡ AUTOEXECUTE/)) {
+        section = "autoexec";
+        continue;
+      }
+      if (line.match(/^## 🔔 AUTO_NOTIFY/)) {
+        section = "autonotify";
+        continue;
+      }
+      if (line.match(/^## ✋ APPROVAL_NEEDED/)) {
+        section = "approval";
+        continue;
+      }
+      if (line.match(/^## 🔧 WEEKEND_BUILD/)) {
+        section = "weekend";
+        continue;
+      }
+      if (line.match(/^## 📋 BACKLOG/)) {
+        section = "backlog";
+        continue;
+      }
+      if (line.match(/^## /)) {
+        section = "";
+        continue;
+      }
+      if (!section) continue;
+
+      const item = parseBrainstormLine(line, section);
+      if (!item) continue;
+      itemsBySection[section].push(item);
+      if (!item.done) pending++;
+    }
+
+    const sections: BrainstormSection[] = BRAINSTORM_SECTION_ORDER.map(
+      (key) => ({
+        key,
+        ...BRAINSTORM_SECTION_META[key],
+        items: itemsBySection[key],
+      }),
+    );
+
+    return {
+      sections,
+      pending,
+      updatedAt: Date.now(),
+    };
+  } catch (err) {
+    return {
+      sections: BRAINSTORM_SECTION_ORDER.map((key) => ({
+        key,
+        ...BRAINSTORM_SECTION_META[key],
+        items: [],
+      })),
+      pending: 0,
+      updatedAt: Date.now(),
+      error: String(err),
+    };
+  }
 }
