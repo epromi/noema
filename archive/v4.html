@@ -1118,6 +1118,64 @@ function actionBtn(action, id, description, label) {
   await refresh();
   setInterval(updateCountdown, 1000);
   setInterval(refresh, 10000);
+
+  // ── Drag to reposition ──
+  const handle = document.getElementById('dli-handle');
+  let dragging = false, startX, startY, startLeft, startTop;
+
+  // Restore saved position
+  const saved = localStorage.getItem('dli-pos');
+  if (saved) {
+    try {
+      const [l, t] = JSON.parse(saved);
+      indicator.style.left = l + 'px';
+      indicator.style.top = t + 'px';
+      indicator.style.right = 'auto';
+    } catch {}
+  }
+
+  function setPos(left, top) {
+    const bw = window.innerWidth, bh = window.innerHeight;
+    const iw = indicator.offsetWidth, ih = indicator.offsetHeight;
+    const clampedLeft = Math.max(0, Math.min(left, bw - iw));
+    const clampedTop = Math.max(0, Math.min(top, bh - ih));
+    indicator.style.left = clampedLeft + 'px';
+    indicator.style.top = clampedTop + 'px';
+    indicator.style.right = 'auto';
+    localStorage.setItem('dli-pos', JSON.stringify([clampedLeft, clampedTop]));
+  }
+
+  handle.addEventListener('mousedown', e => {
+    dragging = true;
+    const rect = indicator.getBoundingClientRect();
+    startX = e.clientX;
+    startY = e.clientY;
+    startLeft = rect.left;
+    startTop = rect.top;
+    e.preventDefault();
+  });
+
+  handle.addEventListener('touchstart', e => {
+    dragging = true;
+    const rect = indicator.getBoundingClientRect();
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    startLeft = rect.left;
+    startTop = rect.top;
+  }, {passive:true});
+
+  document.addEventListener('mousemove', e => {
+    if (!dragging) return;
+    setPos(startLeft + (e.clientX - startX), startTop + (e.clientY - startY));
+  });
+
+  document.addEventListener('touchmove', e => {
+    if (!dragging) return;
+    setPos(startLeft + (e.touches[0].clientX - startX), startTop + (e.touches[0].clientY - startY));
+  }, {passive:true});
+
+  document.addEventListener('mouseup', () => { dragging = false; });
+  document.addEventListener('touchend', () => { dragging = false; });
 })();
 </script>
 </body>
