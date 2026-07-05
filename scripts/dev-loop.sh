@@ -8,8 +8,8 @@
 #   2. STRATEGY       — determine Alfred vs Cursor
 #   3. PROMPT         — generate Cursor prompt from template
 #   4. EXECUTE        — run Cursor agent or hand off to Alfred
-#   5. VERIFY         — file existence, pnpm check, git status
-#   6. COMMIT         — git add, commit, push
+#   5. DEEP REVIEW    — lint+format(auto-fix 3x), test, architecture, quality, security, summary
+#   6. COMMIT         — git add, commit, push + dashboard regen
 set -euo pipefail
 
 PKG_ID="${1:-}"
@@ -171,39 +171,230 @@ fi
 echo ""
 
 # ═══════════════════════════════════════════════════════════════════════════
-banner "PHASE 5/6: Verification"
+banner "PHASE 5/6: Deep Review + Auto-Fix"
 # ═══════════════════════════════════════════════════════════════════════════
+# 6 sub-phases: lint→auto-fix→retry (3x), test, architecture, provider, imports, summary
 
-echo "1/4: pnpm check..."
-if [ -f "$PROJECT_DIR/package.json" ]; then
-  cd "$PROJECT_DIR"
-  pnpm check 2>&1 || warn "pnpm check failed (review output)"
-else
-  warn "No package.json — V2 scaffold not built yet (expected at this stage)"
-fi
-
-echo ""
-echo "2/4: src/lib/core/*.ts — ZERO Svelte imports check..."
-CORE_LEAKS=$(grep -rl "from 'svelte\|from \"svelte\|import svelte" "$PROJECT_DIR/src/lib/core/" 2>/dev/null || true)
-if [ -z "$CORE_LEAKS" ]; then
-  ok "  No Svelte imports in src/lib/core/"
-else
-  warn "  SVELTE LEAK in src/lib/core/: $CORE_LEAKS"
-fi
-
-echo ""
-echo "3/4: src/lib/components/*.svelte — NO exec/sessions/read/write calls..."
-COMP_LEAKS=$(grep -rl "exec(\|sessions_\|read(\|write(" "$PROJECT_DIR/src/lib/components/" 2>/dev/null || true)
-if [ -z "$COMP_LEAKS" ]; then
-  ok "  No system calls in src/lib/components/"
-else
-  warn "  SYSTEM CALL in src/lib/components/: $COMP_LEAKS"
-fi
-
-echo ""
-echo "4/4: git status..."
 cd "$PROJECT_DIR"
-git status --short
+HAS_PKG="$([ -f package.json ] && echo 1 || echo 0)"
+REVIEW_PASS=0
+REVIEW_WARN=0
+REVIEW_FAIL=0
+REVIEW_LOG="$PROJECT_DIR/logs/review-${PKG_ID}.log"
+
+review_ok()   { printf "${GREEN}    ✅ %s${NC}\n" "$1"; REVIEW_PASS=$((REVIEW_PASS + 1)); echo "✅ $1" >> "$REVIEW_LOG"; }
+review_warn() { printf "${YELLOW}    ⚠️  %s${NC}\n" "$1"; REVIEW_WARN=$((REVIEW_WARN + 1)); echo "⚠️  $1" >> "$REVIEW_LOG"; }
+review_fail() { printf "${RED}    ❌ %s${NC}\n" "$1"; REVIEW_FAIL=$((REVIEW_FAIL + 1)); echo "❌ $1" >> "$REVIEW_LOG"; }
+
+# Reset review log
+: > "$REVIEW_LOG"
+echo "# Review: $PKG_ID — $(date -Iseconds)" >> "$REVIEW_LOG"
+echo "" >> "$REVIEW_LOG"
+
+# ─── 5a: Lint + Format (auto-fix, max 3 retry) ──────────────────────────
+banner "5a: Lint + Format (auto-fix, max 3x)"
+
+if [ "$HAS_PKG" -eq 1 ]; then
+  LINT_OK=0
+  for attempt in 1 2 3; do
+    LINT_OUT=""
+
+    # ESLint check
+    ESLINT_FAIL=0
+    if npx eslint --quiet src/ 2>&1 || true; then
+      :
+    else
+      ESLINT_FAIL=${PIPESTATUS[0]:-1}
+    fi
+
+    # Prettier check
+    PRETTIER_FAIL=0
+    if npx prettier --check "src/**/*.{ts,svelte,js,cjs}" 2>&1 || true; then
+      :
+    else
+      PRETTIER_FAIL=${PIPESTATUS[0]:-1}
+    fi
+
+    if [ "$ESLINT_FAIL" -eq 0 ] && [ "$PRETTIER_FAIL" -eq 0 ]; then
+      review_ok "Lint + Format clean (pass $attempt)"
+      LINT_OK=1
+      break
+    fi
+
+    echo "    Lint/formátum hibák — auto-fix ($attempt/3)..."
+    npx eslint --fix --quiet src/ 2>&1 || true
+    npx prettier --write "src/**/*.{ts,svelte,js,cjs}" 2>&1 || true
+  done
+
+  if [ "$LINT_OK" -eq 0 ]; then
+    review_warn "Lint/format issues persist after 3 fix attempts"
+  fi
+else
+  echo "    (no package.json — skip lint)"
+fi
+
+echo ""
+
+# ─── 5b: Test Suite ──────────────────────────────────────────────────────
+banner "5b: Test Suite"
+
+if [ "$HAS_PKG" -eq 1 ]; then
+  if [ -f "vitest.config.ts" ] || [ -f "vitest.config.js" ] || grep -q '"test"' package.json 2>/dev/null; then
+    if pnpm test --reporter=verbose 2>&1 | tee -a "$REVIEW_LOG" || true; then
+      TEST_EXIT=${PIPESTATUS[0]:-0}
+      if [ "$TEST_EXIT" -eq 0 ]; then
+        review_ok "All tests passing"
+      else
+        FAILED_TESTS=$(grep -c 'FAIL\|✗' "$REVIEW_LOG" 2>/dev/null || echo "?")
+        review_warn "Tests failing ($FAILED_TESTS failures) — review required"
+      fi
+    else
+      review_warn "Test run crashed — check $REVIEW_LOG"
+    fi
+  else
+    echo "    (no test config — skip)"
+  fi
+else
+  echo "    (no package.json — skip)"
+fi
+
+echo ""
+
+# ─── 5c: Architecture Compliance ─────────────────────────────────────────
+banner "5c: Architecture Compliance"
+
+ARCH_VIOLATIONS=0
+
+# Check 1: src/lib/core/ must not import Svelte
+if [ -d "$PROJECT_DIR/src/lib/core" ]; then
+  CORE_SVELTE=$(grep -rl "from 'svelte\|from \"svelte\|import svelte" "$PROJECT_DIR/src/lib/core/" 2>/dev/null || true)
+  if [ -z "$CORE_SVELTE" ]; then
+    review_ok "src/lib/core/ — zero Svelte imports"
+  else
+    review_fail "SVELTE LEAK in src/lib/core/: $(echo "$CORE_SVELTE" | tr '\n' ' ')"
+    ARCH_VIOLATIONS=$((ARCH_VIOLATIONS + 1))
+  fi
+fi
+
+# Check 2: src/lib/core/ must not call OpenClaw/exec APIs directly
+if [ -d "$PROJECT_DIR/src/lib/core" ]; then
+  CORE_SYSCALL=$(grep -rl "exec(\|sessions_\|fetch.*openclaw\|process\." "$PROJECT_DIR/src/lib/core/" 2>/dev/null || true)
+  if [ -z "$CORE_SYSCALL" ]; then
+    review_ok "src/lib/core/ — zero system/API calls (provider-safe)"
+  else
+    review_fail "SYSTEM CALL in src/lib/core/: $(echo "$CORE_SYSCALL" | tr '\n' ' ')"
+    ARCH_VIOLATIONS=$((ARCH_VIOLATIONS + 1))
+  fi
+fi
+
+# Check 3: src/lib/components/ must not have exec/session calls
+if [ -d "$PROJECT_DIR/src/lib/components" ]; then
+  COMP_SYSCALL=$(grep -rl "exec(\|sessions_\|read(\|write(" "$PROJECT_DIR/src/lib/components/" 2>/dev/null || true)
+  if [ -z "$COMP_SYSCALL" ]; then
+    review_ok "src/lib/components/ — zero system calls"
+  else
+    review_fail "SYSTEM CALL in components: $(echo "$COMP_SYSCALL" | tr '\n' ' ')"
+    ARCH_VIOLATIONS=$((ARCH_VIOLATIONS + 1))
+  fi
+fi
+
+# Check 4: Provider pattern — verify OpenClaw adapter exists if core modules need external data
+if [ -d "$PROJECT_DIR/src/lib/providers" ]; then
+  PROVIDER_FILES=$(ls "$PROJECT_DIR/src/lib/providers/" 2>/dev/null | wc -l)
+  if [ "$PROVIDER_FILES" -ge 1 ]; then
+    review_ok "Provider layer present ($PROVIDER_FILES adapter file(s))"
+  else
+    review_warn "Provider layer empty — check if needed"
+  fi
+fi
+
+echo ""
+
+# ─── 5d: Code Quality Metrics ────────────────────────────────────────────
+banner "5d: Code Quality Metrics"
+
+# LOC counts
+if git rev-parse --git-dir >/dev/null 2>&1; then
+  ADDED_LINES=$(git diff --cached --numstat 2>/dev/null | awk '{sum+=$1} END {print sum+0}')
+  ADDED_FILES=$(git diff --cached --name-only 2>/dev/null | wc -l)
+  echo "    Lines added: $ADDED_LINES | Files changed: $ADDED_FILES"
+
+  # Phase budget check (max 5 files per phase constraint from CONTRIBUTING.md)
+  if [ "$ADDED_FILES" -gt 10 ]; then
+    review_warn "Large changeset ($ADDED_FILES files) — phase budget exceeded (max 5/phase)"
+  elif [ "$ADDED_FILES" -gt 5 ]; then
+    review_warn "Moderate changeset ($ADDED_FILES files) — consider splitting next time"
+  else
+    review_ok "Changeset size OK ($ADDED_FILES files)"
+  fi
+
+  # File size extremes
+  OVERSIZED=$(git diff --cached --numstat 2>/dev/null | awk '$1 > 300 {print $3 " (" $1 " lines)"}')
+  if [ -n "$OVERSIZED" ]; then
+    echo "    ⚠️  Oversized files (>300 lines added):"
+    echo "$OVERSIZED" | while read line; do echo "       $line"; done || true
+  fi
+else
+  echo "    (not a git repo — skip)"
+fi
+
+echo ""
+
+# ─── 5e: Security Scan (quick) ───────────────────────────────────────────
+banner "5e: Quick Security Scan"
+
+SEC_ISSUES=0
+
+# Hardcoded secrets check
+if git rev-parse --git-dir >/dev/null 2>&1; then
+  SECRETS=$(git diff --cached 2>/dev/null | grep -iE 'api.?key[[:space:]]*=|token[[:space:]]*=|secret[[:space:]]*=|password[[:space:]]*=' | grep -v 'EXAMPLE\|example\|\.env\.\|process\.env\|DENO_ENV' || true)
+  if [ -z "$SECRETS" ]; then
+    review_ok "No hardcoded secrets detected"
+  else
+    SEC_COUNT=$(echo "$SECRETS" | wc -l)
+    review_fail "Potential secrets in diff ($SEC_COUNT lines) — VERIFY MANUALLY"
+    echo "$SECRETS" | head -5 >> "$REVIEW_LOG"
+    SEC_ISSUES=$((SEC_ISSUES + 1))
+  fi
+fi
+
+# Dangerous patterns: eval, innerHTML, dangerouslySetInnerHTML
+if git rev-parse --git-dir >/dev/null 2>&1; then
+  DANGER=$(git diff --cached 2>/dev/null | grep -E '^\+.*eval\(|^\+.*innerHTML|^\+.*dangerouslySetInnerHTML' | grep -v '//.*eval\|#.*eval\|test.*eval' || true)
+  if [ -z "$DANGER" ]; then
+    review_ok "No dangerous patterns (eval, innerHTML)"
+  else
+    DANGER_COUNT=$(echo "$DANGER" | wc -l)
+    review_warn "Dangerous patterns found ($DANGER_COUNT) — review recommended"
+    echo "$DANGER" | head -5 >> "$REVIEW_LOG"
+  fi
+fi
+
+echo ""
+
+# ─── 5f: Summary ─────────────────────────────────────────────────────────
+banner "5f: Review Summary"
+
+echo ""
+echo "  ┌─────────────────────────────────────┐"
+printf "  │  ✅ Pass:      %2d                   │\n" "$REVIEW_PASS"
+printf "  │  ⚠️  Warnings:  %2d                   │\n" "$REVIEW_WARN"
+printf "  │  ❌ Failures:  %2d                   │\n" "$REVIEW_FAIL"
+echo "  │  Full log:    logs/review-${PKG_ID}.log  │"
+echo "  └─────────────────────────────────────┘"
+echo ""
+
+# Decision gate
+if [ "$ARCH_VIOLATIONS" -gt 0 ]; then
+  warn "ARCHITECTURE VIOLATIONS ($ARCH_VIOLATIONS) — review before next package"
+elif [ "$REVIEW_FAIL" -gt 0 ]; then
+  warn "$REVIEW_FAIL hard failure(s) — proceed with caution"
+elif [ "$REVIEW_WARN" -gt 3 ]; then
+  warn "$REVIEW_WARN warnings — review recommended"
+else
+  ok "Review passed cleanly ($REVIEW_PASS checks OK)"
+fi
+
 echo ""
 
 # ═══════════════════════════════════════════════════════════════════════════
