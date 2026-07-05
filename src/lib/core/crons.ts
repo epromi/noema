@@ -1,7 +1,7 @@
 import type { AllProviders } from '$lib/providers/types';
 import { getProvider } from '$lib/providers';
 import type { CronData, CronEntry } from '$lib/types';
-import { classifyCronGroup, formatSchedule } from './utils.js';
+import { buildCronByGroup, classifyCronGroup, emptyCronByGroup, formatSchedule } from './utils.js';
 
 export async function getCrons(providers?: AllProviders): Promise<CronData> {
 	const p = providers ?? getProvider();
@@ -27,6 +27,7 @@ export async function getCrons(providers?: AllProviders): Promise<CronData> {
 			crons,
 			healthy,
 			total: crons.length,
+			byGroup: buildCronByGroup(crons),
 			updatedAt: Date.now()
 		};
 	} catch (err) {
@@ -34,6 +35,7 @@ export async function getCrons(providers?: AllProviders): Promise<CronData> {
 			crons: [],
 			healthy: 0,
 			total: 0,
+			byGroup: emptyCronByGroup(),
 			updatedAt: Date.now(),
 			error: String(err)
 		};

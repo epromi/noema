@@ -1,10 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import {
+	buildCronByGroup,
 	classifyCronGroup,
 	formatSchedule,
 	safeParseJson,
 	staleLevel
 } from '$lib/core/utils';
+import type { CronEntry } from '$lib/types';
 
 describe('utils', () => {
 	it('formatSchedule handles everyMs schedules', () => {
@@ -23,5 +25,31 @@ describe('utils', () => {
 
 	it('classifyCronGroup covers all groups', () => {
 		expect(classifyCronGroup('18:00 daily')).toBe('EVENING');
+	});
+
+	it('buildCronByGroup aggregates healthy counts', () => {
+		const crons: CronEntry[] = [
+			{
+				id: '1',
+				name: 'A',
+				agentId: 'alfred',
+				schedule: '02:00',
+				group: 'NIGHT',
+				lastResult: 'ok',
+				enabled: true,
+				consecutiveErrors: 0
+			},
+			{
+				id: '2',
+				name: 'B',
+				agentId: 'otto',
+				schedule: '03:00',
+				group: 'NIGHT',
+				lastResult: 'error',
+				enabled: true,
+				consecutiveErrors: 1
+			}
+		];
+		expect(buildCronByGroup(crons).NIGHT).toEqual({ total: 2, healthy: 1 });
 	});
 });

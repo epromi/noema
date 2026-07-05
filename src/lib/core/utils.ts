@@ -1,4 +1,23 @@
-import type { CronGroup } from '$lib/types';
+import type { CronByGroup, CronEntry, CronGroup } from '$lib/types';
+
+const CRON_GROUPS: CronGroup[] = ['NIGHT', 'MORNING', 'DAYTIME', 'EVENING', 'SPANNING'];
+
+/** Empty per-group stats for all cron time groups. */
+export function emptyCronByGroup(): CronByGroup {
+	return Object.fromEntries(
+		CRON_GROUPS.map((group) => [group, { total: 0, healthy: 0 }])
+	) as CronByGroup;
+}
+
+/** Aggregate healthy/total counts per cron time group. */
+export function buildCronByGroup(crons: CronEntry[]): CronByGroup {
+	const byGroup = emptyCronByGroup();
+	for (const cron of crons) {
+		byGroup[cron.group].total++;
+		if (cron.lastResult === 'ok') byGroup[cron.group].healthy++;
+	}
+	return byGroup;
+}
 
 /** Classify cron schedule into dashboard time groups. */
 export function classifyCronGroup(schedule: unknown): CronGroup {

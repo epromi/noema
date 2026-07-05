@@ -2,6 +2,13 @@
 
 export type CronGroup = 'NIGHT' | 'MORNING' | 'DAYTIME' | 'EVENING' | 'SPANNING';
 
+export interface CronGroupStats {
+	total: number;
+	healthy: number;
+}
+
+export type CronByGroup = Record<CronGroup, CronGroupStats>;
+
 export interface CronEntry {
 	id: string;
 	name: string;
@@ -19,6 +26,7 @@ export interface CronData {
 	crons: CronEntry[];
 	healthy: number;
 	total: number;
+	byGroup: CronByGroup;
 	updatedAt: number;
 	error?: string;
 }

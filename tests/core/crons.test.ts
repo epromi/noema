@@ -17,6 +17,8 @@ describe('crons', () => {
 		expect(data.total).toBe(2);
 		expect(data.healthy).toBe(1);
 		expect(data.crons[0]?.lastResult).toBe('ok');
+		expect(data.byGroup.SPANNING).toEqual({ total: 1, healthy: 1 });
+		expect(data.byGroup.NIGHT).toEqual({ total: 1, healthy: 0 });
 		expect(data.updatedAt).toBeGreaterThan(0);
 		expect(data.error).toBeUndefined();
 	});
@@ -35,5 +37,6 @@ describe('crons', () => {
 		const data = await getCrons(mock);
 		expect(data.error).toContain('cron unavailable');
 		expect(data.crons).toEqual([]);
+		expect(data.byGroup.MORNING).toEqual({ total: 0, healthy: 0 });
 	});
 });
