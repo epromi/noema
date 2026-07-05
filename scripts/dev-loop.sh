@@ -242,32 +242,47 @@ COVERAGE_THRESHOLD=70
 
 if [ "$HAS_PKG" -eq 1 ]; then
   if [ -f "vitest.config.ts" ] || [ -f "vitest.config.js" ] || grep -q '"test"' package.json 2>/dev/null; then
-    # Run tests WITH coverage
+    # Run tests WITH coverage — capture exit code safely (set -e friendly)
     TEST_PASSED=0
-    if pnpm test --reporter=verbose --coverage 2>&1 | tee /tmp/noema-coverage-${PKG_ID}.txt || true; then
-      TEST_EXIT=${PIPESTATUS[0]:-0}
-    else
-      TEST_EXIT=${PIPESTATUS[0]:-1}
+    COV_LOG="/tmp/noema-coverage-${PKG_ID}.txt"
+
+    set +e
+    pnpm test --reporter=verbose --coverage 2>&1 | tee "$COV_LOG"
+    TEST_EXIT=$?
+    set -e
+
+    cat "$COV_LOG" >> "$REVIEW_LOG"
+
+    # Parse coverage from coverage-summary.json (vitest v8 provider default)
+    COV_LINE=0
+    COV_JSON="$PROJECT_DIR/coverage/coverage-summary.json"
+    if [ -f "$COV_JSON" ]; then
+      COV_LINE=$(python3 -c "
+import json
+with open('$COV_JSON') as f:
+    data = json.load(f)
+    total = data.get('total', {})
+    lines = total.get('lines', {}).get('pct', 0)
+    stmts = total.get('statements', {}).get('pct', 0)
+    print(max(lines, stmts))
+" 2>/dev/null || echo 0)
     fi
 
-    # Parse coverage lines from vitest output
-    COV_FILE="/tmp/noema-coverage-${PKG_ID}.txt"
-    cat "$COV_FILE" >> "$REVIEW_LOG"
-
-    # Extract statement/line coverage %% from vitest
-    COV_LINE=$(grep -oP 'All files[[:space:]]+\|?[[:space:]]*\K[0-9.]+(?=\s*\|)' "$COV_FILE" 2>/dev/null | head -1 || echo "")
-    if [ -z "$COV_LINE" ]; then
-      # Try alternative format
-      COV_LINE=$(grep -oP 'Lines[[:space:]]*:[[:space:]]*\K[0-9.]+(?=%)' "$COV_FILE" 2>/dev/null | head -1 || echo "")
+    # Fallback: try to parse from terminal output
+    if [ "$COV_LINE" = "0" ] || [ -z "$COV_LINE" ]; then
+      COV_LINE=$(grep -oP 'All files[[:space:]]+\|[[:space:]]*[0-9.]+[[:space:]]*\|[[:space:]]*\K[0-9.]+(?=\s*\|)' "$COV_LOG" 2>/dev/null | head -1 || echo "")
+      if [ -z "$COV_LINE" ]; then
+        COV_LINE=$(grep -oP 'Lines[[:space:]]*:[[:space:]]*\K[0-9.]+(?=%)' "$COV_LOG" 2>/dev/null | head -1 || echo "")
+      fi
+      COV_LINE="${COV_LINE:-0}"
     fi
-    COV_LINE="${COV_LINE:-0}"
 
     if [ "$TEST_EXIT" -eq 0 ]; then
       review_ok "Tests passing"
       TEST_PASSED=1
     else
-      FAILED_TESTS=$(grep -c 'FAIL\|✗' "$COV_FILE" 2>/dev/null || echo "?")
-      review_warn "Tests failing ($FAILED_TESTS failures) — review required"
+      FAILED_TESTS=$(grep -c 'FAIL\|✗' "$COV_LOG" 2>/dev/null || echo "?")
+      review_warn "Tests failing — exit=$TEST_EXIT, $FAILED_TESTS failure(s) — review required"
     fi
 
     # Coverage gate
