@@ -13,7 +13,7 @@
 | PKG-002 | Core: Cron Data | ✅ F5 | — | S | ✅ kész | PKG-013 |
 | PKG-003 | Core: Agent Data | ✅ F5 | — | S | ✅ kész | PKG-013 |
 | PKG-004 | Core: Health & Heartbeat | ✅ F5 | — | S | ✅ kész | PKG-013 |
-| PKG-005 | Core: H1 Data | 📋 F0 | — | M | 1-1.5h | PKG-013 |
+| PKG-005 | Core: H1 Data | ✅ F5 | — | M | ✅ kész | PKG-013 |
 | PKG-006 | Logs Viewer Tab | 📋 F0 | F-05 P1 | S | 1h | PKG-001+002 |
 | PKG-007 | Audit Trail | 📋 F0 | F-06 P1 | M | 1.5-2h | PKG-001+003 |
 | PKG-008 | Cron Health Timeline | 📋 F0 | F-07 P1 | S | 1h | PKG-001+002 |
