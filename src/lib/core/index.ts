@@ -7,6 +7,7 @@ import { getH1Data } from './h1.js';
 import { getHealth } from './health.js';
 import { getNoema } from './noema.js';
 import { getResearch } from './research.js';
+import { getDevLoopLog, getRunningDevLoop, getDevPackages } from './dev-loop-log.js';
 
 export async function getAllData(): Promise<DashboardData> {
 	const [crons, agents, health, h1, calendar, bills, research, noema] = await Promise.all([
@@ -33,4 +34,4 @@ export async function getAllData(): Promise<DashboardData> {
 	};
 }
 
-export { getAgents, getBills, getCalendar, getCrons, getH1Data, getHealth, getNoema, getResearch };
+export { getAgents, getBills, getCalendar, getCrons, getH1Data, getHealth, getNoema, getResearch, getDevLoopLog, getRunningDevLoop, getDevPackages };

@@ -150,6 +150,34 @@ export interface NoemaData {
 	error?: string;
 }
 
+export interface DevPackageEntry {
+	id: string;
+	name: string;
+	phase: string;
+	done: boolean;
+}
+
+export interface DevPackagesData {
+	packages: DevPackageEntry[];
+	updatedAt: number;
+	error?: string;
+}
+
+export interface DevLoopLogData {
+	pkgId: string;
+	content: string;
+	updatedAt: number;
+	error?: string;
+}
+
+export interface DevLoopRunningData {
+	running: string | null;
+	updatedAt: number;
+	error?: string;
+}
+
+export type ImplementState = 'idle' | 'running' | 'done' | 'error' | 'offline';
+
 export interface DashboardMeta {
 	loadedAt: number;
 }

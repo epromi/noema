@@ -92,7 +92,7 @@ echo "Package:  $PKG_ID — $PKG_NAME"
 echo "Size:     $PKG_SIZE ($PKG_EFFORT)"
 echo "Phases:   $PKG_PHASES"
 echo "Expected files ($(echo "$EXPECTED_FILES" | grep -c . 2>/dev/null || echo 0)):"
-echo "$EXPECTED_FILES" | while read f; do [ -n "$f" ] && echo "  - $f"; done
+echo "$EXPECTED_FILES" | while read f; do [ -n "$f" ] && echo "  - $f"; done || true
 
 # ═══════════════════════════════════════════════════════════════════════════
 banner "PHASE 2/6: Strategy"
@@ -123,7 +123,7 @@ sed "s/PKG_PLACEHOLDER/$PKG_ID/g" "$TEMPLATE" > "$PROMPT_FILE"
   echo "## EXPECTED FILES (must exist after implementation)"
   echo "$EXPECTED_FILES" | while read f; do
     [ -n "$f" ] && echo "- $f"
-  done
+  done || true
 } >> "$PROMPT_FILE"
 
 echo "Prompt:   $PROMPT_FILE ($(wc -l < "$PROMPT_FILE") lines)"
@@ -161,7 +161,7 @@ echo "$EXPECTED_FILES" | while read f; do
     warn "  $f — NOT CREATED"
     MISSING=$((MISSING + 1))
   fi
-done
+done || true
 
 if [ "$MISSING" -gt 0 ] 2>/dev/null; then
   warn "$MISSING expected file(s) missing — review cursor output"
