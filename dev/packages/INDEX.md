@@ -10,7 +10,7 @@
 | PKG-013 | **Provider Abstraction Layer** 🧱 | ✅ F5 | F-23 P1 | M | ✅ kész | PKG-001 |
 | PKG-014 | Dev Loop Log Viewer | ✅ F5 | F-05 P1 | S | ✅ kész | PKG-001 |
 | PKG-015 | Expandable Package Rows | ✅ F5 | — | S | ✅ kész | PKG-001 |
-| PKG-002 | Core: Cron Data | 📋 F0 | — | S | 0.5-1h | PKG-013 |
+| PKG-002 | Core: Cron Data | ✅ F5 | — | S | ✅ kész | PKG-013 |
 | PKG-003 | Core: Agent Data | 📋 F0 | — | S | 0.5-1h | PKG-013 |
 | PKG-004 | Core: Health & Heartbeat | 📋 F0 | — | S | 0.5h | PKG-013 |
 | PKG-005 | Core: H1 Data | 📋 F0 | — | M | 1-1.5h | PKG-013 |
