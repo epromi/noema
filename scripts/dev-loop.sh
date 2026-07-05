@@ -218,7 +218,50 @@ fi
 git commit -m "$COMMIT_MSG" 2>&1 || warn "git commit failed (nothing to commit?)"
 git push 2>&1 || warn "git push failed"
 
-ok "Done — $PKG_ID implemented and pushed"
+ok "Implementation pushed — $PKG_ID"
+
+# ═══════════════════════════════════════════════════════════════════════
+banner "PHASE 6b: Status Update (INDEX.md + Dashboard)"
+# ═══════════════════════════════════════════════════════════════════════
+
+# 1. Mark package as done in INDEX.md
+INDEX_MD="$PROJECT_DIR/dev/packages/INDEX.md"
+echo "Updating $INDEX_MD..."
+python3 -c "
+f = '$INDEX_MD'
+c = open(f).read()
+pkg = '$PKG_ID'
+for line in c.split('\n'):
+    if line.startswith('| ' + pkg + ' '):
+        cols = line.split('|')
+        cols[3] = ' ✅ F5 '
+        cols[6] = ' ✅ kész '
+        new_line = '|'.join(cols)
+        c = c.replace(line, new_line)
+        open(f, 'w').write(c)
+        print('✅ INDEX.md: ' + pkg + ' → ✅ F5')
+        break
+else:
+    print('⚠️  PKG-ID not found in INDEX.md')
+" || warn "INDEX.md update failed"
+
+# 2. Regenerate dashboard
+echo ""
+echo "Regenerating dashboard..."
+cd "$PROJECT_DIR"
+node generate.cjs 2>&1 || warn "Dashboard regen failed"
+
+# 3. Commit status update + dashboard
+git add dev/packages/INDEX.md dashboard.html
+git diff --cached --name-status | head -5
+git commit -m "📊 $PKG_ID done (✅ F5) + dashboard regen" 2>&1
+
+# 4. Handle possible race: cron auto-refresh may have pushed in parallel
+# Pull with rebase to keep history clean, then push
+git pull --rebase 2>&1 || warn "Rebase conflict — manual fix needed"
+git push 2>&1 || warn "Push failed (maybe already pushed by cron)"
+
+ok "Status updated — $PKG_ID marked done + dashboard regen pushed"
 
 # Mark action queue entry
 ACTION_QUEUE="$PROJECT_DIR/../memory/state/noema-actions.jsonl"
