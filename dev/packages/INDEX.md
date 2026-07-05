@@ -23,7 +23,7 @@
 | PKG-020 | Action Queue — Több választási lehetőség | ⏭️ (absorbed by PKG-023) | — | M | — | — |
 | PKG-019 | Cron Sidebar — Mindig látható oldalsáv | 📋 F0 | F-07 P1 | M | 1h | PKG-001+017 |
 | PKG-018 | Log Panel Auto-Refresh Fix | ✅ F5 | — | S | ✅ kész | PKG-014+016 |
-| PKG-017 | Cron Timeline + Processor Timer | 📋 F0 | F-07 P1 | M | 1h | PKG-001+002 |
+| PKG-017 | Cron Timeline + Processor Timer | ✅ F5 | F-07 P1 | M | ✅ kész | PKG-001+002 |
 | PKG-006 | Logs Viewer Tab | ✅ F5 | F-05 P1 | S | ✅ kész | PKG-001+002 |
 | PKG-007 | Audit Trail | ✅ F5 | F-06 P1 | M | ✅ kész | PKG-001+003 |
 | PKG-008 | Cron Health Timeline | 📋 F0 | F-07 P1 | S | 1h | PKG-001+002 |
