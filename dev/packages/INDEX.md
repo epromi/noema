@@ -68,8 +68,8 @@ AJÁNLOTT SORREND:
 🧩 KOMPONENSEK (globális widget-ek):
   PKG-026 (Dev Job Indicator) — draggable floating panel, minden tab-on
 
-✅ KÉSZ: PKG-001, PKG-013, PKG-014, PKG-015, PKG-002, PKG-003, PKG-004, PKG-005, PKG-016, PKG-017 (reverted)
-❌ REVERTED: PKG-017 (orchestrator tab), PKG-019 (wrong SvelteKit target)
+✅ KÉSZ: PKG-001, PKG-013, PKG-014, PKG-015, PKG-002, PKG-003, PKG-004, PKG-005, PKG-016, PKG-017, PKG-019
+❌ REVERTED: PKG-019 SvelteKit first attempt (wrong target — legacy ✅ F5)
 ```
 
 ## Forrás Kulcs

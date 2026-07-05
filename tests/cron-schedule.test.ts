@@ -50,6 +50,21 @@ describe("cron-schedule", () => {
     );
   });
 
+  it("computeNextRun for split daily times (03:00 + 03:35)", () => {
+    const beforeFirst = new Date("2026-07-05T02:00:00");
+    expect(computeNextRun("03:00 + 03:35", null, beforeFirst)).toBe(
+      new Date("2026-07-05T03:00:00").getTime(),
+    );
+    const between = new Date("2026-07-05T03:10:00");
+    expect(computeNextRun("03:00 + 03:35", null, between)).toBe(
+      new Date("2026-07-05T03:35:00").getTime(),
+    );
+    const afterBoth = new Date("2026-07-05T04:00:00");
+    expect(computeNextRun("03:00 + 03:35", null, afterBoth)).toBe(
+      new Date("2026-07-06T03:00:00").getTime(),
+    );
+  });
+
   it("computeNextRun for weekday schedule", () => {
     const tue = new Date("2026-07-07T10:00:00"); // Tuesday
     const next = computeNextRun("15:30 Tue", null, tue);
