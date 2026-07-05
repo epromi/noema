@@ -13,7 +13,7 @@
 	import Viktor from '$lib/components/tabs/Viktor.svelte';
 	import type { ImplementState } from '$lib/types';
 
-	const RELAY_URL = 'http://127.0.0.1:18998';
+	const RELAY_URL = '/api';
 	const LOG_POLL_MS = 3000;
 
 	let { data }: { data: PageData } = $props();

@@ -964,7 +964,12 @@ function toggleLog(pkgId, parentRow) {
   let panel = document.getElementById(panelId);
   if (panel) {
     panel.classList.toggle('active');
-    if (!panel.classList.contains('active')) { stopLogPoll(pkgId); }
+    if (!panel.classList.contains('active')) {
+      stopLogPoll(pkgId);
+    } else if (!logPollers[pkgId]) {
+      fetchLog(pkgId, panelId);
+      logPollers[pkgId] = setInterval(function() { fetchLog(pkgId, panelId); }, 3000);
+    }
     return;
   }
   panel = document.createElement('div');
@@ -996,16 +1001,7 @@ function stopLogPoll(pkgId) {
   if (logPollers[pkgId]) { clearInterval(logPollers[pkgId]); delete logPollers[pkgId]; }
 }
 
-// Static log view for completed packages (no polling)
 function viewLog(pkgId, parentRow) {
-  // If panel already visible in parent, close it
-  const panelId = 'logpanel-' + pkgId.replace(/[^a-zA-Z0-9-]/g,'');
-  const existing = document.getElementById(panelId);
-  if (existing && existing.classList.contains('active')) {
-    existing.classList.remove('active');
-    stopLogPoll(pkgId);
-    return;
-  }
   toggleLog(pkgId, parentRow);
 }
 

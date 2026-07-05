@@ -157,8 +157,19 @@ const server = http.createServer((req, res) => {
           triggerProcessor();
           res.writeHead(200, { ...cors, 'Content-Type': 'application/json' });
           return res.end(JSON.stringify({ ok: true, id, status: 'pending' }));
+        } else if (existing.status === 'done' || existing.status === 'failed' || existing.status === 'error' || existing.status === 'dead') {
+          // Reset completed/failed items to allow re-run
+          existing.status = 'pending';
+          existing.updatedAt = nowISO();
+          delete existing.completedAt;
+          delete existing.elapsed;
+          writeEntries(entries);
+          log('🔄', `${id}: ${existing.status} → pending (re-run)`);
+          triggerProcessor();
+          res.writeHead(200, { ...cors, 'Content-Type': 'application/json' });
+          return res.end(JSON.stringify({ ok: true, id, status: 'pending' }));
         } else {
-          // Already exists and active — skip
+          // Already active — skip
           log('⏭️', `${id}: már ${existing.status}, skip`);
           res.writeHead(200, { ...cors, 'Content-Type': 'application/json' });
           return res.end(JSON.stringify({ ok: true, id, status: existing.status, skipped: true }));
