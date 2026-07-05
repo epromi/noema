@@ -81,7 +81,24 @@ export function createMockProviders(overrides: Partial<AllProviders> = {}): AllP
 				'### 📋 PROPOSE\n| 1 | Test finding | med | 🟡 |\n| 2 | Another | low | 🟢 |'
 		},
 		tool: {
-			h1Command: async () => 'balance: $100',
+			h1Command: async (cmd) => {
+				if (cmd === 'balance') return JSON.stringify({ data: { balance: 100 } });
+				if (cmd === 'my-reports') {
+					return JSON.stringify({
+						data: [
+							{
+								id: '1',
+								attributes: { title: 't', state: 'new', created_at: '2026-07-01' },
+								relationships: {
+									reporter: { data: { attributes: { signal: 7.5, reputation: 120 } } }
+								}
+							}
+						]
+					});
+				}
+				if (cmd === 'programs') return JSON.stringify({ data: [] });
+				return '';
+			},
 			gogCommand: async () => JSON.stringify([{ title: 'Meeting', start: '2026-07-06T10:00:00', end: '2026-07-06T11:00:00' }]),
 			execCommand: async (cmd) => {
 				if (cmd.includes('uptime')) return 'up 2 days';

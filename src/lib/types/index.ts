@@ -112,18 +112,59 @@ export interface HealthData {
   error?: string;
 }
 
+export interface H1Program {
+  id: string;
+  handle: string;
+  name: string;
+  offersBounties: boolean;
+  submissionState: string;
+}
+
+export interface H1Report {
+  id: string;
+  title: string;
+  state: string;
+  createdAt: string;
+  severity?: string;
+  programHandle?: string;
+}
+
 export interface H1Stats {
   open: string;
   signal: string;
   reputation: string;
   trial: string;
   totalReports: number;
+  resolved: number;
+  duplicates: number;
+  pending: number;
+  notApplicable: number;
+}
+
+export interface H1Signal {
+  signal: string;
+  reputation: string;
+  trial: string;
+}
+
+export interface H1ViktorStatus {
+  totalCompleted: number;
+  recall: number;
+  h1Submitted: number;
+  h1Accepted: number;
+  activeLabel: string;
+  circuit: string;
 }
 
 export interface H1Data {
   stats: H1Stats;
   balance: string;
+  balanceAmount: number;
   programs: string;
+  programList: H1Program[];
+  reports: H1Report[];
+  signal: H1Signal;
+  viktor: H1ViktorStatus;
   updatedAt: number;
   error?: string;
 }
