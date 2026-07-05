@@ -825,8 +825,11 @@ const payload = JSON.stringify({
 
 // ── Inject into template ──
 const template = fs.readFileSync(path.join(W,'projects/noema/archive/v4.html'),'utf8');
+const cronScheduleJs = fs.readFileSync(path.join(W,'projects/noema/lib/cron-schedule.cjs'),'utf8')
+  .replace(/if \(typeof module[\s\S]*$/m, '');
 const escaped = payload.replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,'\\n');
-const html = template.replace("'DATA_JSON_PLACEHOLDER'", "'"+escaped+"'");
+let html = template.replace("'DATA_JSON_PLACEHOLDER'", "'"+escaped+"'");
+html = html.replace('/* CRON_SCHEDULE_PLACEHOLDER */', cronScheduleJs);
 const outFile = path.join(W,'projects/noema/dashboard.html');
 fs.writeFileSync(outFile, html);
 
