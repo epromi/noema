@@ -48,6 +48,7 @@
 | **F-12** | **Subagent Status Panel** — Session-enként: spawn time, státusz, tool call count, completion time, success/error. Timeline vizualizáció | Hermes Dashboard | 2-3h | 📋 Kutatva |
 | **F-13** | **Template JS Kiszervezés** — A ~920 soros HTML-ből a JS renderer kiszervezése külön `<script>` fájlba. Karbantarthatóság ↑ | Code Quality | 1-2h | 📋 Kutatva |
 | **F-20** | **Agent Decision Trace** — Agent session-ök tool call fájának strukturált vizualizációja. Mit csinált, milyen sorrendben, mi volt a tool output, hogyan befolyásolta a következő döntést. Döntési lánc, NEM gondolati lánc (az LLM reasoning nem hozzáférhető) | Industry Review 2026 | 4-6h | 📋 Kutatva |
+| **F-23** | **Provider Abstraction Layer** 🧱 — OpenClaw API hívások izolálása adapter réteg mögé. 6 provider interface (Cron, Session, Agent, Messaging, Filesystem, Tool). Framework váltás = 1 fájl újraírása, nem 9 core modul. Mock provider = tesztelhetőség | András request | 2-3h | 📋 Kutatva |
 
 ---
 
@@ -83,10 +84,10 @@
 | Prioritás | Összes | Kész | Függőben |
 |-----------|--------|------|----------|
 | 🔴 P0 | 4 | 3 | 1 |
-| 🟡 P1 | 4 | 0 | 4 |
+| 🟡 P1 | 5 | 0 | 5 |
 | 🟢 P2 | 8 | 0 | 8 |
 | ⚪ P3 | 8 | 0 | 8 |
-| **Összes** | **24** | **3** | **21** |
+| **Összes** | **25** | **3** | **22** |
 
 ---
 
