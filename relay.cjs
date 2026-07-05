@@ -232,10 +232,13 @@ const server = http.createServer((req, res) => {
           'systemctl --user show dashboard-action-processor.timer --property=LastTriggerUSec --property=TimersMonotonic --no-pager 2>/dev/null',
           { encoding: 'utf-8', timeout: 2000 }
         );
-        // Parse LastTriggerUSec (human-readable: "Sun 2026-07-05 16:29:43 CEST")
+        // Parse LastTriggerUSec (format: "Sun 2026-07-05 16:29:43 CEST")
         const lm = show.match(/LastTriggerUSec=(.+)/);
         if (lm) {
-          lastTrigger = new Date(lm[1].trim());
+          // Strip day name + timezone — keep ISO-like date-time only
+          const cleanDate = lm[1].trim().replace(/^(\w{3}\s+)/, '').replace(/\s+\w+$/, '');
+          lastTrigger = new Date(cleanDate.replace(' ', 'T'));
+          if (isNaN(lastTrigger.getTime())) lastTrigger = null;
           // Parse OnUnitInactiveUSec from TimersMonotonic
           const im = show.match(/OnUnitInactiveUSec=(\d+)(min|s|ms)/);
           let inactiveMs = 120000; // default 2min
