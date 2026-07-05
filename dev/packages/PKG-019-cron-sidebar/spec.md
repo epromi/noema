@@ -1,24 +1,23 @@
 # PKG-019: Cron Sidebar — Mindig látható oldalsáv
 
-**🚨 TARGET: `archive/v4.html` (LEGACY DASHBOARD) — NOT SvelteKit! 🚨**
+**🚨 TARGET: SvelteKit — `src/lib/components/layout/CronSidebar.svelte` + `src/routes/+layout.svelte`**
 
-> EZ A CSOMAG A `projects/noema/archive/v4.html` FÁJLT MÓDOSÍTJA.
-> NE használj `src/lib/`-et, `+layout.svelte`-t, vagy SvelteKit komponenseket.
-> A dashboard egy statikus HTML fájl amit a `relay.cjs` szolgál ki.
-> CSS és JS inline az `archive/v4.html`-ben.
+> ⛔ TILOS az `archive/v4.html`-hez vagy `dashboard.html`-hez nyúlni!
+> A dashboard SvelteKit (adapter-node), nem statikus HTML.
+> Komponens: `src/lib/components/layout/CronSidebar.svelte` (ÚJ fájl)
+> Integráció: `src/routes/+layout.svelte` — sidebar a `<slot />` mellett
+> Stílus: Svelte `<style>` blokkban, scoped CSS
 
-**Size:** M | **Effort:** 1.5-2h | **Priority:** P1 | **Status:** spec  
-**Depends on:** PKG-017 (Cron Timeline) ⏸️ | **Spec date:** 2026-07-05 | **Retry:** 2 (first attempt: wrong SvelteKit target)
+**Size:** M | **Effort:** 1.5-2h | **Priority:** P1 | **Status:** spec
+**Depends on:** PKG-017 (Cron Timeline) ⏸️ | **Spec date:** 2026-07-05 | **Retry:** 3 (2 korábbi kísérlet LEGACY HTML-be ment)
 
 ## 🎯 Mit
 
-A cron pipeline timeline **fix oldalsávban**, mindig látható — bármelyik tab-on vagy. A dashboard layout átalakítása: fő tartalom + jobb oldali sidebar.
+A cron pipeline timeline **fix oldalsávban**, mindig látható — bármelyik tab-on vagy. A SvelteKit layout átalakítása: fő tartalom + jobb oldali sidebar.
 
 ### F1: Layout átalakítás — sidebar hozzáadása
 
-A dashboard kétoszlopos layout-ra vált:
-- **Bal oldal (flex: 1)**: a jelenlegi tab-ok és tartalmuk
-- **Jobb oldal (280px fix)**: Cron Sidebar — mindig látható, sticky
+`+layout.svelte` módosítása: kétoszlopos layout, a `<slot />` mellett a `<CronSidebar />`:
 
 ```
 ┌─────────────────────────────────────────┬──────────────┐
@@ -26,82 +25,102 @@ A dashboard kétoszlopos layout-ra vált:
 │  [Tab1] [Tab2] [Tab3] ...               │              │
 ├─────────────────────────────────────────┤  16:57 ════  │
 │                                          │              │
-│  [Kiválasztott tab tartalma]            │  17:00 📋 FS  │
+│  [<slot /> — kiválasztott tab]          │  17:00 📋 FS  │
 │                                          │     in 3m    │
-│                                          │  18:00 📋 FS  │
-│                                          │     in 1h    │
-│                                          │  20:00 📚 HRP │
-│                                          │     in 3h    │
-│                                          │  21:00 🧩 KG  │
-│                                          │     in 4h    │
-│                                          │  22:00 💡 BT  │
-│                                          │     in 5h    │
-│                                          │  23:05 💾 BK  │
-│                                          │     in 6h    │
-│                                          │              │
-│                                          │  01:00 🔍 HI │
-│                                          │    in 8h     │
-│                                          │              │
+│                                          │  ...         │
 └─────────────────────────────────────────┴──────────────┘
 ```
 
-### F2: Sidebar tartalom — kompakt cron lista
+### F2: CronSidebar Svelte komponens
 
-- **Fejléc**: "⏰ Cronok" + mostani idő (frissül)
-- **NOW vonal**: piros pulzáló indikátor
+Új fájl: `src/lib/components/layout/CronSidebar.svelte`
+
+- **Props**: `cronJobs: CronJob[]` (a layout load-ból jön)
+- **Fejléc**: "⏰ Cronok" + mostani idő (reaktívan frissül 30 mp-enként `onMount`/`onDestroy`)
+- **NOW vonal**: piros pulzáló indikátor az aktuális időnél
 - **Következő 12-24 óra cron-jai**, időrendben
 - **Minden sor**: időpont, emoji, rövid név, countdown ("in 3m", "in 1h 15m")
 - **Színkód**: OK (zöld bal border), Error (piros), Warning (sárga)
-- **Múltbeli**: halványított
+- **Múltbeli**: opacity 0.45
 - **Épp következő**: kiemelt (kék glow)
-- **30 mp-enként auto-frissül**
-- **Hover**: teljes név tooltip + leírás
 
 ### F3: Reszponzív viselkedés
 
-- **Asztali (>900px)**: sidebar fix 280px, normál nézet
-- **Tablet (600-900px)**: sidebar 220px, kisebb betűméret
-- **Mobil (<600px)**: sidebar eltűnik, helyette egy "⏰ Cronok" tab jelenik meg
+- **Asztali (>900px)**: sidebar fix 280px
+- **Tablet (600-900px)**: sidebar 220px
+- **Mobil (<600px)**: sidebar eltűnik, tab-navigációba kerül
 
 ### F4: Sidebar toggle
 
-- "◀" / "▶" gomb a sidebar tetején — összecsukás/kinyitás
-- Összecsukott állapot: csak egy vékony csík (40px) az ikonokkal
-- Kinyitott állapot: teljes 280px sidebar
-- Állapot localStorage-ban mentve
+- ◀/▶ gomb — összecsukás/kinyitás
+- Összecsukott: 40px, csak ikonok
+- Állapot `localStorage`-ban
 
 ## 📐 Scope
 
 ### Mit érint
-- `archive/v4.html` — CSS: layout átalakítás (.app-layout, .main-content, .cron-sidebar), JS: cronSidebarRender(), sidebarToggle()
-- `generate.cjs` — cronGrid adat sidebar-ba is (már megvan, csak új embed hely)
+- `src/lib/components/layout/CronSidebar.svelte` — **ÚJ** Svelte komponens
+- `src/routes/+layout.svelte` — layout: flex container + `<CronSidebar />` a `<slot />` mellett
+- `src/routes/+layout.server.ts` — cron data (ha nincs layout load, akkor a page load-ból)
 
 ### Mit NEM érint
-- `relay.cjs` — semmi (cron adat a dashboard JSON-ból jön, nincs új endpoint)
-- `src/lib/core/` — semmi (csak dashboard template)
-- `scripts/dev-loop.sh` — semmi
+- ⛔ `archive/v4.html` — TILOS!
+- ⛔ `dashboard.html` — TILOS!
+- ⛔ `generate.cjs` — TILOS!
+- `src/lib/core/` — cron típust használhat, de nem változtat
 
-### Fázisok (max 5 fájl per fázis)
+### Fázisok
 
 | Fázis | Mit | Fájlok |
 |-------|-----|--------|
-| **Phase 1** | CSS — `.app-layout`, `.main-content`, `.cron-sidebar`, reszponzív breakpoint-ok | `archive/v4.html` CSS |
-| **Phase 2** | HTML — layout struktúra átalakítás, sidebar container | `archive/v4.html` HTML |
-| **Phase 3** | JS — `renderCronSidebar()`: kompakt cron lista, countdown, NOW, auto-refresh | `archive/v4.html` JS |
-| **Phase 4** | JS — `toggleSidebar()`: collapse/expand, localStorage | `archive/v4.html` JS |
-| **Phase 5** | Integráció — tab-ok sidebar mellé rendezése, reszponzív teszt | `archive/v4.html` |
-| **Phase 6** | Teszt: sidebar frissül, toggle működik, reszponzív breakpoint-ok, localStorage persist | Manuális böngésző |
+| **Phase 1** | `CronSidebar.svelte` — komponens váz: HTML struktúra + script (props: cronJobs) | `src/lib/components/layout/CronSidebar.svelte` |
+| **Phase 2** | CronSidebar — lista render: cron-ok időrendben, countdown, NOW marker, színkódok | `src/lib/components/layout/CronSidebar.svelte` |
+| **Phase 3** | CronSidebar — toggle collapse/expand, localStorage persist, auto-refresh 30s | `src/lib/components/layout/CronSidebar.svelte` |
+| **Phase 4** | `+layout.svelte` — flex layout + `<CronSidebar>` integrálás, reszponzív | `src/routes/+layout.svelte` |
+| **Phase 5** | Reszponzív: mobil tab, tablet 220px | `src/lib/components/layout/CronSidebar.svelte` |
+| **Phase 6** | `pnpm check` + `pnpm test` + manuális böngésző teszt | — |
 
-## 🎨 Design Részletek
+## 🎨 Design
 
-### Sidebar CSS
+### Svelte komponens
+```svelte
+<script lang="ts">
+  import { onMount, onDestroy } from 'svelte';
+  import type { CronJob } from '$lib/core/noema';
+
+  export let cronJobs: CronJob[] = [];
+
+  let collapsed = false;
+  let now = new Date();
+  let interval: ReturnType<typeof setInterval>;
+
+  $: sorted = [...cronJobs].sort((a, b) => (a.nextRun || '').localeCompare(b.nextRun || ''));
+  $: upcoming = sorted.filter(c => /* következő 24 óra */);
+
+  onMount(() => {
+    collapsed = localStorage.getItem('cron-sidebar') === 'true';
+    interval = setInterval(() => now = new Date(), 30000);
+  });
+  onDestroy(() => clearInterval(interval));
+
+  function toggle() {
+    collapsed = !collapsed;
+    localStorage.setItem('cron-sidebar', String(collapsed));
+  }
+</script>
+```
+
+### Scoped CSS
 ```css
-.app-layout { display: flex; min-height: 100vh; }
-.main-content { flex: 1; min-width: 0; }
-.cron-sidebar { width: 280px; min-width: 280px; position: sticky; top: 0; height: 100vh; overflow-y: auto; background: var(--card); border-left: 1px solid var(--border); }
+.cron-sidebar { width: 280px; min-width: 280px; position: sticky; top: 0; height: 100vh; overflow-y: auto; border-left: 1px solid var(--border); }
 .cron-sidebar.collapsed { width: 40px; min-width: 40px; }
-.cron-sidebar .cr-item { display: flex; align-items: center; gap: 6px; padding: 4px 8px; border-left: 2px solid transparent; font-size: 0.82em; }
-.cron-sidebar .cr-item.now-marker { border-top: 2px solid var(--red); border-bottom: 2px solid var(--red); background: rgba(255,80,60,0.08); }
+.cr-item { display: flex; align-items: center; gap: 6px; padding: 4px 8px; border-left: 2px solid transparent; font-size: 0.82em; }
+.cr-item.ok { border-left-color: var(--green); }
+.cr-item.error { border-left-color: var(--red); }
+.cr-item.warning { border-left-color: var(--orange); }
+.cr-item.past { opacity: 0.45; }
+.cr-item.next-up { box-shadow: inset 0 0 0 1px var(--blue); }
+.now-marker { border-top: 2px solid var(--red); background: rgba(255,80,60,0.08); }
 ```
 
 ### Sidebar cron item
@@ -109,41 +128,19 @@ A dashboard kétoszlopos layout-ra vált:
 ┌──────────────────────────────────┐
 │ 17:00  📋  Daytime Fact Sync     │ ← border-left: green
 │             in 3m                │ ← countdown
-│ 18:00  📋  Daytime Fact Sync     │
-│             in 1h 3m             │
 │ ─── NOW 16:57 ───               │ ← piros pulzáló
 │ 20:00  📚  Hugo Repo Prep        │
 │             in 3h 3m             │
-│ 21:00  🧩  KG Extractor          │
-│             in 4h 3m             │
 └──────────────────────────────────┘
-```
-
-### Toggle gomb
-```
-┌──────────────────────────────────┐
-│ [◀] ⏰ Cronok        16:57:03   │ ← fejléc
-│ ...                              │
-```
-Összecsukva:
-```
-┌─┬────────────────────────────────┐
-│▶│                                │
-│ │                                │
-│ │                                │
-│📋│                                │
-│📚│                                │
-│🧩│                                │
-│💡│                                │
-└─┴────────────────────────────────┘
 ```
 
 ## ✅ Acceptance Criteria
 
-1. Sidebar látható minden tab-on, fix pozícióban
-2. NOW vonal mindig az aktuális időnél, 30 mp-enként frissül
-3. Minden cron sor mutatja: idő + emoji + név + countdown
-4. Sidebar összecsukható/nyitható, állapot localStorage-ban
-5. Reszponzív: asztali (280px), tablet (220px), mobil (tab-ba kerül)
-6. A régi orchestrator tab cron pipeline megmarad (ott nagyobb, részletesebb nézet)
-7. `bash -n` ✅, `pnpm check` ✅
+1. Sidebar látható minden tab-on (`+layout.svelte`-ben, `<slot />` mellett)
+2. CronSidebar Svelte komponens, scoped CSS-sel
+3. NOW vonal aktuális időnél, 30 mp-enként frissül
+4. Minden cron sor: idő + emoji + név + countdown
+5. Toggle működik, localStorage persist
+6. Reszponzív: asztali 280px, tablet 220px, mobil tab
+7. `pnpm check` ✅, `pnpm test` ✅
+8. ⛔ `archive/v4.html`-hez NEM nyúltunk

@@ -1,5 +1,11 @@
 <script lang="ts">
+  import { onDestroy, onMount } from "svelte";
+  import { fade } from "svelte/transition";
   import ImplementButton from "$lib/components/shared/ImplementButton.svelte";
+  import {
+    DEFAULT_RELAY_URL,
+    getDevJobStatus,
+  } from "$lib/core/noema-devjob";
   import type {
     ActionQueueData,
     ActionQueueItem,
@@ -7,12 +13,23 @@
     CronEntry,
     CronGroup,
     DashboardActionType,
+    DevJobStatus,
     ImplementState,
     OttoRunEntry,
     ResearchData,
   } from "$lib/types";
+  import {
+    computeNextRun,
+    cronPeriod,
+    formatClock,
+    formatCountdown,
+    formatTimeLabel,
+    isSpanningSched,
+    parseDisplayMinutes,
+  } from "../../../../lib/cron-schedule.cjs";
 
-  const RELAY_URL = "/api";
+  const RELAY_URL = DEFAULT_RELAY_URL;
+  const POLL_MS = 5000;
 
   let {
     crons,
@@ -38,51 +55,6 @@
     onLogToggle?: (pkgId: string) => void;
   } = $props();
 
-  const CRON_DESCRIPTIONS: Record<string, string> = {
-    "Autoresearch Orchestrator":
-      "Viktor benchmark loop — blind repo audits, recall stats",
-    "Nightly Hacker Intel":
-      "Albert — CVE/exploit intelligence, H1 program scanning",
-    "Autoexecutor A (02:00)":
-      "Action tracker AUTOEXECUTE items (Flash) — off-peak 00-03",
-    "Otto Core Analysis": "Memory audit + agent status + KG consistency check",
-    "Cortex Pipeline Optimizer":
-      "System optimization proposals for Viktor pipeline",
-    "Edwin Morning Study": "Capability research: news, self-improvement",
-    "Otto Compilation": "Nightly review → Telegram (bilingual metrics)",
-    "Nightly Staff Review (Core)":
-      "Memory audit + agent status + KG consistency check",
-    "Nightly Staff Review (Compile)":
-      "Nightly review → Telegram (bilingual metrics)",
-    "Porter Hourly Triage":
-      "Gmail scan: categorize, bill detection → calendar+tasks",
-    "Autoexecutor B (07:00)":
-      "Action tracker AUTOEXECUTE items (Flash) — off-peak 06-08",
-    "Morning Backup": "Workspace snapshot backup (rsync)",
-    "Edwin CCM (7-23)": "Cross-domain pattern detection — silence by default",
-    "Daytime Fact Sync": "Fact consolidation from daily logs into SSOT files",
-    "Stand-up Prep (Friday)": "Friday scrum stand-up preparation",
-    "Stand-up Prep (Tuesday)": "Tuesday scrum stand-up preparation",
-    "Week in Review (Friday)": "Weekly review + metrics compilation",
-    "Alíz zsebpénz emlékeztető": "Alíz weekly pocket money reminder",
-    "Hugo Repo Prep": "Advisory → answer key preparation for Viktor audits",
-    "KG Extractor": "Knowledge graph extraction from daily logs",
-    "Brainstorming Trigger": "Research-backed action item generation (Flash)",
-    "Idle Brainstorming Trigger":
-      "Research-backed action item generation (Flash)",
-    "Dashboard Refresh (2h)": "Dashboard HTML regeneration from live data",
-    "Dashboard Research & Auto-Fix":
-      "Dashboard analysis + web research + auto-fix",
-    "Nightly Backup": "File-level backup (rsync to dated folder)",
-    "KG Weekly Validation": "Knowledge graph weekly audit + dedup",
-    "Weekly Strategic Brief": "Edwin weekly strategy briefing",
-    "Proactive Compaction": "Session context compaction (automatic trigger)",
-    "Mid-day Proactive Compact": "Mid-day session compaction",
-    "Proactive Evening Compact": "Evening session compaction",
-    "Hourly Email Triage": "Gmail scan: categorize, bill detection",
-    "Edwin — Continuous Context Monitor": "Cross-domain pattern detection",
-  };
-
   const GROUP_LABELS: Record<CronGroup, string> = {
     NIGHT: "🌙 ÉJSZAKA (00:00–06:00)",
     MORNING: "🌅 REGGEL (06:00–08:00)",
@@ -90,14 +62,6 @@
     EVENING: "🌆 ESTE (18:00–24:00)",
     SPANNING: "🔄 AUTOMATIKUS (nincs fix idő)",
   };
-
-  const GROUP_ORDER: CronGroup[] = [
-    "NIGHT",
-    "MORNING",
-    "SPANNING",
-    "DAYTIME",
-    "EVENING",
-  ];
 
   const AGENT_ICONS: Record<string, string> = {
     alfred: "👔",
@@ -125,76 +89,304 @@
   };
 
   type ActionBtnState = "idle" | "loading" | "ok" | "error" | "offline";
+  type ProcessorState = "idle" | "running" | "queued" | "offline";
+  type TimelineSection =
+    | "night"
+    | "morning"
+    | "spanning"
+    | "day"
+    | "evening"
+    | "auto";
+
+  interface EnrichedCron extends CronEntry {
+    displayMin: number;
+    nextMs: number | null;
+    section: TimelineSection;
+    sortScore: number;
+  }
+
+  type TimelineRow =
+    | { kind: "hour"; label: string; key: string }
+    | { kind: "section"; label: string; count: number; key: string }
+    | {
+        kind: "now";
+        clock: string;
+        timeLabel: string;
+        key: string;
+      }
+    | {
+        kind: "cron";
+        cron: EnrichedCron;
+        timeLabel: string;
+        countdown: string;
+        icon: string;
+        statusClass: string;
+        isPast: boolean;
+        isNext: boolean;
+        key: string;
+      };
+
+  const SECTION_LABELS: Record<TimelineSection, string> = {
+    night: GROUP_LABELS.NIGHT,
+    morning: GROUP_LABELS.MORNING,
+    spanning: "🌐 EGÉSZ NAP (több időpont / range)",
+    day: GROUP_LABELS.DAYTIME,
+    evening: GROUP_LABELS.EVENING,
+    auto: GROUP_LABELS.SPANNING,
+  };
 
   let actionBtnStates = $state<Record<string, ActionBtnState>>({});
+  let nowMs = $state(Date.now());
+  let processorStatus = $state<DevJobStatus>({
+    nextMs: 0,
+    queue: 0,
+    running: null,
+    updatedAt: 0,
+  });
+  let timelineScrollEl = $state<HTMLDivElement | null>(null);
 
-  const nowMinutes = $derived.by(() => {
-    const now = new Date();
-    return now.getHours() * 60 + now.getMinutes();
+  let pollTimer: ReturnType<typeof setInterval> | undefined;
+  let paintTimer: ReturnType<typeof setInterval> | undefined;
+
+  const processorState = $derived.by((): ProcessorState => {
+    if (processorStatus.error) return "offline";
+    if (processorStatus.running) return "running";
+    if (processorStatus.queue > 0) return "queued";
+    return "idle";
   });
 
-  const nowPercent = $derived((nowMinutes / 1440) * 100);
-
-  const timelineDots = $derived(
-    crons.crons
-      .map((cron) => {
-        const minutes = parseScheduleMinutes(cron.schedule);
-        if (minutes == null) return null;
-        return {
-          cron,
-          left: (minutes / 1440) * 100,
-          isNight: minutes < 360 || minutes > 1320,
-          color:
-            cron.lastResult === "ok"
-              ? "var(--green)"
-              : cron.lastResult === "error"
-                ? "var(--red)"
-                : "var(--yellow)",
-        };
-      })
-      .filter((d): d is NonNullable<typeof d> => d != null),
-  );
-
-  const groupedCrons = $derived.by(() => {
-    const groups = new Map<CronGroup, CronEntry[]>();
-    for (const group of GROUP_ORDER) {
-      const items = crons.crons.filter((c) => c.group === group);
-      if (items.length > 0) groups.set(group, items);
+  const processorMainText = $derived.by(() => {
+    if (processorState === "running") {
+      return `🖊️ Cursor: ${processorStatus.running} — folyamatban…`;
     }
-    return groups;
+    if (processorState === "queued") {
+      return `⚡ Processor: ${processorStatus.queue} elem a sorban — most indul`;
+    }
+    if (processorState === "offline") {
+      return "❓ Processor: timer offline";
+    }
+    return `⏳ Processor: idle — következő ellenőrzés ${formatProcessorCountdown(processorStatus.nextMs, nowMs)} múlva`;
+  });
+
+  const processorSubText = $derived.by(() => {
+    if (processorState !== "idle" || processorStatus.nextMs <= 0) return "";
+    return `következő trigger: ${formatProcessorCountdown(processorStatus.nextMs, nowMs)}`;
+  });
+
+  const enrichedCrons = $derived.by((): EnrichedCron[] => {
+    const nowDate = new Date(nowMs);
+    return crons.crons.map((cron) => {
+      const displayMin = parseDisplayMinutes(cron.schedule);
+      const lastRun = formatLastRunForSchedule(cron.lastRunAtMs);
+      const nextMs =
+        cron.nextRunAtMs ??
+        computeNextRun(cron.schedule, lastRun, nowDate) ??
+        null;
+      const sortScore = cronSortScore(cron.schedule, displayMin);
+      return {
+        ...cron,
+        displayMin: displayMin ?? sortScore,
+        nextMs,
+        section: cronSectionFor(cron.schedule, displayMin),
+        sortScore,
+      };
+    });
+  });
+
+  const nextCronId = $derived.by(() => {
+    let nextId: string | null = null;
+    let soonest = Infinity;
+    for (const cron of enrichedCrons) {
+      if (cron.nextMs != null && cron.nextMs < soonest) {
+        soonest = cron.nextMs;
+        nextId = cron.id;
+      }
+    }
+    return nextId;
+  });
+
+  const timelineRows = $derived.by((): TimelineRow[] => {
+    if (crons.crons.length === 0) return [];
+
+    const nowDate = new Date(nowMs);
+    const nowMins =
+      nowDate.getHours() * 60 +
+      nowDate.getMinutes() +
+      nowDate.getSeconds() / 60;
+    const nowClock = formatClock(nowDate);
+
+    type SortItem =
+      | { type: "cron"; sort: number; cron: EnrichedCron }
+      | { type: "now"; sort: number };
+
+    const items: SortItem[] = enrichedCrons.map((cron) => ({
+      type: "cron",
+      sort: cron.sortScore,
+      cron,
+    }));
+    items.push({ type: "now", sort: nowMins });
+    items.sort(
+      (a, b) =>
+        a.sort - b.sort ||
+        (a.type === "now" ? 1 : 0) - (b.type === "now" ? 1 : 0),
+    );
+
+    const rows: TimelineRow[] = [];
+    let lastHour = -1;
+    let lastSection = "";
+
+    for (const item of items) {
+      if (item.type === "now") {
+        const hour = nowDate.getHours();
+        if (hour !== lastHour) {
+          rows.push({
+            kind: "hour",
+            label: `${String(hour).padStart(2, "0")}:00`,
+            key: `hour-now-${hour}`,
+          });
+          lastHour = hour;
+        }
+        rows.push({
+          kind: "now",
+          clock: nowClock,
+          timeLabel: `${String(nowDate.getHours()).padStart(2, "0")}:${String(nowDate.getMinutes()).padStart(2, "0")}`,
+          key: "now-marker",
+        });
+        continue;
+      }
+
+      const cron = item.cron;
+      const mins = cron.displayMin;
+      const hour = Math.floor(mins / 60);
+      if (hour !== lastHour && mins < 9999) {
+        rows.push({
+          kind: "hour",
+          label: formatTimeLabel(mins),
+          key: `hour-${hour}-${cron.id}`,
+        });
+        lastHour = hour;
+      }
+
+      if (cron.section !== lastSection) {
+        const count = enrichedCrons.filter((c) => c.section === cron.section)
+          .length;
+        rows.push({
+          kind: "section",
+          label: SECTION_LABELS[cron.section],
+          count,
+          key: `section-${cron.section}`,
+        });
+        lastSection = cron.section;
+      }
+
+      const isPast =
+        !isSpanningSched(cron.schedule) &&
+        cron.schedule !== "auto" &&
+        mins < 9999 &&
+        mins < nowMins;
+      const isNext = cron.id === nextCronId;
+
+      rows.push({
+        kind: "cron",
+        cron,
+        timeLabel:
+          mins < 9999 && !isSpanningSched(cron.schedule)
+            ? formatTimeLabel(mins)
+            : "",
+        countdown: cronCountdownLabel(cron, nowMs),
+        icon: cronIcon(cron),
+        statusClass: cronStatusClass(cron.lastResult),
+        isPast,
+        isNext,
+        key: cron.id,
+      });
+    }
+
+    return rows;
+  });
+
+  function cronSortScore(schedule: string, displayMin: number | null): number {
+    if (isSpanningSched(schedule)) return 400;
+    if (displayMin == null) return 9999;
+    return displayMin;
+  }
+
+  function cronSectionFor(
+    schedule: string,
+    displayMin: number | null,
+  ): TimelineSection {
+    if (isSpanningSched(schedule)) return "spanning";
+    const mins = displayMin ?? 9999;
+    if (mins >= 9999) return "auto";
+    return cronPeriod(mins) as TimelineSection;
+  }
+
+  function formatLastRunForSchedule(ms: number | undefined): string | null {
+    if (ms == null) return null;
+    const d = new Date(ms);
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+
+  function cronCountdownLabel(cron: EnrichedCron, atMs: number): string {
+    if (isSpanningSched(cron.schedule)) {
+      return cron.nextMs
+        ? formatCountdown(cron.nextMs, atMs)
+        : "hourly";
+    }
+    if (cron.schedule === "auto") return "auto";
+    return cron.nextMs ? formatCountdown(cron.nextMs, atMs) : "—";
+  }
+
+  function cronIcon(cron: CronEntry): string {
+    return AGENT_ICONS[cron.agentId] ?? "🤖";
+  }
+
+  function cronStatusClass(lastResult: string): string {
+    if (lastResult === "ok") return "ct-status-g";
+    if (lastResult === "error") return "ct-status-r";
+    return "ct-status-y";
+  }
+
+  function formatProcessorCountdown(nextMs: number, atMs: number): string {
+    const diff = nextMs - atMs;
+    if (nextMs <= 0 || diff <= 0) return "most";
+    const secs = Math.ceil(diff / 1000);
+    if (secs < 60) return `${secs}s`;
+    const mins = Math.floor(secs / 60);
+    const rem = secs % 60;
+    return rem ? `${mins}m ${rem}s` : `${mins}m`;
+  }
+
+  async function pollProcessor(): Promise<void> {
+    processorStatus = await getDevJobStatus(RELAY_URL);
+  }
+
+  function scrollToNow(): void {
+    timelineScrollEl
+      ?.querySelector("#ct-now-marker")
+      ?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+
+  onMount(() => {
+    void pollProcessor();
+    paintTimer = setInterval(() => {
+      nowMs = Date.now();
+    }, 1000);
+    pollTimer = setInterval(() => {
+      void pollProcessor();
+    }, POLL_MS);
+  });
+
+  onDestroy(() => {
+    if (paintTimer) clearInterval(paintTimer);
+    if (pollTimer) clearInterval(pollTimer);
   });
 
   function ottoIcon(status: OttoRunEntry["status"]): string {
     if (status === "ok") return "✅";
     if (status === "warn") return "⚠️";
     return "❌";
-  }
-
-  function cronDescription(cron: CronEntry): string {
-    return CRON_DESCRIPTIONS[cron.name] ?? "—";
-  }
-
-  function parseScheduleMinutes(sched: string): number | null {
-    if (!sched || sched === "—" || sched === "auto" || sched === "unknown")
-      return null;
-    const hm = sched.match(/(\d{1,2}):(\d{2})/);
-    if (hm) return parseInt(hm[1] ?? "0", 10) * 60 + parseInt(hm[2] ?? "0", 10);
-    const range = sched.match(/^(\d{1,2})-/);
-    if (range) return parseInt(range[1] ?? "0", 10) * 60;
-    const comma = sched.match(/^(\d{1,2}),/);
-    if (comma) return parseInt(comma[1] ?? "0", 10) * 60;
-    return null;
-  }
-
-  function formatLastRun(ms: number | undefined): string {
-    if (ms == null) return "—";
-    const delta = Math.max(0, Date.now() - ms);
-    const mins = Math.floor(delta / 60_000);
-    if (mins < 1) return "just now";
-    if (mins < 60) return `${mins}m ago`;
-    const hours = Math.floor(mins / 60);
-    if (hours < 24) return `${hours}h ago`;
-    return `${Math.floor(hours / 24)}d ago`;
   }
 
   function actionKey(itemId: string, action: DashboardActionType): string {
@@ -352,76 +544,90 @@
     </div>
   {/if}
 
-  <!-- F3: Cron Pipeline -->
-  <h3 class="section-title">⏰ Cron Pipeline (24h)</h3>
-  {#if crons.error}
-    <p class="empty">No cron data — {crons.error}</p>
-  {:else}
-    <div class="cron-timeline">
-      {#each Array.from({ length: 13 }) as _, i (i)}
-        {@const hour = i * 2}
-        {@const left = (hour / 24) * 100}
-        <div class="tl-tick" style:left="{left}%"></div>
-        <div class="tl-label" style:left="{left}%">
-          {String(hour).padStart(2, "0")}:00
-        </div>
-      {/each}
-      <div class="tl-track"></div>
-      <div class="tl-now" style:left="{nowPercent}%"></div>
-      {#each timelineDots as dot (dot.cron.id)}
-        <div
-          class="tl-dot"
-          class:night={dot.isNight}
-          style:left="{dot.left}%; background: {dot.color}"
-          title="{dot.cron.name}: {dot.cron.schedule}"
-        ></div>
-      {/each}
+  <!-- F3: Cron Timeline (vertical 24h) -->
+  <div class="cron-timeline-v-wrap">
+    <div class="ct-header">
+      <h3 class="section-title ct-title">⏰ Cron Timeline (24h)</h3>
+      <button
+        type="button"
+        class="ct-now-btn"
+        title="Scroll to current time"
+        onclick={scrollToNow}
+      >
+        📍 NOW
+      </button>
     </div>
-
-    <div class="table-wrap">
-      <table class="pipeline-table">
-        <thead>
-          <tr>
-            <th>⏱️</th>
-            <th>Cron</th>
-            <th>Agent</th>
-            <th>Leírás</th>
-            <th>Utolsó</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          {#each GROUP_ORDER as group (group)}
-            {@const items = groupedCrons.get(group)}
-            {#if items && items.length > 0}
-              <tr class="group-hdr">
-                <td colspan="6">{GROUP_LABELS[group]} ({items.length})</td>
-              </tr>
-              {#each items as cron (cron.id)}
-                <tr class:disabled={!cron.enabled}>
-                  <td class="cr-time">{cron.schedule}</td>
-                  <td>{cron.name}</td>
-                  <td>{AGENT_ICONS[cron.agentId] ?? "🤖"} {cron.agentId}</td>
-                  <td class="cr-desc">{cronDescription(cron)}</td>
-                  <td class="mono">{formatLastRun(cron.lastRunAtMs)}</td>
-                  <td class="cr-status">
-                    <span
-                      class="cr-dot"
-                      style:background={cron.lastResult === "ok"
-                        ? "var(--green)"
-                        : cron.lastResult === "error"
-                          ? "var(--red)"
-                          : "var(--yellow)"}
-                    ></span>
-                  </td>
-                </tr>
-              {/each}
+    <div class="ct-legend">
+      <span
+        ><span class="ct-leg-dot" style:background="var(--green)"></span> OK</span
+      >
+      <span
+        ><span class="ct-leg-dot" style:background="var(--red)"></span> Error</span
+      >
+      <span
+        ><span class="ct-leg-dot" style:background="var(--yellow)"></span> Warning</span
+      >
+      <span>🔴 NOW vonal</span>
+    </div>
+    {#if crons.error}
+      <p class="empty">No cron data — {crons.error}</p>
+    {:else if crons.crons.length === 0}
+      <p class="empty">No scheduled crons</p>
+    {:else}
+      <div class="cron-timeline-v" bind:this={timelineScrollEl}>
+        <div class="ct-scroll">
+          {#each timelineRows as row (row.key)}
+            {#if row.kind === "hour"}
+              <div class="ct-hour">{row.label}</div>
+            {:else if row.kind === "section"}
+              <div class="ct-section">
+                {row.label} — {row.count} cron{row.count === 1 ? "" : "s"}
+              </div>
+            {:else if row.kind === "now"}
+              <div class="ct-now" id="ct-now-marker">
+                <span class="ct-time">{row.timeLabel}</span>
+                <span class="ct-now-line"
+                  >▐▐▐▐ NOW {row.clock} ▐▐▐▐</span
+                >
+              </div>
+            {:else}
+              <div
+                class="ct-row {row.statusClass}"
+                class:ct-past={row.isPast}
+                class:ct-next-up={row.isNext}
+                class:disabled={!row.cron.enabled}
+                title={row.cron.name}
+              >
+                <span class="ct-time">{row.timeLabel}</span>
+                <span class="ct-body">
+                  <span class="ct-icon">{row.icon}</span>
+                  <span class="ct-name">{row.cron.name}</span>
+                  <span class="ct-countdown">{row.countdown}</span>
+                </span>
+              </div>
             {/if}
           {/each}
-        </tbody>
-      </table>
-    </div>
-  {/if}
+        </div>
+      </div>
+    {/if}
+  </div>
+
+  <!-- Processor Timer -->
+  <div
+    class="processor-timer-bar"
+    class:pt-idle={processorState === "idle"}
+    class:pt-queue={processorState === "queued"}
+    class:pt-running={processorState === "running"}
+    class:pt-offline={processorState === "offline"}
+    transition:fade={{ duration: 150 }}
+  >
+    <span class="pt-main">{processorMainText}</span>
+    {#if processorSubText}
+      <span class="pt-sub" transition:fade={{ duration: 150 }}
+        >{processorSubText}</span
+      >
+    {/if}
+  </div>
 
   <!-- F4: Research Proposals -->
   <h3 class="section-title">🧠 Noema Product Research</h3>
@@ -655,144 +861,263 @@
     background: var(--red);
   }
 
-  .cron-timeline {
-    position: relative;
-    height: 42px;
+  .cron-timeline-v-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .ct-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .ct-title {
+    margin: 0;
+  }
+
+  .ct-now-btn {
+    cursor: pointer;
     background: var(--card);
+    color: var(--accent);
     border: 1px solid var(--border);
     border-radius: 6px;
-    overflow: hidden;
+    padding: 4px 12px;
+    font-size: 0.88em;
+    font-weight: 700;
+    transition:
+      background 0.15s,
+      border-color 0.15s;
   }
 
-  .tl-track {
-    position: absolute;
-    top: 50%;
-    left: 30px;
-    right: 10px;
-    height: 2px;
-    background: var(--border);
-    transform: translateY(-50%);
+  .ct-now-btn:hover {
+    background: var(--bg);
+    border-color: var(--accent);
   }
 
-  .tl-tick {
-    position: absolute;
-    top: 0;
-    height: 100%;
-    width: 1px;
-    background: var(--border);
-    opacity: 0.5;
-  }
-
-  .tl-label {
-    position: absolute;
-    top: 2px;
-    font-size: 0.75em;
+  .ct-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-size: 0.82em;
     color: var(--muted);
-    transform: translateX(-50%);
   }
 
-  .tl-dot {
-    position: absolute;
-    top: 50%;
+  .ct-legend span {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .ct-leg-dot {
     width: 8px;
     height: 8px;
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
-    cursor: pointer;
-    z-index: 2;
-  }
-
-  .tl-dot.night {
-    filter: brightness(0.7);
-  }
-
-  .tl-now {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    width: 2px;
-    background: var(--red);
-    opacity: 0.85;
-    transform: translateX(-50%);
-    z-index: 3;
-  }
-
-  .table-wrap {
-    overflow-x: auto;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    background: var(--card);
-    max-height: 500px;
-    overflow-y: auto;
-  }
-
-  .pipeline-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.88em;
-  }
-
-  .pipeline-table th,
-  .pipeline-table td {
-    padding: 6px 8px;
-    text-align: left;
-    border-bottom: 1px solid var(--border);
-    vertical-align: top;
-  }
-
-  .pipeline-table th {
-    position: sticky;
-    top: 0;
-    background: var(--card);
-    color: var(--muted);
-    font-weight: 600;
-    font-size: 0.82em;
-    z-index: 2;
-  }
-
-  .group-hdr td {
-    background: var(--card);
-    color: var(--accent);
-    font-weight: 700;
-    font-size: 0.9em;
-    padding: 8px 8px 4px;
-    border-bottom: 2px solid var(--accent);
-  }
-
-  .cr-time {
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    color: var(--accent);
-    font-weight: 600;
-    white-space: nowrap;
-  }
-
-  .cr-desc {
-    color: var(--muted);
-    font-size: 0.92em;
-    max-width: 280px;
-  }
-
-  .cr-status {
-    text-align: center;
-    width: 30px;
-  }
-
-  .cr-dot {
-    width: 7px;
-    height: 7px;
     border-radius: 50%;
     display: inline-block;
   }
 
-  .mono {
+  .cron-timeline-v {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    max-height: 520px;
+    overflow-y: auto;
+    position: relative;
+  }
+
+  .ct-scroll {
+    padding: 6px 0;
+  }
+
+  .ct-hour {
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    font-size: 0.92em;
+    font-size: 0.82em;
+    color: var(--muted);
+    padding: 2px 10px 2px 12px;
+    border-left: 2px solid transparent;
+    opacity: 0.55;
+  }
+
+  .ct-section {
+    padding: 8px 12px 4px;
+    font-size: 0.82em;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 0.4px;
+    border-top: 1px solid var(--border);
+    background: rgba(88, 166, 255, 0.04);
+  }
+
+  .ct-section:first-child {
+    border-top: none;
+  }
+
+  .ct-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px 6px 0;
+    border-left: 3px solid var(--border);
+    margin-left: 12px;
+    transition:
+      background 0.15s,
+      opacity 0.15s;
+    font-size: 0.9em;
+  }
+
+  .ct-row:hover {
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  .ct-row.ct-past {
+    opacity: 0.45;
+  }
+
+  .ct-row.ct-status-g {
+    border-left-color: var(--green);
+  }
+
+  .ct-row.ct-status-y {
+    border-left-color: var(--yellow);
+  }
+
+  .ct-row.ct-status-r {
+    border-left-color: var(--red);
+  }
+
+  .ct-row.ct-next-up {
+    border-left-color: var(--accent);
+    box-shadow: inset 0 0 12px rgba(88, 166, 255, 0.12);
+    background: rgba(88, 166, 255, 0.05);
+  }
+
+  .ct-row.disabled {
+    opacity: 0.55;
+  }
+
+  .ct-time {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    color: var(--accent);
+    font-weight: 600;
+    min-width: 46px;
+    text-align: right;
+    flex-shrink: 0;
+    font-size: 0.88em;
+  }
+
+  .ct-body {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .ct-icon {
+    flex-shrink: 0;
+    font-size: 1em;
+  }
+
+  .ct-name {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  .ct-countdown {
+    color: var(--muted);
+    font-size: 0.86em;
+    white-space: nowrap;
+    flex-shrink: 0;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+
+  .ct-now {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px 8px 0;
+    margin: 4px 0 4px 12px;
+    border-left: 3px solid var(--red);
+    position: relative;
+  }
+
+  .ct-now-line {
+    flex: 1;
+    text-align: center;
+    font-weight: 700;
+    font-size: 0.88em;
+    color: var(--red);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(248, 81, 73, 0.15),
+      transparent
+    );
+    padding: 4px 8px;
+    border-radius: 4px;
+    animation: ct-now-pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes ct-now-pulse {
+    0%,
+    100% {
+      opacity: 1;
+      box-shadow: 0 0 0 rgba(248, 81, 73, 0);
+    }
+    50% {
+      opacity: 0.85;
+      box-shadow: 0 0 14px rgba(248, 81, 73, 0.35);
+    }
+  }
+
+  .processor-timer-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    font-size: 0.9em;
+    flex-wrap: wrap;
+  }
+
+  .processor-timer-bar.pt-idle {
+    border-color: var(--border);
     color: var(--muted);
   }
 
-  .pipeline-table tbody tr.disabled {
-    opacity: 0.55;
+  .processor-timer-bar.pt-queue {
+    border-color: var(--green);
+    color: var(--green);
+  }
+
+  .processor-timer-bar.pt-running {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .processor-timer-bar.pt-offline {
+    border-color: var(--red);
+    color: var(--red);
+  }
+
+  .pt-main {
+    font-weight: 700;
+    flex: 1;
+    min-width: 180px;
+  }
+
+  .pt-sub {
+    font-size: 0.86em;
+    opacity: 0.85;
+    white-space: nowrap;
   }
 
   .research-header {
@@ -870,8 +1195,20 @@
       grid-template-columns: 1fr;
     }
 
-    .cr-desc {
-      max-width: 160px;
+    .ct-row {
+      flex-wrap: wrap;
+      padding-right: 8px;
+    }
+
+    .ct-countdown {
+      width: 100%;
+      text-align: right;
+      padding-left: 54px;
+    }
+
+    .processor-timer-bar {
+      flex-direction: column;
+      align-items: flex-start;
     }
   }
 </style>
