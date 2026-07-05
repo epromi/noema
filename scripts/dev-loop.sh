@@ -64,8 +64,19 @@ SHORT_ID=$(echo "$PKG_ID" | grep -oP '^PKG-\d{3}' || echo "$PKG_ID")
 # Ensure log directory exists
 mkdir -p "$PROJECT_DIR/logs"
 
+DEV_LOG="$PROJECT_DIR/logs/dev-${PKG_ID}.log"
+PIPELINE_START=$(date +%s)
+
+log_dev() {
+  echo "[$(date +%H:%M:%S)] $1" >> "$DEV_LOG"
+}
+
+: > "$DEV_LOG"
+log_dev "🚀 Pipeline indult: $PKG_ID"
+
 # ═══════════════════════════════════════════════════════════════════════════
 banner "PHASE 1/6: Spec Analysis ($PKG_ID)"
+log_dev "📋 Phase 1/6: Spec Analysis — kezdve"
 # ═══════════════════════════════════════════════════════════════════════════
 
 # Extract metadata — robust grep with fallbacks
@@ -94,16 +105,22 @@ echo "Phases:   $PKG_PHASES"
 echo "Expected files ($(echo "$EXPECTED_FILES" | grep -c . 2>/dev/null || echo 0)):"
 echo "$EXPECTED_FILES" | while read f; do [ -n "$f" ] && echo "  - $f"; done || true
 
+EXPECTED_COUNT=$(echo "$EXPECTED_FILES" | grep -c . 2>/dev/null || echo 0)
+log_dev "✅ Phase 1: Spec Analysis — kész ($EXPECTED_COUNT expected files)"
+
 # ═══════════════════════════════════════════════════════════════════════════
 banner "PHASE 2/6: Strategy"
+log_dev "📋 Phase 2/6: Strategy — CURSOR AGENT ($PKG_SIZE size)"
 # ═══════════════════════════════════════════════════════════════════════════
 
 echo "Strategy: CURSOR AGENT (all sizes — $PKG_SIZE)"
 echo "Mandatory context: CONTRIBUTING.md + spec.md"
 echo ""
+log_dev "✅ Phase 2: Strategy — kész (Cursor agent)"
 
 # ═══════════════════════════════════════════════════════════════════════════
 banner "PHASE 3/6: Cursor Prompt"
+log_dev "📋 Phase 3/6: Cursor Prompt — kezdve"
 # ═══════════════════════════════════════════════════════════════════════════
 
 TEMPLATE="$PROJECT_DIR/prompts/cursor-implement.txt"
@@ -126,12 +143,16 @@ sed "s/PKG_PLACEHOLDER/$PKG_ID/g" "$TEMPLATE" > "$PROMPT_FILE"
   done || true
 } >> "$PROMPT_FILE"
 
-echo "Prompt:   $PROMPT_FILE ($(wc -l < "$PROMPT_FILE") lines)"
+PROMPT_LINES=$(wc -l < "$PROMPT_FILE")
+echo "Prompt:   $PROMPT_FILE ($PROMPT_LINES lines)"
 echo "Template: $TEMPLATE"
 echo ""
+log_dev "📋 Phase 3/6: Cursor Prompt — generálva ($PROMPT_LINES lines)"
+log_dev "✅ Phase 3: Cursor Prompt — kész"
 
 # ═══════════════════════════════════════════════════════════════════════════
 banner "PHASE 4/6: Cursor Agent"
+log_dev "🖊️  Phase 4/6: Cursor Agent — fut..."
 # ═══════════════════════════════════════════════════════════════════════════
 
 echo "Running cursor agent..."
@@ -168,10 +189,17 @@ fi
 if [ "$MISSING" -gt 0 ] 2>/dev/null; then
   warn "$MISSING expected file(s) missing — review cursor output"
 fi
+
+CURSOR_LINES=0
+[ -f "$CURSOR_LOG" ] && CURSOR_LINES=$(wc -l < "$CURSOR_LOG" 2>/dev/null || echo 0)
+CREATED_FILES=$(echo "$EXPECTED_FILES" | grep -c . 2>/dev/null || echo 0)
+CREATED_FILES=$((CREATED_FILES - MISSING))
+log_dev "✅ Phase 4: Cursor Agent — kész ($CREATED_FILES files, $CURSOR_LINES lines)"
 echo ""
 
 # ═══════════════════════════════════════════════════════════════════════════
 banner "PHASE 5/6: Deep Review + Auto-Fix"
+log_dev "🔍 Phase 5/6: Deep Review — kezdve"
 # ═══════════════════════════════════════════════════════════════════════════
 # 6 sub-phases: lint→auto-fix→retry (3x), test, architecture, provider, imports, summary
 
@@ -182,9 +210,9 @@ REVIEW_WARN=0
 REVIEW_FAIL=0
 REVIEW_LOG="$PROJECT_DIR/logs/review-${PKG_ID}.log"
 
-review_ok()   { printf "${GREEN}    ✅ %s${NC}\n" "$1"; REVIEW_PASS=$((REVIEW_PASS + 1)); echo "✅ $1" >> "$REVIEW_LOG"; }
-review_warn() { printf "${YELLOW}    ⚠️  %s${NC}\n" "$1"; REVIEW_WARN=$((REVIEW_WARN + 1)); echo "⚠️  $1" >> "$REVIEW_LOG"; }
-review_fail() { printf "${RED}    ❌ %s${NC}\n" "$1"; REVIEW_FAIL=$((REVIEW_FAIL + 1)); echo "❌ $1" >> "$REVIEW_LOG"; }
+review_ok()   { printf "${GREEN}    ✅ %s${NC}\n" "$1"; REVIEW_PASS=$((REVIEW_PASS + 1)); echo "✅ $1" >> "$REVIEW_LOG"; log_dev "✅ $1"; }
+review_warn() { printf "${YELLOW}    ⚠️  %s${NC}\n" "$1"; REVIEW_WARN=$((REVIEW_WARN + 1)); echo "⚠️  $1" >> "$REVIEW_LOG"; log_dev "⚠️  $1"; }
+review_fail() { printf "${RED}    ❌ %s${NC}\n" "$1"; REVIEW_FAIL=$((REVIEW_FAIL + 1)); echo "❌ $1" >> "$REVIEW_LOG"; log_dev "❌ $1"; }
 
 # Reset review log
 : > "$REVIEW_LOG"
@@ -216,7 +244,7 @@ if [ "$HAS_PKG" -eq 1 ]; then
     fi
 
     if [ "$ESLINT_FAIL" -eq 0 ] && [ "$PRETTIER_FAIL" -eq 0 ]; then
-      review_ok "Lint + Format clean (pass $attempt)"
+      review_ok "5a: Lint + Format — clean"
       LINT_OK=1
       break
     fi
@@ -277,20 +305,21 @@ with open('$COV_JSON') as f:
       COV_LINE="${COV_LINE:-0}"
     fi
 
+    PASSED_TESTS="?"
+    FAILED_TESTS=0
     if [ "$TEST_EXIT" -eq 0 ]; then
-      review_ok "Tests passing"
+      PASSED_TESTS=$(grep -oP 'Tests\s+\K[0-9]+ passed' "$COV_LOG" 2>/dev/null | head -1 || grep -c '✓' "$COV_LOG" 2>/dev/null || echo "?")
+      review_ok "5b: Test Suite — ${PASSED_TESTS} passed, ${COV_LINE}% coverage"
       TEST_PASSED=1
     else
       FAILED_TESTS=$(grep -c 'FAIL\|✗' "$COV_LOG" 2>/dev/null || echo "?")
-      review_warn "Tests failing — exit=$TEST_EXIT, $FAILED_TESTS failure(s) — review required"
+      review_warn "5b: Test Suite — exit=$TEST_EXIT, $FAILED_TESTS failure(s)"
     fi
 
-    # Coverage gate
+    # Coverage gate (logged in combined 5b line above when passing)
     COV_OK=$(echo "$COV_LINE >= $COVERAGE_THRESHOLD" | bc 2>/dev/null || echo 0)
-    if [ "$COV_OK" -eq 1 ]; then
-      review_ok "Coverage: ${COV_LINE}% (≥${COVERAGE_THRESHOLD}%)"
-    else
-      review_warn "Coverage: ${COV_LINE}% (below ${COVERAGE_THRESHOLD}% threshold)"
+    if [ "$TEST_EXIT" -ne 0 ] || [ "$COV_OK" -ne 1 ]; then
+      [ "$COV_OK" -ne 1 ] && review_warn "5b: Coverage — ${COV_LINE}% (below ${COVERAGE_THRESHOLD}%)"
     fi
 
     # Check: do all core/*.ts files have corresponding test files?
@@ -329,9 +358,7 @@ ARCH_VIOLATIONS=0
 # Check 1: src/lib/core/ must not import Svelte
 if [ -d "$PROJECT_DIR/src/lib/core" ]; then
   CORE_SVELTE=$(grep -rl "from 'svelte\|from \"svelte\|import svelte" "$PROJECT_DIR/src/lib/core/" 2>/dev/null || true)
-  if [ -z "$CORE_SVELTE" ]; then
-    review_ok "src/lib/core/ — zero Svelte imports"
-  else
+  if [ -n "$CORE_SVELTE" ]; then
     review_fail "SVELTE LEAK in src/lib/core/: $(echo "$CORE_SVELTE" | tr '\n' ' ')"
     ARCH_VIOLATIONS=$((ARCH_VIOLATIONS + 1))
   fi
@@ -340,9 +367,7 @@ fi
 # Check 2: src/lib/core/ must not call OpenClaw/exec APIs directly
 if [ -d "$PROJECT_DIR/src/lib/core" ]; then
   CORE_SYSCALL=$(grep -rl "exec(\|sessions_\|fetch.*openclaw\|process\." "$PROJECT_DIR/src/lib/core/" 2>/dev/null || true)
-  if [ -z "$CORE_SYSCALL" ]; then
-    review_ok "src/lib/core/ — zero system/API calls (provider-safe)"
-  else
+  if [ -n "$CORE_SYSCALL" ]; then
     review_fail "SYSTEM CALL in src/lib/core/: $(echo "$CORE_SYSCALL" | tr '\n' ' ')"
     ARCH_VIOLATIONS=$((ARCH_VIOLATIONS + 1))
   fi
@@ -351,9 +376,7 @@ fi
 # Check 3: src/lib/components/ must not have exec/session calls
 if [ -d "$PROJECT_DIR/src/lib/components" ]; then
   COMP_SYSCALL=$(grep -rl "exec(\|sessions_\|read(\|write(" "$PROJECT_DIR/src/lib/components/" 2>/dev/null || true)
-  if [ -z "$COMP_SYSCALL" ]; then
-    review_ok "src/lib/components/ — zero system calls"
-  else
+  if [ -n "$COMP_SYSCALL" ]; then
     review_fail "SYSTEM CALL in components: $(echo "$COMP_SYSCALL" | tr '\n' ' ')"
     ARCH_VIOLATIONS=$((ARCH_VIOLATIONS + 1))
   fi
@@ -362,11 +385,15 @@ fi
 # Check 4: Provider pattern — verify OpenClaw adapter exists if core modules need external data
 if [ -d "$PROJECT_DIR/src/lib/providers" ]; then
   PROVIDER_FILES=$(ls "$PROJECT_DIR/src/lib/providers/" 2>/dev/null | wc -l)
-  if [ "$PROVIDER_FILES" -ge 1 ]; then
-    review_ok "Provider layer present ($PROVIDER_FILES adapter file(s))"
-  else
+  if [ "$PROVIDER_FILES" -lt 1 ]; then
     review_warn "Provider layer empty — check if needed"
   fi
+fi
+
+if [ "$ARCH_VIOLATIONS" -eq 0 ]; then
+  review_ok "5c: Architecture — compliant"
+else
+  review_fail "5c: Architecture — $ARCH_VIOLATIONS violation(s)"
 fi
 
 echo ""
@@ -386,7 +413,7 @@ if git rev-parse --git-dir >/dev/null 2>&1; then
   elif [ "$ADDED_FILES" -gt 5 ]; then
     review_warn "Moderate changeset ($ADDED_FILES files) — consider splitting next time"
   else
-    review_ok "Changeset size OK ($ADDED_FILES files)"
+    review_ok "5d: Code Quality — OK ($ADDED_FILES files)"
   fi
 
   # File size extremes
@@ -410,7 +437,7 @@ SEC_ISSUES=0
 if git rev-parse --git-dir >/dev/null 2>&1; then
   SECRETS=$(git diff --cached 2>/dev/null | grep -iE 'api.?key[[:space:]]*=|token[[:space:]]*=|secret[[:space:]]*=|password[[:space:]]*=' | grep -v 'EXAMPLE\|example\|\.env\.\|process\.env\|DENO_ENV' || true)
   if [ -z "$SECRETS" ]; then
-    review_ok "No hardcoded secrets detected"
+    review_ok "5e: Security Scan — clean"
   else
     SEC_COUNT=$(echo "$SECRETS" | wc -l)
     review_fail "Potential secrets in diff ($SEC_COUNT lines) — VERIFY MANUALLY"
@@ -423,7 +450,7 @@ fi
 if git rev-parse --git-dir >/dev/null 2>&1; then
   DANGER=$(git diff --cached 2>/dev/null | grep -E '^\+.*eval\(|^\+.*innerHTML|^\+.*dangerouslySetInnerHTML' | grep -v '//.*eval\|#.*eval\|test.*eval' || true)
   if [ -z "$DANGER" ]; then
-    review_ok "No dangerous patterns (eval, innerHTML)"
+    :
   else
     DANGER_COUNT=$(echo "$DANGER" | wc -l)
     review_warn "Dangerous patterns found ($DANGER_COUNT) — review recommended"
@@ -444,6 +471,7 @@ printf "  │  ❌ Failures:  %2d                   │\n" "$REVIEW_FAIL"
 echo "  │  Full log:    logs/review-${PKG_ID}.log  │"
 echo "  └─────────────────────────────────────┘"
 echo ""
+log_dev "📊 5f: Summary — ${REVIEW_PASS}✅ ${REVIEW_WARN}⚠️ ${REVIEW_FAIL}❌"
 
 # Decision gate
 if [ "$ARCH_VIOLATIONS" -gt 0 ]; then
@@ -460,6 +488,7 @@ echo ""
 
 # ═══════════════════════════════════════════════════════════════════════════
 banner "PHASE 6/6: Commit & Push"
+log_dev "📤 Phase 6/6: Commit + Push — kezdve"
 # ═══════════════════════════════════════════════════════════════════════════
 
 echo "Files staged for commit:"
@@ -475,9 +504,15 @@ if [ -t 0 ]; then
   COMMIT_MSG="${USER_MSG:-$COMMIT_MSG}"
 fi
 
-git commit -m "$COMMIT_MSG" 2>&1 || warn "git commit failed (nothing to commit?)"
+COMMIT_HASH=""
+if git commit -m "$COMMIT_MSG" 2>&1; then
+  COMMIT_HASH=$(git rev-parse --short HEAD 2>/dev/null || echo "?")
+else
+  warn "git commit failed (nothing to commit?)"
+fi
 git push 2>&1 || warn "git push failed"
 
+log_dev "✅ Phase 6: Commit + Push — kész (${COMMIT_HASH:-skip})"
 ok "Implementation pushed — $PKG_ID"
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -550,7 +585,11 @@ if [ -f "$ACTION_QUEUE" ]; then
   grep "$PKG_ID" "$ACTION_QUEUE" 2>/dev/null | head -3 || echo "  (none)"
 fi
 
+PIPELINE_END=$(date +%s)
+PIPELINE_DURATION=$((PIPELINE_END - PIPELINE_START))
+log_dev "✅ Pipeline kész: $PKG_ID (${PIPELINE_DURATION}s)"
+
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "🧠 Loop complete: $PKG_ID — $PKG_NAME"
+echo "🧠 Loop complete: $PKG_ID — $PKG_NAME (${PIPELINE_DURATION}s)"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"

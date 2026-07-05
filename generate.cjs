@@ -718,59 +718,77 @@ const payload = JSON.stringify({
     // Development packages from INDEX.md
     let packagesHtml = '';
     let activePropCount = 0;
+
+    function renderPackageRow(cols, sizeColors) {
+      if (cols.length < 5) return '';
+      const [pkgId, name, phase, , size] = cols;
+      const deps = cols[cols.length - 1] || '—';
+      const isDone = phase.startsWith('✅');
+      const sizeBadge = `<span style="color:${sizeColors[size] || ''};font-weight:700;font-size:0.82em">${size}</span>`;
+      const borderColor = isDone ? 'var(--green)' : 'var(--accent)';
+      const bgStyle = isDone ? 'opacity:0.6' : '';
+
+      let detailHtml = '';
+      try {
+        const pkgDir = fs.readdirSync(path.join(W, 'projects/noema/dev/packages')).find(d => d.startsWith(pkgId));
+        if (pkgDir) {
+          const specPath = path.join(W, 'projects/noema/dev/packages', pkgDir, 'spec.md');
+          if (fs.existsSync(specPath)) {
+            const spec = fs.readFileSync(specPath, 'utf8');
+            const descMatch = spec.match(/\*\*Mit\*\*:\s*(.+)/);
+            const scopeSection = spec.match(/\*\*Scope\*\*:\s*\n([\s\S]*?)(?=\n###|\n##|\n\*\*)/);
+            const phases = [];
+            const phaseRegex = /### (F\d)\s*[\u2013\-]\s*(.+?)(?=\n- \[)/g;
+            let pm;
+            while ((pm = phaseRegex.exec(spec)) !== null) {
+              phases.push(`<span style="color:var(--muted)">${pm[1]}</span> ${pm[2].replace(/</g, '&lt;')}`);
+            }
+            const desc = (descMatch ? descMatch[1].replace(/</g, '&lt;') : name);
+            const scopeItems = scopeSection ? scopeSection[1].trim().split('\n').filter(l => l.trim()).map(l => l.replace(/^-\s*`?/, '').replace(/`$/, '').trim()).join(' · ') : '';
+            detailHtml = `<div style="padding:4px 0 2px 0;color:var(--muted);font-size:0.84em">${desc}</div>`;
+            if (scopeItems) detailHtml += `<div style="font-size:0.80em;color:var(--muted);opacity:0.7">📁 ${scopeItems}</div>`;
+            if (phases.length > 0) detailHtml += `<div style="font-size:0.80em;margin-top:2px">${phases.slice(0, 4).join(' <span style="color:var(--border)">│</span> ')}</div>`;
+          }
+        }
+      } catch {}
+
+      const rowId = 'pkgrow-' + pkgId.replace(/[^a-zA-Z0-9-]/g, '');
+      let html = `<div onclick="togglePkg('${rowId}')" style="font-size:0.88em;padding:6px 8px;margin-bottom:3px;background:var(--card);border-left:3px solid ${borderColor};border-radius:3px;line-height:1.5;display:flex;align-items:center;gap:8px;cursor:pointer;${bgStyle}" onmouseenter="this.style.opacity='0.85'" onmouseout="this.style.opacity='${isDone ? '0.6' : '1'}'">`;
+      html += `<span style="flex:1"><strong>${pkgId}</strong> ${name} ${sizeBadge} <span style="color:var(--muted);font-size:0.82em">${deps !== '—' ? '→ ' + deps : ''}</span> <span style="font-size:0.75em;color:var(--accent);opacity:0.6">▸</span></span>`;
+      if (isDone) {
+        html += `<span style="color:var(--green);font-weight:700;font-size:0.82em;white-space:nowrap">✅</span>`;
+        html += `<button class="log-btn" onclick="event.stopPropagation();viewLog('${pkgId}',this.parentElement)" style="background:var(--muted)" title="Dev log megtekintése">📋 Log</button>`;
+      } else {
+        html += `<button onclick="event.stopPropagation();sendAction('implement','${pkgId}','${pkgId}: ${name.replace(/'/g, "\\'")}',this,'▶ Mehet')" style="cursor:pointer;background:var(--green);color:#fff;border:none;border-radius:4px;padding:2px 10px;font-size:0.82em;font-weight:700;white-space:nowrap;flex-shrink:0">▶ Mehet</button>`;
+        activePropCount++;
+      }
+      html += '</div>';
+      html += `<div id="${rowId}" class="pkg-detail" style="display:none;margin:-2px 0 4px 0;padding:8px 10px;background:var(--card);border-left:3px solid var(--border);border-radius:0 3px 3px 0;font-size:0.84em;line-height:1.6">${detailHtml}</div>`;
+      return html;
+    }
+
     try {
-      const indexMd = fs.readFileSync(path.join(W,'projects/noema/dev/packages/INDEX.md'),'utf8');
-      // Parse table rows: | PKG-XXX | Name | F0 | ... | S | 1h | DEP |
+      const indexMd = fs.readFileSync(path.join(W, 'projects/noema/dev/packages/INDEX.md'), 'utf8');
       const rows = indexMd.split('\n').filter(l => l.match(/^\| PKG-\d{3}\s*\|/));
       const sizeColors = { S: 'var(--green)', M: 'var(--yellow)', L: 'var(--accent)', XL: 'var(--red)' };
+      const doneRows = [];
+      const pendingRows = [];
       for (const row of rows) {
         const cols = row.split('|').map(c => c.trim()).filter(c => c);
         if (cols.length < 5) continue;
-        const [pkgId, name, phase, , size] = cols;
-        const deps = cols[cols.length-1] || '—';
-        const isDone = phase.startsWith('✅');
-        const sizeBadge = `<span style="color:${sizeColors[size]||''};font-weight:700;font-size:0.82em">${size}</span>`;
-        const borderColor = isDone ? 'var(--green)' : 'var(--accent)';
-        const bgStyle = isDone ? 'opacity:0.6' : '';
-
-        // Read spec.md for expandable detail panel
-        let detailHtml = '';
-        try {
-          const pkgDir = fs.readdirSync(path.join(W,'projects/noema/dev/packages')).find(d => d.startsWith(pkgId));
-          if (pkgDir) {
-            const specPath = path.join(W,'projects/noema/dev/packages',pkgDir,'spec.md');
-            if (fs.existsSync(specPath)) {
-              const spec = fs.readFileSync(specPath,'utf8');
-              const descMatch = spec.match(/\*\*Mit\*\*:\s*(.+)/);
-              const scopeSection = spec.match(/\*\*Scope\*\*:\s*\n([\s\S]*?)(?=\n###|\n##|\n\*\*)/);
-              const phases = [];
-              const phaseRegex = /### (F\d)\s*[\u2013\-]\s*(.+?)(?=\n- \[)/g;
-              let pm;
-              while ((pm = phaseRegex.exec(spec)) !== null) {
-                phases.push(`<span style="color:var(--muted)">${pm[1]}</span> ${pm[2].replace(/</g,'&lt;')}`);
-              }
-              const desc = (descMatch ? descMatch[1].replace(/</g,'&lt;') : name);
-              const scopeItems = scopeSection ? scopeSection[1].trim().split('\n').filter(l => l.trim()).map(l => l.replace(/^-\s*`?/,'').replace(/`$/,'').trim()).join(' · ') : '';
-              detailHtml = `<div style="padding:4px 0 2px 0;color:var(--muted);font-size:0.84em">${desc}</div>`;
-              if (scopeItems) detailHtml += `<div style="font-size:0.80em;color:var(--muted);opacity:0.7">📁 ${scopeItems}</div>`;
-              if (phases.length > 0) detailHtml += `<div style="font-size:0.80em;margin-top:2px">${phases.slice(0,4).join(' <span style="color:var(--border)">│</span> ')}</div>`;
-            }
-          }
-        } catch {}
-
-        const rowId = 'pkgrow-' + pkgId.replace(/[^a-zA-Z0-9-]/g,'');
-        packagesHtml += `<div onclick="togglePkg('${rowId}')" style="font-size:0.88em;padding:6px 8px;margin-bottom:3px;background:var(--card);border-left:3px solid ${borderColor};border-radius:3px;line-height:1.5;display:flex;align-items:center;gap:8px;cursor:pointer;${bgStyle}" onmouseenter="this.style.opacity='0.85'" onmouseout="this.style.opacity='${isDone?'0.6':'1'}'">`;
-        packagesHtml += `<span style="flex:1"><strong>${pkgId}</strong> ${name} ${sizeBadge} <span style="color:var(--muted);font-size:0.82em">${deps!=='—'?'→ '+deps:''}</span> <span style="font-size:0.75em;color:var(--accent);opacity:0.6">▸</span></span>`;
-        if (isDone) {
-          packagesHtml += `<span style="color:var(--green);font-weight:700;font-size:0.82em;white-space:nowrap">✅ KÉSZ</span>`;
-        } else {
-          packagesHtml += `<button onclick="event.stopPropagation();sendAction('implement','${pkgId}','${pkgId}: ${name.replace(/'/g,"\\'")}',this,'▶ Mehet')" style="cursor:pointer;background:var(--green);color:#fff;border:none;border-radius:4px;padding:2px 10px;font-size:0.82em;font-weight:700;white-space:nowrap;flex-shrink:0">▶ Mehet</button>`;
-          activePropCount++;
-        }
-        packagesHtml += '</div>';
-        packagesHtml += `<div id="${rowId}" class="pkg-detail" style="display:none;margin:-2px 0 4px 0;padding:8px 10px;background:var(--card);border-left:3px solid var(--border);border-radius:0 3px 3px 0;font-size:0.84em;line-height:1.6">${detailHtml}</div>`;
+        if (cols[2].startsWith('✅')) doneRows.push(cols);
+        else pendingRows.push(cols);
       }
-    } catch (e) { packagesHtml = '<span style="color:var(--red)">Package index hiba: '+e.message+'</span>'; }
+
+      if (doneRows.length > 0) {
+        packagesHtml += `<div style="font-size:0.85em;font-weight:700;color:var(--green);margin:8px 0 6px 0">✅ Kész (${doneRows.length})</div>`;
+        for (const cols of doneRows) packagesHtml += renderPackageRow(cols, sizeColors);
+      }
+      if (pendingRows.length > 0) {
+        packagesHtml += `<div style="font-size:0.85em;font-weight:700;color:var(--accent);margin:12px 0 6px 0">📋 Fejlesztésre vár (${pendingRows.length})</div>`;
+        for (const cols of pendingRows) packagesHtml += renderPackageRow(cols, sizeColors);
+      }
+    } catch (e) { packagesHtml = '<span style="color:var(--red)">Package index hiba: ' + e.message + '</span>'; }
     
     // Research proposals from nightly cron (secondary)
     let researchHtml = '';

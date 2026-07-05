@@ -970,6 +970,12 @@ function stopLogPoll(pkgId) {
   if (logPollers[pkgId]) { clearInterval(logPollers[pkgId]); delete logPollers[pkgId]; }
 }
 
+// Static log view for completed packages (no polling)
+function viewLog(pkgId, parentRow) {
+  toggleLog(pkgId, parentRow);
+  stopLogPoll(pkgId);
+}
+
 // ── Expandable Package Details ──
 function togglePkg(rowId) {
   const el = document.getElementById(rowId);
