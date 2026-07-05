@@ -81,23 +81,8 @@ Proposal beérkezik
     Mark "done" → dashboard regen
 ```
 
-Cursor prompt template:
-```
-You are working on the Noema monitoring dashboard (SvelteKit v2).
-Project context: projects/noema/dev/packages/PKG-XXX/spec.md
-Read the spec first, then implement ALL phases.
-
-Rules:
-- lib/core/ = plain TypeScript, ZERO Svelte imports
-- lib/components/ = Svelte UI only
-- Max 5 files per phase
-- Write tests for lib/core/ modules
-
-Implement these files:
-<fájllista a spec-ből>
-
-After implementation, run: pnpm check
-```
+Cursor prompt template → `research/cursor-prompt-template.md`
+(size-specific variants, model selection, verification checklist)
 
 ### Fázis 4: VERIFY (auto)
 **Ki**: Alfred + CI
@@ -165,8 +150,9 @@ Prioritás guide:
 - [x] Research cron: fut (01:00 daily)
 - [x] Action queue: file-based (dashboard ↔ relay ↔ processor)
 - [x] Dashboard gombok: ▶ Mehet működik
-- [ ] proposals.jsonl formátum: research prompt frissítendő
-- [ ] PKG spec auto-generálás: Alfred template alapján
-- [ ] Cursor integration: prompt template + verifikáció
-- [ ] Loop orchestrator: scripts/dev-loop.sh
+- [x] proposals.jsonl formátum: research-prompt.md frissítve
+- [x] PKG spec auto-generálás: template kész (Alfred)
+- [x] Cursor integration: prompt template + verifikáció checklist
+- [x] Loop orchestrator: scripts/dev-loop.sh (6-phase)
 - [ ] Dashboard regen auto-trigger: minden implementáció után
+- [ ] Éles teszt: egy teljes PKG végig a loop-on

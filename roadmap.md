@@ -76,6 +76,7 @@
 | **TD-03** | `generate.js` szétbontása modulokra (fetch / process / render) | P2 | ⏳ |
 | **TD-04** | Template CSS rendszerezése (ismétlődő stílusok konszolidálása) | P3 | ⏳ |
 | **TD-05** | Cron név + leírás szinkron `jobs.json` ↔ `cron list` között | P1 | ⏳ |
+| **TD-06** | **Dev Loop Infrastructure** — Research→Dashboard→Action Queue→Cursor/Alfred→Verify→Done pipeline. Bridge scripts, prompt template, auto-dashboard-regen after implementation | P1 | 🔨 |
 
 ---
 
