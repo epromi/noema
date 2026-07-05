@@ -2,6 +2,8 @@
 	import { getContext, onDestroy } from 'svelte';
 	import type { PageData } from './$types';
 	import Overview from '$lib/components/tabs/Overview.svelte';
+	import Agents from '$lib/components/tabs/Agents.svelte';
+	import Crons from '$lib/components/tabs/Crons.svelte';
 	import Noema from '$lib/components/tabs/Noema.svelte';
 	import type { ImplementState } from '$lib/types';
 
@@ -127,6 +129,10 @@
 			h1={data.h1}
 			hostname={data.hostname}
 		/>
+	{:else if activeTab === 'agents'}
+		<Agents agents={data.agents} viktor={data.h1.viktor} />
+	{:else if activeTab === 'crons'}
+		<Crons crons={data.crons} />
 	{:else if activeTab === 'noema'}
 		<Noema
 			packages={data.devPackages.packages}
