@@ -32,6 +32,7 @@
 | PKG-011 | Session Health Scoring | 📋 F0 | F-21 P2 | M | 2-3h | PKG-003 |
 | PKG-012 | OTel Export (opcionális) | 📋 F0 | F-22 P3 | S | 1h | PKG-002..005 |
 | PKG-026 | **Dev Job Floating Indicator** 🧩 | ✅ F5 | — | S | ✅ kész | PKG-021 |
+| PKG-027 | **Nightly Dash Research → Dev Pipeline** 🤖 | 📋 F0 | — | S | 30m | PKG-013 |
 
 ## Függőségi Sorrend
 
@@ -70,6 +71,7 @@ AJÁNLOTT SORREND:
 
 ✅ KÉSZ: PKG-001, PKG-013, PKG-014, PKG-015, PKG-002, PKG-003, PKG-004, PKG-005, PKG-016
 ⚠️  LEGACY-ONLY: PKG-017, PKG-019 (Cursor rossz target — dashboard.html helyett SvelteKit kell)
+🔄 QUEUED: PKG-027 (Otto → Relay → Processor → Cursor bridge)
 ```
 
 ## Forrás Kulcs

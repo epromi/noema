@@ -265,16 +265,26 @@ function validatePageData(data: Partial<DashboardData>): DashboardData {
 export const load: PageServerLoad = async () => {
   const providers = getProvider();
 
+  // 🚨 SSR timeout: ha 25 másodpercen belül nincs válasz, üres default-okkal tölt
+  const SSR_TIMEOUT_MS = 25000;
+  const TIMEOUT_SENTINEL = Symbol("ssr-timeout");
+
   const [dashboard, devPackages, hostnameRaw] = await Promise.all([
-    getAllData(providers),
-    getDevPackages(providers),
+    Promise.race([
+      getAllData(providers),
+      new Promise<typeof TIMEOUT_SENTINEL>((r) => setTimeout(() => r(TIMEOUT_SENTINEL), SSR_TIMEOUT_MS)),
+    ]),
+    Promise.race([
+      getDevPackages(providers),
+      new Promise<typeof TIMEOUT_SENTINEL>((r) => setTimeout(() => r(TIMEOUT_SENTINEL), SSR_TIMEOUT_MS)),
+    ]),
     providers.tool
       .execCommand('hostname 2>/dev/null || echo "N/A"')
       .catch(() => "N/A"),
   ]);
 
-  const validated = validatePageData(dashboard);
-  const devPackagesSafe = devPackages ?? emptyDevPackages();
+  const validated = validatePageData(typeof dashboard === "object" ? dashboard : {});
+  const devPackagesSafe = (typeof devPackages === "object" ? devPackages : null) ?? emptyDevPackages();
 
   return {
     ...validated,
