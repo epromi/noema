@@ -24,7 +24,7 @@
 | PKG-019 | Cron Sidebar — Mindig látható oldalsáv | ❌ (reverted, wrong target) | F-07 P1 | M | — | PKG-001+017 |
 | PKG-018 | Log Panel Auto-Refresh Fix | ✅ F5 | — | S | ✅ kész | PKG-014+016 |
 | PKG-017 | Cron Timeline + Processor Timer | ✅ F5 | F-07 P1 | M | ✅ kész | PKG-001+002 |
-| PKG-006 | Logs Viewer Tab | 📋 F0 | F-05 P1 | S | 1h | PKG-001+002 |
+| PKG-006 | Logs Viewer Tab | ✅ F5 | F-05 P1 | S | ✅ kész | PKG-001+002 |
 | PKG-007 | Audit Trail | 📋 F0 | F-06 P1 | M | 1.5-2h | PKG-001+003 |
 | PKG-008 | Cron Health Timeline | 📋 F0 | F-07 P1 | S | 1h | PKG-001+002 |
 | PKG-009 | SSE Live Updates | 📋 F0 | F-17↑ | M | 1.5-2h | PKG-001+002+003 |
