@@ -13,6 +13,7 @@
   import Research from "$lib/components/tabs/Research.svelte";
   import LogsViewer from "$lib/components/tabs/LogsViewer.svelte";
   import AuditTrail from "$lib/components/tabs/AuditTrail.svelte";
+  import DecisionTrace from "$lib/components/tabs/DecisionTrace.svelte";
   import H1 from "$lib/components/tabs/H1.svelte";
   import Viktor from "$lib/components/tabs/Viktor.svelte";
   import type { ImplementState } from "$lib/types";
@@ -197,6 +198,8 @@
     <LogsViewer logs={data.logs} />
   {:else if activeTab === "audit"}
     <AuditTrail auditTrail={data.auditTrail} />
+  {:else if activeTab === "trace"}
+    <DecisionTrace decisionTrace={data.decisionTrace} />
   {:else if activeTab === "noema"}
     <Noema
       packages={data.devPackages.packages}

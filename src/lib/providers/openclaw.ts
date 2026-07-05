@@ -150,11 +150,53 @@ export function createOpenClawProviders(
         ],
         { timeoutMs: 60_000 },
       );
-      const parsed = parseJson<{ messages?: Message[]; turns?: Message[] }>(
-        raw,
-        {},
-      );
-      return parsed.messages ?? parsed.turns ?? [];
+      const parsed = parseJson<{
+        messages?: Message[];
+        turns?: Message[];
+        outputDir?: string;
+      }>(raw, {});
+
+      if (parsed.messages?.length) return parsed.messages;
+      if (parsed.turns?.length) return parsed.turns;
+
+      if (parsed.outputDir) {
+        const eventsPath = join(parsed.outputDir, "events.jsonl");
+        const eventsRaw = await readFile(eventsPath, "utf8");
+        const messages: Message[] = [];
+
+        for (const line of eventsRaw.trim().split("\n")) {
+          if (!line.trim()) continue;
+          const event = parseJson<{
+            type?: string;
+            ts?: string;
+            data?: Record<string, unknown>;
+          }>(line, {});
+
+          if (event.type !== "tool.call" && event.type !== "tool.result") {
+            continue;
+          }
+
+          messages.push({
+            role: event.type,
+            content: event.data ?? {},
+            timestamp: event.ts ? Date.parse(event.ts) : undefined,
+            toolName:
+              typeof event.data?.name === "string"
+                ? event.data.name
+                : typeof event.data?.message === "object" &&
+                    event.data.message &&
+                    "toolName" in event.data.message
+                  ? String(
+                      (event.data.message as { toolName?: string }).toolName,
+                    )
+                  : undefined,
+          });
+        }
+
+        return messages;
+      }
+
+      return [];
     },
 
     async spawnAgent(agentId: string, task: string): Promise<SpawnResult> {

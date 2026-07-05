@@ -21,9 +21,9 @@
 | PKG-022 | Agents + Crons Tabs | ✅ F5 | — | M | ✅ kész | PKG-021 |
 | PKG-021 | Data Pipeline + Overview Tab | ✅ F5 | — | L | ✅ kész | PKG-001..005 |
 | PKG-020 | Action Queue — Több választási lehetőség | ⏭️ (absorbed by PKG-023) | — | M | — | — |
-| PKG-019 | Cron Sidebar — Mindig látható oldalsáv | ✅ F5 | F-07 P1 | M | ✅ kész | PKG-001+017 |
+| PKG-019 | Cron Sidebar — Mindig látható oldalsáv | 📋 F0 | F-07 P1 | M | 1h | PKG-001+017 |
 | PKG-018 | Log Panel Auto-Refresh Fix | ✅ F5 | — | S | ✅ kész | PKG-014+016 |
-| PKG-017 | Cron Timeline + Processor Timer | ✅ F5 | F-07 P1 | M | ✅ kész | PKG-001+002 |
+| PKG-017 | Cron Timeline + Processor Timer | 📋 F0 | F-07 P1 | M | 1h | PKG-001+002 |
 | PKG-006 | Logs Viewer Tab | ✅ F5 | F-05 P1 | S | ✅ kész | PKG-001+002 |
 | PKG-007 | Audit Trail | ✅ F5 | F-06 P1 | M | ✅ kész | PKG-001+003 |
 | PKG-008 | Cron Health Timeline | 📋 F0 | F-07 P1 | S | 1h | PKG-001+002 |
@@ -68,8 +68,8 @@ AJÁNLOTT SORREND:
 🧩 KOMPONENSEK (globális widget-ek):
   PKG-026 (Dev Job Indicator) — draggable floating panel, minden tab-on
 
-✅ KÉSZ: PKG-001, PKG-013, PKG-014, PKG-015, PKG-002, PKG-003, PKG-004, PKG-005, PKG-016, PKG-017, PKG-019
-❌ REVERTED: PKG-019 SvelteKit first attempt (wrong target — legacy ✅ F5)
+✅ KÉSZ: PKG-001, PKG-013, PKG-014, PKG-015, PKG-002, PKG-003, PKG-004, PKG-005, PKG-016
+⚠️  LEGACY-ONLY: PKG-017, PKG-019 (Cursor rossz target — dashboard.html helyett SvelteKit kell)
 ```
 
 ## Forrás Kulcs

@@ -118,6 +118,12 @@ function minimalDashboardData(): DashboardData {
       },
       updatedAt: now,
     },
+    decisionTrace: {
+      sessions: [],
+      traces: {},
+      defaultSessionKey: "",
+      updatedAt: now,
+    },
   };
 }
 

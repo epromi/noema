@@ -15,6 +15,7 @@
     { id: "research", label: "🔬 Research" },
     { id: "logs", label: "📋 Logs" },
     { id: "audit", label: "📜 Audit" },
+    { id: "trace", label: "🌳 Trace" },
     { id: "noema", label: "🧠 Noema" },
   ] as const;
 

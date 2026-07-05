@@ -12,6 +12,10 @@ import { getResearch } from "./research.js";
 import { getLogs } from "./logs.js";
 import { getAuditTrail } from "./audit-trail.js";
 import {
+  getDecisionTraceData,
+  getDecisionTrace,
+} from "./decision-trace.js";
+import {
   getDevLoopLog,
   getRunningDevLoop,
   getDevPackages,
@@ -34,6 +38,7 @@ export async function getAllData(
     actionQueue,
     logs,
     auditTrail,
+    decisionTrace,
   ] = await Promise.all([
     getCrons(p),
     getAgents(p),
@@ -47,6 +52,7 @@ export async function getAllData(
     getActionQueue(p),
     getLogs(p),
     getAuditTrail(p),
+    getDecisionTraceData(p),
   ]);
 
   return {
@@ -63,6 +69,7 @@ export async function getAllData(
     actionQueue,
     logs,
     auditTrail,
+    decisionTrace,
   };
 }
 
@@ -75,6 +82,8 @@ export {
   getHealth,
   getLogs,
   getAuditTrail,
+  getDecisionTrace,
+  getDecisionTraceData,
   getNoema,
   getActionQueue,
   getBrainstorm,

@@ -15,6 +15,7 @@ import type {
   BrainstormData,
   LogData,
   AuditTrailData,
+  DecisionTraceData,
 } from "$lib/types";
 import type { PageServerLoad } from "./$types";
 
@@ -187,6 +188,16 @@ function emptyAuditTrail(): AuditTrailData {
   };
 }
 
+function emptyDecisionTrace(): DecisionTraceData {
+  return {
+    sessions: [],
+    traces: {},
+    defaultSessionKey: "",
+    updatedAt: Date.now(),
+    error: "No data",
+  };
+}
+
 /** Ensure every core module section is present and arrays are never null. */
 function validatePageData(data: Partial<DashboardData>): DashboardData {
   const crons = data.crons ?? emptyCrons();
@@ -242,6 +253,11 @@ function validatePageData(data: Partial<DashboardData>): DashboardData {
       events: data.auditTrail?.events ?? [],
       sessions: data.auditTrail?.sessions ?? [],
       agents: data.auditTrail?.agents ?? [],
+    },
+    decisionTrace: {
+      ...(data.decisionTrace ?? emptyDecisionTrace()),
+      sessions: data.decisionTrace?.sessions ?? [],
+      traces: data.decisionTrace?.traces ?? {},
     },
   };
 }

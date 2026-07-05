@@ -447,6 +447,64 @@ export interface AuditTrailData {
   error?: string;
 }
 
+/** Single tool invocation in an agent session decision chain. */
+export interface DecisionStep {
+  id: string;
+  index: number;
+  toolName: string;
+  arguments: Record<string, unknown>;
+  argumentsPreview: string;
+  outputPreview: string;
+  timestampMs: number;
+  latencyMs?: number;
+  isError: boolean;
+  triggeredBy?: string;
+  isLoop: boolean;
+  isBottleneck: boolean;
+}
+
+/** Repeated tool call pattern within a session trace. */
+export interface DecisionLoop {
+  toolName: string;
+  signature: string;
+  stepIds: string[];
+  count: number;
+}
+
+/** Slow tool call flagged as a bottleneck. */
+export interface DecisionBottleneck {
+  stepId: string;
+  toolName: string;
+  latencyMs: number;
+}
+
+export interface DecisionTraceSessionOption {
+  key: string;
+  agentId?: string;
+  label: string;
+  updatedAt?: number;
+}
+
+/** Parsed decision trace for one session. */
+export interface DecisionTrace {
+  sessionKey: string;
+  agentId?: string;
+  steps: DecisionStep[];
+  loops: DecisionLoop[];
+  bottlenecks: DecisionBottleneck[];
+  updatedAt: number;
+  error?: string;
+}
+
+/** Dashboard payload: session list + traces keyed by session key. */
+export interface DecisionTraceData {
+  sessions: DecisionTraceSessionOption[];
+  traces: Record<string, DecisionTrace>;
+  defaultSessionKey: string;
+  updatedAt: number;
+  error?: string;
+}
+
 export interface DashboardData {
   meta: DashboardMeta;
   crons: CronData;
@@ -461,6 +519,7 @@ export interface DashboardData {
   actionQueue: ActionQueueData;
   logs: LogData;
   auditTrail: AuditTrailData;
+  decisionTrace: DecisionTraceData;
 }
 
 /** SSR page load payload (+page.server.ts → +page.svelte). */

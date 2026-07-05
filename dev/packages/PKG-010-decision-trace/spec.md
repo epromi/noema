@@ -53,3 +53,28 @@
 - [ ] `pnpm check` ZÖLD
 
 ### F3-F5: Integráció, teszt, merge (mint az eredeti spec)
+
+
+## 🎯 Mit
+
+_Placeholder — to be filled._
+
+
+## 📐 Scope
+
+_Placeholder — to be filled._
+
+
+## Mit érint
+
+_Placeholder — to be filled._
+
+
+## Mit NEM érint
+
+_Placeholder — to be filled._
+
+
+## ✅ Acceptance Criteria
+
+_Placeholder — to be filled._
