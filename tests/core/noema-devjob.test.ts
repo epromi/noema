@@ -48,7 +48,7 @@ function mockFetchWithStatus(
 
 describe("DEFAULT_RELAY_URL", () => {
   it("is the expected localhost relay address", () => {
-    expect(DEFAULT_RELAY_URL).toBe("http://127.0.0.1:18998");
+    expect(DEFAULT_RELAY_URL).toBe("/api");
   });
 });
 
