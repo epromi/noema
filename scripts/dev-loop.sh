@@ -3,7 +3,7 @@
 # Usage: ./scripts/dev-loop.sh <pkg-id>
 # Example: ./scripts/dev-loop.sh PKG-013
 #
-# 7-phase pipeline:
+# 8-phase pipeline:
 #   0. SPEC REVIEW    — validate spec, auto-fix, loop max 5x (NEW!)
 #   1. SPEC ANALYSIS  — read spec, extract metadata
 #   2. STRATEGY       — determine Alfred vs Cursor
@@ -11,6 +11,7 @@
 #   4. EXECUTE        — run Cursor agent or hand off to Alfred
 #   5. DEEP REVIEW    — lint+format(auto-fix 3x), test, architecture, quality, security, summary
 #   6. COMMIT         — git add, commit, push + dashboard regen
+#   7. CI VERIFY      — poll GitHub Actions, auto-fix failures, max 3 retry (NEW!)
 set -euo pipefail
 
 PKG_ID="${1:-}"
@@ -587,6 +588,132 @@ git pull --rebase 2>&1 || warn "Rebase conflict — manual fix needed"
 git push 2>&1 || warn "Push failed (maybe already pushed by cron)"
 
 ok "Status updated — $PKG_ID marked done + dashboard regen pushed"
+
+# ═══════════════════════════════════════════════════════════════════════════
+banner "PHASE 7: CI Verification"
+log_dev "🔍 Phase 7: CI Verification — kezdve (max 5 perc várakozás, 3 retry)"
+# ═══════════════════════════════════════════════════════════════════════════
+
+CI_PASS=0
+CI_MAX_WAIT=300  # 5 minutes max total wait
+CI_POLL=15       # Check every 15s
+CI_MAX_RETRY=3
+CI_ELAPSED=0
+
+for ci_attempt in $(seq 1 $CI_MAX_RETRY); do
+  echo ""
+  echo "🔍 CI ellenőrzés ($ci_attempt/$CI_MAX_RETRY)..."
+  
+  # Wait for CI to pick up the push (give GitHub ~10s head start)
+  if [ "$ci_attempt" -eq 1 ]; then
+    echo "   Várakozás CI trigger-re (10s)..."
+    sleep 10
+  fi
+
+  # Poll CI status
+  CI_FOUND=0
+  while [ "$CI_ELAPSED" -lt "$CI_MAX_WAIT" ]; do
+    CI_JSON=$(gh run list --repo epromi/noema --branch main --limit 1 --json databaseId,status,conclusion,displayTitle 2>/dev/null || echo '')
+    
+    if [ -z "$CI_JSON" ] || [ "$CI_JSON" = "[]" ]; then
+      echo "   ⏳ Még nincs CI run... ($CI_ELAPSED s)"
+      sleep "$CI_POLL"
+      CI_ELAPSED=$((CI_ELAPSED + CI_POLL))
+      continue
+    fi
+
+    CI_ID=$(echo "$CI_JSON" | python3 -c "import json,sys; runs=json.load(sys.stdin); print(runs[0]['databaseId'] if runs else '')" 2>/dev/null)
+    CI_STATUS=$(echo "$CI_JSON" | python3 -c "import json,sys; runs=json.load(sys.stdin); print(runs[0]['status'] if runs else '')" 2>/dev/null)
+    CI_CONCLUSION=$(echo "$CI_JSON" | python3 -c "import json,sys; runs=json.load(sys.stdin); print(runs[0].get('conclusion','') if runs else '')" 2>/dev/null)
+    CI_TITLE=$(echo "$CI_JSON" | python3 -c "import json,sys; runs=json.load(sys.stdin); print(runs[0]['displayTitle'] if runs else '')" 2>/dev/null)
+    
+    echo "   Run #$CI_ID: $CI_STATUS ($CI_CONCLUSION) — $CI_TITLE"
+
+    case "$CI_STATUS" in
+      completed)
+        CI_FOUND=1
+        break
+        ;;
+      *)
+        sleep "$CI_POLL"
+        CI_ELAPSED=$((CI_ELAPSED + CI_POLL))
+        ;;
+    esac
+  done
+
+  if [ "$CI_FOUND" -eq 0 ]; then
+    warn "CI timeout — $CI_MAX_WAIT s alatt nem fejeződött be"
+    log_dev "⚠️  Phase 7: CI timeout — escalate"
+    break
+  fi
+
+  # Show failed job details
+  if [ "$CI_CONCLUSION" = "failure" ]; then
+    echo ""
+    echo "❌ CI FAILED — hiba részletek:"
+    gh run view "$CI_ID" --repo epromi/noema --log-failed 2>&1 | head -30 || echo "   (nem sikerült lekérni a log-ot)"
+    echo ""
+    
+    if [ "$ci_attempt" -lt "$CI_MAX_RETRY" ]; then
+      warn "CI retry $ci_attempt/$CI_MAX_RETRY — auto-fix kísérlet..."
+      log_dev "⚠️  Phase 7: CI failed (attempt $ci_attempt) — auto-fix"
+      
+      # Attempt auto-fix: common CI issues
+      cd "$PROJECT_DIR"
+      
+      # Re-generate lockfile if pnpm issue
+      if gh run view "$CI_ID" --repo epromi/noema --log-failed 2>&1 | grep -q "frozen-lockfile\|ERR_PNPM"; then
+        echo "   🔧 pnpm lockfile hiba — regenerálás..."
+        pnpm install --no-frozen-lockfile 2>&1 | tail -3
+        git add pnpm-lock.yaml 2>/dev/null || true
+      fi
+      
+      # Re-check syntax if syntax error
+      if gh run view "$CI_ID" --repo epromi/noema --log-failed 2>&1 | grep -q "SyntaxError"; then
+        echo "   🔧 Syntax error — re-checking..."
+        for f in generate.cjs relay.cjs action-processor.cjs scripts/spec-review-agent.cjs lib/cron-schedule.cjs; do
+          node --check "$f" 2>&1 || warn "Syntax error in $f"
+        done
+      fi
+      
+      # Commit any fixes and push
+      if ! git diff --quiet 2>/dev/null; then
+        git add -A
+        git commit -m "🔧 CI fix (attempt $ci_attempt): $PKG_ID" 2>&1 || true
+        git pull --rebase 2>&1 || warn "Rebase conflict"
+        git push 2>&1 || warn "Push failed"
+        CI_ELAPSED=0
+        continue
+      else
+        warn "Nincs auto-fix lehetőség — escalate"
+        break
+      fi
+    else
+      warn "CI FAILED after $CI_MAX_RETRY attempts — escalate"
+      log_dev "❌ Phase 7: CI failed after $CI_MAX_RETRY retries"
+    fi
+  elif [ "$CI_CONCLUSION" = "success" ]; then
+    ok "CI ✅ PASSED — $CI_TITLE"
+    log_dev "✅ Phase 7: CI Verification — passed"
+    CI_PASS=1
+    break
+  elif [ "$CI_CONCLUSION" = "cancelled" ] || [ "$CI_CONCLUSION" = "skipped" ]; then
+    warn "CI $CI_CONCLUSION — nem futott le"
+    break
+  else
+    echo "   CI státusz: $CI_CONCLUSION — várakozás..."
+    sleep 10
+    CI_ELAPSED=$((CI_ELAPSED + 10))
+  fi
+done
+
+if [ "$CI_PASS" -eq 0 ]; then
+  echo ""
+  echo "📢 ESCALATE to András: $PKG_ID CI verification failed"
+  echo "   Run: gh run list --repo epromi/noema --limit 1"
+fi
+
+echo ""
 
 # ═══════════════════════════════════════════════════════════════════════════
 banner "5g: Review Sub-Agent"
