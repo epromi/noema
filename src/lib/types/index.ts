@@ -69,10 +69,14 @@ export interface AgentData {
 export interface HeartbeatEntry {
   agentId: string;
   consecutiveErrors: number;
+  /** 0–100 derived from consecutiveErrors (100 = healthy, ≤25 = stuck). */
+  healthScore: number;
   lastError?: string;
   retriesToday?: number;
   timeout?: number;
 }
+
+export type GatewayStatus = "online" | "offline" | "unknown";
 
 /** Session hook runtime state from memory/state/hook-state.json. */
 export interface HookState {
@@ -100,7 +104,7 @@ export interface HealthData {
   uptime: string;
   disk: string;
   ram: string;
-  gatewayStatus: string;
+  gatewayStatus: GatewayStatus;
   heartbeat: HeartbeatEntry[];
   hookState: HookState;
   modelMappingAge: number;

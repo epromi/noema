@@ -1,1 +1,6 @@
-export { getHealth, parseHeartbeatEntries, classifyGatewayStatus } from '../../src/lib/core/health.js';
+export {
+	getHealth,
+	parseHeartbeatEntries,
+	classifyGatewayStatus,
+	computeHeartbeatHealthScore
+} from '../../src/lib/core/health.js';

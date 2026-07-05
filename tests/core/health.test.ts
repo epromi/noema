@@ -2,12 +2,20 @@ import { describe, it, expect, vi } from 'vitest';
 import {
 	getHealth,
 	parseHeartbeatEntries,
-	classifyGatewayStatus
+	classifyGatewayStatus,
+	computeHeartbeatHealthScore
 } from '$lib/core/health';
 import { createMockProviders } from './mock-providers';
 
 describe('health', () => {
-	it('parseHeartbeatEntries maps agent heartbeat fields', () => {
+	it('computeHeartbeatHealthScore maps error counts to scores', () => {
+		expect(computeHeartbeatHealthScore(0)).toBe(100);
+		expect(computeHeartbeatHealthScore(1)).toBe(75);
+		expect(computeHeartbeatHealthScore(2)).toBe(50);
+		expect(computeHeartbeatHealthScore(5)).toBe(25);
+	});
+
+	it('parseHeartbeatEntries maps agent heartbeat fields and scores', () => {
 		const entries = parseHeartbeatEntries({
 			edwin: {
 				consecutiveErrors: 2,
@@ -15,12 +23,14 @@ describe('health', () => {
 				retriesToday: 1,
 				timeout: 120
 			},
-			otto: {}
+			otto: {},
+			lastChecks: { email: 1_777_741_080 }
 		});
 		expect(entries).toEqual([
 			{
 				agentId: 'edwin',
 				consecutiveErrors: 2,
+				healthScore: 50,
 				lastError: 'timeout',
 				retriesToday: 1,
 				timeout: 120
@@ -28,6 +38,7 @@ describe('health', () => {
 			{
 				agentId: 'otto',
 				consecutiveErrors: 0,
+				healthScore: 100,
 				lastError: undefined,
 				retriesToday: 0,
 				timeout: 300
@@ -35,9 +46,11 @@ describe('health', () => {
 		]);
 	});
 
-	it('classifyGatewayStatus detects offline output', () => {
+	it('classifyGatewayStatus detects offline and unknown output', () => {
 		expect(classifyGatewayStatus('offline')).toBe('offline');
 		expect(classifyGatewayStatus('Gateway running on :8080')).toBe('online');
+		expect(classifyGatewayStatus('unknown')).toBe('unknown');
+		expect(classifyGatewayStatus('')).toBe('unknown');
 	});
 
 	it('getHealth returns system metrics via provider', async () => {
@@ -47,6 +60,7 @@ describe('health', () => {
 		expect(data.ram).toContain('total');
 		expect(data.gatewayStatus).toBe('online');
 		expect(data.heartbeat.length).toBeGreaterThan(0);
+		expect(data.heartbeat[0]?.healthScore).toBe(100);
 		expect(data.hookState.rulesCheck?.enabled).toBe(true);
 		expect(data.modelMappingAge).toBeGreaterThanOrEqual(0);
 		expect(data.updatedAt).toBeGreaterThan(0);
@@ -67,6 +81,48 @@ describe('health', () => {
 		expect(data.gatewayStatus).toBe('offline');
 	});
 
+	it('getHealth returns 999 modelMappingAge when mapping file is empty', async () => {
+		const mock = createMockProviders({
+			filesystem: {
+				readMemory: async () => '',
+				writeMemory: async () => {},
+				readAgentStatus: async (agentId) => ({
+					agentId,
+					content: '',
+					path: `/tmp/${agentId}`
+				}),
+				readState: async () => '{}',
+				readResearch: async () => ''
+			}
+		});
+		const data = await getHealth(mock);
+		expect(data.modelMappingAge).toBe(999);
+	});
+
+	it('getHealth returns 999 modelMappingAge when mapping read throws', async () => {
+		const mock = createMockProviders({
+			filesystem: {
+				readMemory: async () => {
+					throw new Error('read failed');
+				},
+				writeMemory: async () => {},
+				readAgentStatus: async (agentId) => ({
+					agentId,
+					content: '',
+					path: `/tmp/${agentId}`
+				}),
+				readState: async (path) => {
+					if (path === 'heartbeat-state.json') return '{}';
+					if (path === 'hook-state.json') return '{}';
+					return '{}';
+				},
+				readResearch: async () => ''
+			}
+		});
+		const data = await getHealth(mock);
+		expect(data.modelMappingAge).toBe(999);
+	});
+
 	it('getHealth returns error payload when provider construction fails', async () => {
 		const broken = createMockProviders();
 		const spy = vi.spyOn(Promise, 'all').mockImplementationOnce(async () => {
@@ -77,5 +133,6 @@ describe('health', () => {
 		expect(data.error).toContain('forced failure');
 		expect(data.heartbeat).toEqual([]);
 		expect(data.hookState).toEqual({});
+		expect(data.gatewayStatus).toBe('unknown');
 	});
 });

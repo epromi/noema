@@ -2,26 +2,58 @@ import { join } from "node:path";
 import type { AllProviders } from "$lib/providers/types";
 import { fileAgeDays, workspaceRoot } from "$lib/providers/openclaw";
 import { getProvider } from "$lib/providers";
-import type { HealthData, HeartbeatEntry, HookState } from "$lib/types";
+import type {
+  GatewayStatus,
+  HealthData,
+  HeartbeatEntry,
+  HookState,
+} from "$lib/types";
 import { safeParseJson } from "./utils.js";
+
+/** Top-level heartbeat-state.json keys that are not per-agent records. */
+const HEARTBEAT_META_KEYS = new Set(["lastChecks"]);
+
+/** Derive a 0–100 health score from consecutive heartbeat errors. */
+export function computeHeartbeatHealthScore(consecutiveErrors: number): number {
+  if (consecutiveErrors <= 0) return 100;
+  if (consecutiveErrors === 1) return 75;
+  if (consecutiveErrors === 2) return 50;
+  return 25;
+}
+
+function isAgentHeartbeatState(state: unknown): state is Record<string, unknown> {
+  return typeof state === "object" && state !== null && !Array.isArray(state);
+}
 
 /** Parse heartbeat-state.json entries into dashboard rows. */
 export function parseHeartbeatEntries(
   raw: Record<string, Record<string, unknown>>,
 ): HeartbeatEntry[] {
-  return Object.entries(raw).map(([agentId, state]) => ({
-    agentId,
-    consecutiveErrors: Number(state.consecutiveErrors ?? 0),
-    lastError:
-      typeof state.lastError === "string" ? state.lastError : undefined,
-    retriesToday: Number(state.retriesToday ?? 0),
-    timeout: Number(state.timeout ?? 300),
-  }));
+  return Object.entries(raw)
+    .filter(
+      ([agentId, state]) =>
+        !HEARTBEAT_META_KEYS.has(agentId) && isAgentHeartbeatState(state),
+    )
+    .map(([agentId, state]) => {
+      const consecutiveErrors = Number(state.consecutiveErrors ?? 0);
+      return {
+        agentId,
+        consecutiveErrors,
+        healthScore: computeHeartbeatHealthScore(consecutiveErrors),
+        lastError:
+          typeof state.lastError === "string" ? state.lastError : undefined,
+        retriesToday: Number(state.retriesToday ?? 0),
+        timeout: Number(state.timeout ?? 300),
+      };
+    });
 }
 
-/** Classify gateway exec output as online or offline. */
-export function classifyGatewayStatus(raw: string): "online" | "offline" {
-  return raw.includes("offline") ? "offline" : "online";
+/** Classify gateway exec output as online, offline, or unknown. */
+export function classifyGatewayStatus(raw: string): GatewayStatus {
+  const normalized = raw.trim().toLowerCase();
+  if (!normalized || normalized === "unknown") return "unknown";
+  if (normalized.includes("offline")) return "offline";
+  return "online";
 }
 
 async function resolveModelMappingAge(
