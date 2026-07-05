@@ -22,7 +22,7 @@
 | PKG-021 | Data Pipeline + Overview Tab | ✅ F5 | — | L | ✅ kész | PKG-001..005 |
 | PKG-020 | Action Queue — Több választási lehetőség | ⏭️ (absorbed by PKG-023) | — | M | — | — |
 | PKG-019 | Cron Sidebar — Mindig látható oldalsáv | ❌ (reverted, wrong target) | F-07 P1 | M | — | PKG-001+017 |
-| PKG-018 | Log Panel Auto-Refresh Fix | 📋 F0 | — | S | 15min | PKG-014+016 |
+| PKG-018 | Log Panel Auto-Refresh Fix | ✅ F5 | — | S | ✅ kész | PKG-014+016 |
 | PKG-017 | Cron Timeline + Processor Timer | ⏸️ (reverted from dashboard) | F-07 P1 | M | — | PKG-001+002 |
 | PKG-006 | Logs Viewer Tab | 📋 F0 | F-05 P1 | S | 1h | PKG-001+002 |
 | PKG-007 | Audit Trail | 📋 F0 | F-06 P1 | M | 1.5-2h | PKG-001+003 |
