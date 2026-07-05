@@ -47,7 +47,7 @@
 | **F-11** | **Auto-Generated Wiki** — Agent fájlokból, configból, skill-ekből auto-generált, kereshető dokumentáció. Read-only, filesystem-ből élőben | Hermes Dashboard | 4-6h | 📋 Kutatva |
 | **F-12** | **Subagent Status Panel** — Session-enként: spawn time, státusz, tool call count, completion time, success/error. Timeline vizualizáció | Hermes Dashboard | 2-3h | 📋 Kutatva |
 | **F-13** | **Template JS Kiszervezés** — A ~920 soros HTML-ből a JS renderer kiszervezése külön `<script>` fájlba. Karbantarthatóság ↑ | Code Quality | 1-2h | 📋 Kutatva |
-| **F-20** | **Reasoning Trace Viewer** 🔥 — Agent session-ök `<thinking>` blokkjainak kinyerése és vizualizációja. Plan-act-observe fázisok, tool választási indoklások, chain-of-thought timeline. Ez a legnagyobb gap az iparági standard-ekhez képest | Industry Review 2026 | 4-6h | 📋 Kutatva |
+| **F-20** | **Agent Decision Trace** — Agent session-ök tool call fájának strukturált vizualizációja. Mit csinált, milyen sorrendben, mi volt a tool output, hogyan befolyásolta a következő döntést. Döntési lánc, NEM gondolati lánc (az LLM reasoning nem hozzáférhető) | Industry Review 2026 | 4-6h | 📋 Kutatva |
 
 ---
 
@@ -61,8 +61,8 @@
 | **F-17** | **WebSocket Real-Time** — Push frissítések page refresh helyett. SSE vagy WebSocket a relay.js-en keresztül | Mission Control | 8-12h | 📋 Kutatva |
 | **F-18** | **Több Téma** — Light mode, kontraszt mód, több színséma (mint a Hermes Studio 8 témája) | Hermes Studio | 3-5h | 📋 Kutatva |
 | **F-19** | **Mobile PWA** — Reszponzív design optimalizálás mobilon, PWA manifest, offline cache | Hermes Studio | 4-6h | 📋 Kutatva |
-| **F-21** | **Eval Scoring Engine** — Automatikus minőségbírálat agent session-ökön. Trace → score (0-100) → fail flag → vissza az agent-hez feedback loop. Braintrust/Otel pattern | Industry Review 2026 | 6-10h | 📋 Kutatva |
-| **F-22** | **OTel GenAI Export** — OpenTelemetry GenAI v1.41 span export a core modulokból. Standard formátum, Grafana/Jaeger kompatibilitás. Noema = frontend, OTel = backend | Industry Review 2026 | 5-8h | 📋 Kutatva |
+| **F-21** | **Session Health Scoring** — Agent session-ök egészségpontozása rendszer-metrikák alapján (completion 35%, efficiency 30%, error rate 20%, loop penalty 15%). NEM LLM eval — tisztán szabály-alapú, determinisztikus | Industry Review 2026 | 3-4h | 📋 Kutatva |
+| **F-22** | **OTel Export (opcionális)** — Lightweight span export JSONL-be + opcionális OTLP endpoint. Single-machine esetben nincs szükség teljes OTel SDK-ra | Industry Review 2026 | 1-2h | 📋 Kutatva |
 
 ---
 
@@ -83,8 +83,8 @@
 | Prioritás | Összes | Kész | Függőben |
 |-----------|--------|------|----------|
 | 🔴 P0 | 4 | 3 | 1 |
-| 🟡 P1 | 5 | 0 | 5 |
-| 🟢 P2 | 7 | 0 | 7 |
+| 🟡 P1 | 4 | 0 | 4 |
+| 🟢 P2 | 8 | 0 | 8 |
 | ⚪ P3 | 8 | 0 | 8 |
 | **Összes** | **24** | **3** | **21** |
 
