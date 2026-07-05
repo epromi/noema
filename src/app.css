@@ -37,8 +37,8 @@ body {
 }
 
 .app-shell {
-  max-width: 1200px;
-  margin: 0 auto;
+  max-width: none;
+  margin: 0;
   padding: 16px 24px;
 }
 

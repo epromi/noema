@@ -2,6 +2,7 @@
 	import { getContext, onDestroy } from 'svelte';
 	import type { PageData } from './$types';
 	import Noema from '$lib/components/tabs/Noema.svelte';
+	import CronSidebar from '$lib/components/shared/CronSidebar.svelte';
 	import type { ImplementState } from '$lib/types';
 
 	const RELAY_URL = 'http://127.0.0.1:18998';
@@ -123,6 +124,10 @@
 			onImplement={handleImplement}
 			onLogToggle={handleLogToggle}
 		/>
+	{:else if tabContext?.current === 'crons'}
+		<div class="mobile-crons">
+			<CronSidebar crons={data.crons} variant="inline" />
+		</div>
 	{:else}
 		<div class="dashboard-placeholder">
 			<p><strong>Noema 🧠</strong> — SvelteKit scaffold ready.</p>
@@ -156,5 +161,15 @@
 
 	.dashboard-placeholder p + p {
 		margin-top: 8px;
+	}
+
+	.mobile-crons {
+		display: none;
+	}
+
+	@media (max-width: 599px) {
+		.mobile-crons {
+			display: block;
+		}
 	}
 </style>

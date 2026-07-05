@@ -32,6 +32,39 @@ export interface CronData {
   error?: string;
 }
 
+export type CronSidebarStatus = "ok" | "error" | "warning";
+
+export interface CronSidebarCronRow {
+  kind: "cron";
+  id: string;
+  timeLabel: string;
+  emoji: string;
+  name: string;
+  shortName: string;
+  countdown: string;
+  status: CronSidebarStatus;
+  isPast: boolean;
+  isNext: boolean;
+  isHourly: boolean;
+  sortMins: number;
+  nextRunAtMs: number | null;
+}
+
+export interface CronSidebarNowRow {
+  kind: "now";
+  sortMins: number;
+  clockLabel: string;
+}
+
+export type CronSidebarRow = CronSidebarCronRow | CronSidebarNowRow;
+
+export interface CronSidebarData {
+  rows: CronSidebarRow[];
+  clockLabel: string;
+  nextCronId: string | null;
+  updatedAt: number;
+}
+
 export type AgentCardStatus = "green" | "yellow" | "red";
 
 /** Live session phase for an agent (distinct from card health color). */
