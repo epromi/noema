@@ -3,7 +3,8 @@
 # Usage: ./scripts/dev-loop.sh <pkg-id>
 # Example: ./scripts/dev-loop.sh PKG-013
 #
-# 6-phase pipeline:
+# 7-phase pipeline:
+#   0. SPEC REVIEW    — validate spec, auto-fix, loop max 5x (NEW!)
 #   1. SPEC ANALYSIS  — read spec, extract metadata
 #   2. STRATEGY       — determine Alfred vs Cursor
 #   3. PROMPT         — generate Cursor prompt from template
@@ -69,6 +70,39 @@ PIPELINE_START=$(date +%s)
 
 source "$PROJECT_DIR/scripts/dev-log.sh"
 dev_log_init "$PKG_ID"
+
+# ═══════════════════════════════════════════════════════════════════════════
+banner "PHASE 0/6: Spec Review Agent"
+log_dev "📋 Phase 0/6: Spec Review — kezdve (max 5 review+fix loop)"
+# ═══════════════════════════════════════════════════════════════════════════
+
+REVIEW_AGENT="$PROJECT_DIR/scripts/spec-review-agent.cjs"
+if [ -f "$REVIEW_AGENT" ]; then
+  echo "Running Spec Review Agent on $PKG_ID..."
+  echo ""
+  set +e
+  node "$REVIEW_AGENT" "$PKG_ID" 2>&1
+  REVIEW_EXIT=$?
+  set -e
+
+  if [ "$REVIEW_EXIT" -eq 0 ]; then
+    ok "Phase 0: Spec Review — ✅ ALL CLEAR"
+    log_dev "✅ Phase 0: Spec Review — passed"
+  else
+    warn "Phase 0: Spec Review — ❌ issues remain after max rounds"
+    log_dev "⚠️  Phase 0: Spec Review — escalated (manual review needed)"
+    echo ""
+    echo "📢 ESCALATE to András: $PKG_ID spec needs manual review."
+    echo "   Spec file: $SPEC_FILE"
+    echo "   Review log: $PROJECT_DIR/logs/reviews/${PKG_ID}-failed.txt"
+    echo ""
+  fi
+else
+  warn "Spec Review Agent not found: $REVIEW_AGENT"
+  log_dev "⚠️  Phase 0: Spec Review — skipped (script missing)"
+fi
+
+echo ""
 
 # ═══════════════════════════════════════════════════════════════════════════
 banner "PHASE 1/6: Spec Analysis ($PKG_ID)"
