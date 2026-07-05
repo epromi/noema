@@ -508,6 +508,25 @@ git push 2>&1 || warn "Push failed (maybe already pushed by cron)"
 
 ok "Status updated — $PKG_ID marked done + dashboard regen pushed"
 
+# ═══════════════════════════════════════════════════════════════════════════
+banner "5g: Review Sub-Agent"
+# ═══════════════════════════════════════════════════════════════════════════
+
+REVIEW_SPAWNER="$PROJECT_DIR/scripts/spawn-review-agent.js"
+
+if [ -f "$REVIEW_SPAWNER" ]; then
+  if [ "${REVIEW_WARN:-0}" -gt 0 ] || [ "${REVIEW_FAIL:-0}" -gt 0 ]; then
+    echo "Issues detected (${REVIEW_WARN:-0}w/${REVIEW_FAIL:-0}f) — spawning review sub-agent..."
+    node "$REVIEW_SPAWNER" "$PKG_ID" "$REVIEW_LOG" 2>&1 || warn "Review agent spawn failed (check Gateway API)"
+  else
+    echo "✅ Review clean — no sub-agent needed"
+  fi
+else
+  echo "(spawn-review-agent.js not found — skip)"
+fi
+
+echo ""
+
 # Mark action queue entry
 ACTION_QUEUE="$PROJECT_DIR/../memory/state/noema-actions.jsonl"
 if [ -f "$ACTION_QUEUE" ]; then
