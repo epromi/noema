@@ -38,6 +38,7 @@ describe('index (getAllData)', () => {
 		expect(data.bills).toBeDefined();
 		expect(data.research).toBeDefined();
 		expect(data.noema).toBeDefined();
+		expect(data.actionQueue).toBeDefined();
 	}, 15000);
 
 	it('named exports are callable', async () => {

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { getNoema } from '$lib/core/noema';
+import { getNoema, getActionQueue } from '$lib/core/noema';
 import { createMockProviders } from './mock-providers';
 
 vi.mock('node:fs/promises', async (importOriginal) => {
@@ -27,5 +27,16 @@ describe('noema', () => {
 		expect(data.metrics.activeProposals).toBe(2);
 		expect(data.architecture).toContain('lib/providers');
 		expect(data.updatedAt).toBeGreaterThan(0);
+	});
+
+	it('getActionQueue parses kanban columns with multi-actions', async () => {
+		const data = await getActionQueue(createMockProviders());
+		expect(data.alfred.length).toBe(1);
+		expect(data.alfred[0]?.id).toBe('test_item');
+		expect(data.alfred[0]?.actions).toEqual(['done', 'escalate']);
+		expect(data.andras.length).toBe(1);
+		expect(data.andras[0]?.actions).toContain('done');
+		expect(data.auto.length).toBe(1);
+		expect(data.auto[0]?.actions).toEqual([]);
 	});
 });

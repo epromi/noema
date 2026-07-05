@@ -19,10 +19,18 @@ vi.mock('node:fs/promises', async (importOriginal) => {
 						ReturnType<typeof actual.readdir>
 					>;
 				}
+				if (d.endsWith('memory/nightly') || d.endsWith('nightly')) {
+					return [{ name: 'nightly-review-2026-07-05.md', isDirectory: () => false }] as unknown as Awaited<
+						ReturnType<typeof actual.readdir>
+					>;
+				}
 				return [];
 			}
 			if (d.endsWith('memory/research/noema') || d.endsWith('research/noema')) {
 				return ['2026-07-05.md'] as unknown as Awaited<ReturnType<typeof actual.readdir>>;
+			}
+			if (d.endsWith('memory/nightly') || d.endsWith('nightly')) {
+				return ['nightly-review-2026-07-05.md'] as unknown as Awaited<ReturnType<typeof actual.readdir>>;
 			}
 			return [] as unknown as Awaited<ReturnType<typeof actual.readdir>>;
 		}),
@@ -41,5 +49,13 @@ describe('research', () => {
 		expect(data.proposals.length).toBeGreaterThan(0);
 		expect(data.proposals[0]?.id).toBe('P-1');
 		expect(data.updatedAt).toBeGreaterThan(0);
+	});
+
+	it('getResearch includes otto nightly runs', async () => {
+		const data = await getResearch(createMockProviders());
+		expect(data.ottoRuns.length).toBeGreaterThan(0);
+		expect(data.ottoRuns[0]?.date).toBe('2026-07-05');
+		expect(data.ottoRuns[0]?.status).toBe('ok');
+		expect(data.ottoRuns[0]?.steps.length).toBeGreaterThan(0);
 	});
 });

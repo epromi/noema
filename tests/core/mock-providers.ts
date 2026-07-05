@@ -53,6 +53,12 @@ export function createMockProviders(overrides: Partial<AllProviders> = {}): AllP
 		},
 		filesystem: {
 			readMemory: async (path) => {
+				if (path.startsWith('nightly/nightly-review-')) {
+					return `# Otto Nightly #52 OK
+**Generated**: test
+- [x] N+1: Core analysis done
+Summary line one.`;
+				}
 				if (path === 'at-a-glance.md') {
 					return '| Open | 3 |\nSignal: 7.5\nReputation: 120\nTrial | 2 |';
 				}
@@ -74,6 +80,15 @@ export function createMockProviders(overrides: Partial<AllProviders> = {}): AllP
 				}
 				if (path === 'hook-state.json') {
 					return JSON.stringify({ rulesCheck: { enabled: true } });
+				}
+				if (path === 'action-queue.md') {
+					return `# Action Queue
+## 👔 Alfred (1 item)
+- [ ] [07-05] [P1] test_item — Fix something → [Done|Escalate]
+## 🧑 András (1 item)
+- [ ] [07-02] [P1] decide_thing — Need decision
+## ⚡ Auto-resolved (ma)
+- [x] [07-05] auto_item — Auto fixed ✅`;
 				}
 				return '{}';
 			},

@@ -151,12 +151,16 @@ h1{font-size:1.3em;margin-bottom:0}.subtitle{color:var(--muted);font-size:0.92em
   .pkg-detail { display:none; }
 
   /* ── Dev Loop Indicator (fixed right-center) ── */
-  #dev-loop-indicator { position:fixed; right:16px; top:50%; transform:translateY(-50%); background:var(--card); border:2px solid var(--border); border-radius:10px; padding:12px 16px; min-width:210px; z-index:9999; box-shadow:0 4px 16px rgba(0,0,0,0.35); font-size:0.82em; line-height:1.5; transition:border-color 0.3s; }
+  #dev-loop-indicator { position:fixed; left:auto; right:16px; top:50%; background:var(--card); border:2px solid var(--border); border-radius:10px; padding:0; min-width:210px; z-index:9999; box-shadow:0 4px 16px rgba(0,0,0,0.35); font-size:0.82em; line-height:1.5; transition:border-color 0.3s; user-select:none; }
   #dev-loop-indicator.idle { border-color:var(--border); }
   #dev-loop-indicator.active { border-color:var(--green); animation:pulse 2s infinite; }
   #dev-loop-indicator.soon { border-color:var(--yellow); }
   @keyframes pulse { 0%,100% { box-shadow:0 4px 16px rgba(0,0,0,0.3); } 50% { box-shadow:0 0 24px rgba(63,185,80,0.3); } }
-  .dli-title { font-weight:700; color:var(--accent); font-size:0.85em; margin-bottom:4px; }
+  .dli-handle { cursor:grab; padding:6px 16px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; }
+  .dli-handle:active { cursor:grabbing; }
+  .dli-title { font-weight:700; color:var(--accent); font-size:0.85em; }
+  .dli-pin { font-size:0.7em; color:var(--muted); opacity:0.5; }
+  .dli-body { padding:6px 16px 12px 16px; }
   .dli-row { display:flex; justify-content:space-between; margin-bottom:2px; }
   .dli-label { color:var(--muted); }
   .dli-val { font-weight:700; }
@@ -166,11 +170,16 @@ h1{font-size:1.3em;margin-bottom:0}.subtitle{color:var(--muted);font-size:0.92em
 <body>
 
 <!-- ── Dev Loop Indicator ── -->
-<div id="dev-loop-indicator" class="idle">
-  <div class="dli-title">⚙️ Dev Job</div>
-  <div class="dli-row"><span class="dli-label">Következő:</span><span class="dli-val dli-countdown" id="dli-next">—</span></div>
-  <div class="dli-row"><span class="dli-label">Sorban áll:</span><span class="dli-val" id="dli-queue" style="color:var(--muted)">0</span></div>
-  <div class="dli-row" id="dli-running-row" style="display:none"><span class="dli-label">Fut:</span><span class="dli-val" id="dli-running" style="color:var(--green)">—</span></div>
+<div id="dev-loop-indicator" class="idle" style="top:calc(50% - 50px)">
+  <div class="dli-handle" id="dli-handle">
+    <span class="dli-title">⚙️ Dev Job</span>
+    <span class="dli-pin">⠿</span>
+  </div>
+  <div class="dli-body">
+    <div class="dli-row"><span class="dli-label">Következő:</span><span class="dli-val dli-countdown" id="dli-next">—</span></div>
+    <div class="dli-row"><span class="dli-label">Sorban áll:</span><span class="dli-val" id="dli-queue" style="color:var(--muted)">0</span></div>
+    <div class="dli-row" id="dli-running-row" style="display:none"><span class="dli-label">Fut:</span><span class="dli-val" id="dli-running" style="color:var(--green)">—</span></div>
+  </div>
 </div>
 
 <!-- ── Header ── -->

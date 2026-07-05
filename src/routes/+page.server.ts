@@ -11,6 +11,7 @@ import type {
   HealthData,
   NoemaData,
   ResearchData,
+  ActionQueueData,
 } from "$lib/types";
 import type { PageServerLoad } from "./$types";
 
@@ -104,6 +105,17 @@ function emptyResearch(): ResearchData {
     proposals: [],
     autoFixCount: 0,
     proposeCount: 0,
+    ottoRuns: [],
+    updatedAt: Date.now(),
+    error: "No data",
+  };
+}
+
+function emptyActionQueue(): ActionQueueData {
+  return {
+    auto: [],
+    alfred: [],
+    andras: [],
     updatedAt: Date.now(),
     error: "No data",
   };
@@ -162,8 +174,15 @@ function validatePageData(data: Partial<DashboardData>): DashboardData {
     research: {
       ...(data.research ?? emptyResearch()),
       proposals: data.research?.proposals ?? [],
+      ottoRuns: data.research?.ottoRuns ?? [],
     },
     noema: data.noema ?? emptyNoema(),
+    actionQueue: {
+      ...(data.actionQueue ?? emptyActionQueue()),
+      auto: data.actionQueue?.auto ?? [],
+      alfred: data.actionQueue?.alfred ?? [],
+      andras: data.actionQueue?.andras ?? [],
+    },
   };
 }
 

@@ -4,6 +4,7 @@
 	import Overview from '$lib/components/tabs/Overview.svelte';
 	import Agents from '$lib/components/tabs/Agents.svelte';
 	import Crons from '$lib/components/tabs/Crons.svelte';
+	import Orchestrator from '$lib/components/tabs/Orchestrator.svelte';
 	import Noema from '$lib/components/tabs/Noema.svelte';
 	import type { ImplementState } from '$lib/types';
 
@@ -133,6 +134,15 @@
 		<Agents agents={data.agents} viktor={data.h1.viktor} />
 	{:else if activeTab === 'crons'}
 		<Crons crons={data.crons} />
+	{:else if activeTab === 'orchestrator'}
+		<Orchestrator
+			crons={data.crons}
+			research={data.research}
+			actionQueue={data.actionQueue}
+			{packageStates}
+			onImplement={handleImplement}
+			onLogToggle={handleLogToggle}
+		/>
 	{:else if activeTab === 'noema'}
 		<Noema
 			packages={data.devPackages.packages}

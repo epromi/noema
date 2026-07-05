@@ -3,7 +3,12 @@ import { join } from "node:path";
 import type { AllProviders } from "$lib/providers/types";
 import { workspaceRoot } from "$lib/providers/openclaw";
 import { getProvider } from "$lib/providers";
-import type { ResearchData, ResearchProposal } from "$lib/types";
+import type {
+  ResearchData,
+  ResearchProposal,
+  OttoRunEntry,
+  OttoRunStatus,
+} from "$lib/types";
 import { countFiles, safeParseJson } from "./utils.js";
 
 export async function getResearch(
@@ -66,6 +71,8 @@ export async function getResearch(
       /* no actions file */
     }
 
+    const ottoRuns = await loadOttoRuns(p, researchRoot);
+
     return {
       totalFiles: total,
       recentFiles: recent,
@@ -73,6 +80,7 @@ export async function getResearch(
       proposals: proposals.slice(0, 8),
       autoFixCount,
       proposeCount,
+      ottoRuns,
       updatedAt: Date.now(),
     };
   } catch (err) {
@@ -83,6 +91,7 @@ export async function getResearch(
       proposals: [],
       autoFixCount: 0,
       proposeCount: 0,
+      ottoRuns: [],
       updatedAt: Date.now(),
       error: String(err),
     };
@@ -126,4 +135,73 @@ function parseProposals(content: string): ResearchProposal[] {
   }
 
   return proposals;
+}
+
+async function loadOttoRuns(
+  p: AllProviders,
+  researchRoot: string,
+): Promise<OttoRunEntry[]> {
+  const nightlyDir = join(researchRoot, "..", "nightly");
+  try {
+    const files = (await readdir(nightlyDir))
+      .filter((f) => f.startsWith("nightly-review-") && f.endsWith(".md"))
+      .sort()
+      .reverse()
+      .slice(0, 10);
+
+    const runs: OttoRunEntry[] = [];
+    for (const file of files) {
+      const content = await p.filesystem.readMemory(`nightly/${file}`);
+      runs.push(parseOttoRun(file, content));
+    }
+    return runs;
+  } catch {
+    return [];
+  }
+}
+
+function parseOttoRun(filename: string, content: string): OttoRunEntry {
+  const lines = content.split("\n");
+  const title = lines[0]?.replace(/^#\s*/, "") || filename;
+  const date = filename
+    .replace("nightly-review-", "")
+    .replace(".md", "");
+
+  let summaryStart = 1;
+  for (let i = 1; i < lines.length && i < 10; i++) {
+    const line = lines[i] ?? "";
+    if (
+      line.startsWith("**") ||
+      line.startsWith(">") ||
+      line.length < 3 ||
+      line.trim() === "---"
+    ) {
+      summaryStart++;
+      continue;
+    }
+    break;
+  }
+
+  const summary = lines
+    .slice(summaryStart, summaryStart + 3)
+    .join(" ")
+    .substring(0, 200);
+
+  const steps: OttoRunEntry["steps"] = [];
+  for (const line of lines) {
+    const stepMatch = line.match(/^- \[(x| )\]\s+(N\+\d+):\s+(.+)/);
+    if (stepMatch) {
+      steps.push({
+        status: stepMatch[1] === "x" ? "ok" : "pending",
+        label: stepMatch[3] ?? "",
+      });
+    }
+  }
+
+  let status: OttoRunStatus = "ok";
+  const upper = title.toUpperCase();
+  if (upper.includes("FAILED") || upper.includes("ERROR")) status = "err";
+  else if (upper.includes("WARN")) status = "warn";
+
+  return { title, date, summary, steps, status };
 }

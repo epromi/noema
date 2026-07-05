@@ -210,6 +210,22 @@ export interface ResearchProposal {
   status?: string;
 }
 
+export type OttoRunStatus = "ok" | "warn" | "err";
+
+export interface OttoRunStep {
+  status: "ok" | "pending";
+  label: string;
+}
+
+/** Single Otto nightly compilation run for the orchestrator timeline. */
+export interface OttoRunEntry {
+  title: string;
+  date: string;
+  summary: string;
+  steps: OttoRunStep[];
+  status: OttoRunStatus;
+}
+
 export interface ResearchData {
   totalFiles: number;
   recentFiles: number;
@@ -217,6 +233,33 @@ export interface ResearchData {
   proposals: ResearchProposal[];
   autoFixCount: number;
   proposeCount: number;
+  ottoRuns: OttoRunEntry[];
+  updatedAt: number;
+  error?: string;
+}
+
+/** Dashboard action relay types (orchestrator kanban + research proposals). */
+export type DashboardActionType =
+  | "implement"
+  | "done"
+  | "escalate"
+  | "restart"
+  | "trigger"
+  | "investigate"
+  | "activate"
+  | "paid";
+
+export interface ActionQueueItem {
+  id: string;
+  desc: string;
+  meta: string;
+  actions: DashboardActionType[];
+}
+
+export interface ActionQueueData {
+  auto: ActionQueueItem[];
+  alfred: ActionQueueItem[];
+  andras: ActionQueueItem[];
   updatedAt: number;
   error?: string;
 }
@@ -279,6 +322,7 @@ export interface DashboardData {
   bills: BillsData;
   research: ResearchData;
   noema: NoemaData;
+  actionQueue: ActionQueueData;
 }
 
 /** SSR page load payload (+page.server.ts → +page.svelte). */
