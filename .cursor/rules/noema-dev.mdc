@@ -1,0 +1,374 @@
+---
+description: Noema — System Intelligence Dashboard fejlesztési szabályok
+globs: projects/noema/**
+alwaysApply: true
+---
+
+# Noema 🧠 — Developer Guide for Cursor
+
+> Ezt a fájlt a Cursor automatikusan betölti amikor a `projects/noema/`-ban dolgozol.
+> Kövesd ezeket a szabályokat. Ha kérdésed van, olvasd el a hivatkozott fájlokat.
+
+## Projekt Összefoglaló
+
+A Noema az Alfred AI agent-ecosystem monitoring dashboard-ja. 22+ adatforrásból gyűjt adatot (cron státusz, agent session-ök, HackerOne API, Google Calendar, számlák, kutatások), és egy webes felületen jeleníti meg 9 tab-bal.
+
+**Stack**: SvelteKit (UI) + plain Node.js `lib/core/` modulok (adatgyűjtés)
+**Telepítés**: `pnpm install && pnpm dev`
+**Privát workspace**: `/home/promi/.openclaw/workspace/`
+
+---
+
+## ⚠️ KRITIKUS ARCHITEKTÚRA SZABÁLY
+
+**A `lib/core/` könyvtárban SEMMILYEN Svelte import nem lehet.**
+
+Minden adatgyűjtő modul tiszta Node.js. Ez a framework-agnostic réteg.
+Ha React-re/Next.js-re/vagy bármi másra váltunk, a `lib/core/` változatlanul marad.
+
+```typescript
+// ✅ HELYES: lib/core/crons.ts
+import { execSync } from 'child_process';
+export async function getCrons(): Promise<CronData> { ... }
+
+// ❌ ROSSZ: lib/core/crons.ts
+import { onMount } from 'svelte';  // SOHA!
+```
+
+---
+
+## Fájlstruktúra
+
+```
+src/
+├── app.html               ← HTML shell (csak ha kell custom)
+├── app.css                ← Globális stílusok (CSS variables, dark theme)
+├── hooks.server.js        ← Szerver oldali hook-ok (pl. auth ha később kell)
+│
+├── routes/
+│   ├── +layout.svelte     ← Közös layout (tab navigáció, fejléc)
+│   ├── +page.svelte       ← Fő dashboard oldal (tab váltó konténer)
+│   ├── +page.ts           ← SSR data loading (első betöltés)
+│   │
+│   └── api/
+│       ├── data/+server.ts    ← GET /api/data  → core.getAllData()
+│       ├── actions/+server.ts ← POST /api/actions → core.processAction()
+│       └── events/+server.ts  ← GET /api/events  → SSE stream
+│
+└── lib/
+    ├── core/              ← ⭐ FRAMEWORK-AGNOSTIC (plain Node.js)
+    │   ├── index.ts       # getAllData(), getAllCoreModules()
+    │   ├── collector.ts   # setInterval → cache frissítés (60s)
+    │   ├── crons.ts       # openclaw cron list
+    │   ├── agents.ts      # Agent státusz + sessions
+    │   ├── h1.ts          # HackerOne API (scripts/h1.sh)
+    │   ├── calendar.ts    # Google Calendar (gog CLI)
+    │   ├── bills.ts       # Számlák, open loop-ok (tasks.md)
+    │   ├── research.ts    # Research + Knowledge Graph
+    │   ├── action-queue.ts# Action queue feldolgozás
+    │   ├── health.ts      # Heartbeat, model mapping
+    │   ├── noema.ts       # Noema saját metrikái
+    │   └── utils.ts       # exec(), safeRead(), parseMarkdownTable()
+    │
+    ├── server/            ← SvelteKit wrapper-ek (vékony réteg)
+    │   ├── cache.ts       # In-memory Map + TTL
+    │   └── sse.ts         # EventSource manager
+    │
+    ├── components/        ← Svelte 5 UI komponensek (csak megjelenítés!)
+    │   ├── TabNav.svelte
+    │   ├── MetricCard.svelte
+    │   ├── StatusBadge.svelte
+    │   └── tabs/
+    │       ├── Overview.svelte
+    │       ├── Agents.svelte
+    │       ├── Crons.svelte
+    │       ├── Orchestrator.svelte
+    │       ├── Brainstorm.svelte
+    │       ├── Bills.svelte
+    │       ├── Research.svelte
+    │       ├── KPIs.svelte
+    │       └── Noema.svelte
+    │
+    └── types/             ← TypeScript típusok (shared)
+        └── index.ts       # Cron, Agent, H1Data, Bill, stb.
+```
+
+---
+
+## Fejlesztési Szabályok
+
+### 1. Core Modulok (`lib/core/`)
+
+**Minden core modulra érvényes:**
+
+```typescript
+// lib/core/crons.ts
+import type { CronEntry, CronData } from '$lib/types';
+import { exec } from '$lib/core/utils';
+
+/**
+ * Lekéri és feldolgozza az összes cron job-ot
+ * @returns CronData objektum vagy { error: string, data: fallback }
+ */
+export async function getCrons(): Promise<CronData> {
+  try {
+    const raw = await exec('openclaw cron list --json');
+    const jobs: CronEntry[] = JSON.parse(raw);
+
+    // Classify by schedule
+    const classified = jobs.map(job => ({
+      ...job,
+      group: classifyCronGroup(job.schedule),
+    }));
+
+    return {
+      crons: classified,
+      healthy: classified.filter(c => c.lastResult === 'ok').length,
+      total: classified.length,
+      updatedAt: Date.now(),
+    };
+  } catch (err) {
+    return {
+      crons: [],
+      healthy: 0,
+      total: 0,
+      updatedAt: Date.now(),
+      error: String(err),
+    };
+  }
+}
+
+function classifyCronGroup(schedule: string): 'NIGHT' | 'MORNING' | 'DAYTIME' | 'EVENING' | 'SPANNING' {
+  // ... group logic
+}
+```
+
+**Szabályok:**
+- [ ] Mindig async függvény
+- [ ] Mindig plain JS objektummal tér vissza (JSON-serializable)
+- [ ] Hiba esetén `{ error: string, ...fallbackDefaults }` — ne dobj exception-t
+- [ ] `updatedAt: Date.now()` minden válaszban
+- [ ] ZERO Svelte import. `import { exec } from '$lib/core/utils'` OK
+- [ ] Típusdefiníció a `$lib/types/index.ts`-ben
+- [ ] Minden modul önállóan tesztelhető: `node -e "import('./src/lib/core/crons.ts').then(m => m.getCrons().then(console.log))"`
+
+### 2. Svelte Komponensek (`lib/components/`)
+
+```svelte
+<!-- lib/components/tabs/Overview.svelte -->
+<script lang="ts">
+  import type { DashboardData } from '$lib/types';
+  import MetricCard from '$lib/components/MetricCard.svelte';
+
+  // ⚠️ Csak props-ból dolgozik. NINCS fetch vagy exec.
+  let { data }: { data: DashboardData } = $props();
+</script>
+
+<div class="overview-grid">
+  <MetricCard title="Cron Health" value={data.crons.healthy} max={data.crons.total} />
+  <MetricCard title="Active Agents" value={data.agents.online} />
+</div>
+```
+
+**Szabályok:**
+- [ ] **Csak megjelenítés**. Adat = `$props()` a szülőtől
+- [ ] NINCS benne `fetch()`, `exec()`, vagy közvetlen API hívás
+- [ ] Ha interakció kell (gomb), az `onclick` → `$app/navigation` vagy form action
+- [ ] Svelte 5 runes: `$props()`, `$state()`, `$effect()`, `$derived()`
+- [ ] CSS saját `<style>` blokkban, scoped
+
+### 3. API Route-ok (`routes/api/`)
+
+```typescript
+// routes/api/data/+server.ts
+import { json } from '@sveltejs/kit';
+import { getAllData } from '$lib/core';
+
+export async function GET() {
+  const data = await getAllData();
+  return json(data, {
+    headers: { 'Cache-Control': 'max-age=55' }  // 60s collector ciklus - 5s buffer
+  });
+}
+```
+
+**Szabályok:**
+- [ ] API route CSAK a core modulokat hívja, nem tartalmaz üzleti logikát
+- [ ] Cache-Control header mindig beállítva
+- [ ] POST action-ök validálása + rate limiting később
+
+### 4. Live Updates (SSE)
+
+```typescript
+// lib/server/sse.ts
+import type { DashboardData } from '$lib/types';
+
+const clients = new Set<(data: DashboardData) => void>();
+
+export function addClient(send: (data: DashboardData) => void) {
+  clients.add(send);
+  return () => clients.delete(send);
+}
+
+// A collector.js hívja minden ciklus végén
+export function broadcast(data: DashboardData) {
+  for (const send of clients) {
+    try { send(data); } catch { clients.delete(send); }
+  }
+}
+```
+
+### 5. TypeScript Szabályok
+
+```json
+// tsconfig.json
+{
+  "compilerOptions": {
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": false
+  }
+}
+```
+
+- [ ] `strict: true` — minden változó típusa explicit
+- [ ] `any` TILOS. Használj `unknown`-t és type guard-ot
+- [ ] Minden core modul exportnak legyen return type-ja
+- [ ] Típusdefiníciók dokumentálva JSDoc-kompatibilis kommentekkel
+
+### 6. Stílus
+
+- [ ] CSS custom properties a dark theme-hez (ne hardcode-olj színeket)
+- [ ] Reszponzív: `@media (max-width: 768px)` minden tab-hoz
+- [ ] Svelte `<style>` scoped. Globális stílus `app.css`-ben
+- [ ] Változók: `--bg`, `--card`, `--text`, `--muted`, `--accent`, `--error`, `--warn`, `--ok`
+
+---
+
+## Data Flow
+
+```
+1. collector.ts (setInterval 60s) → lefuttatja az összes core modult
+2. Eredmény → in-memory cache-be (lib/server/cache.ts)
+3. Első betöltés: +page.ts SSR → getAllData() → cache
+4. Live frissítés: SSE /api/events → broadcast() → cache
+5. Manuális fetch: GET /api/data → cache
+6. Böngésző gombok: POST /api/actions → core.processAction()
+```
+
+---
+
+## Feature Hozzáadása — Checklist
+
+Amikor új tab-ot vagy feature-t implementálsz:
+
+1. [ ] **Core modul**: ha új adatforrás kell → `lib/core/ujforras.ts`
+2. [ ] **Típusok**: `lib/types/index.ts` frissítése
+3. [ ] **Collector**: `lib/core/collector.ts`-ben regisztráld az új modult
+4. [ ] **Index**: `lib/core/index.ts`-ben add hozzá a `getAllData()`-hoz
+5. [ ] **Komponens**: `lib/components/tabs/UjTab.svelte`
+6. [ ] **Page**: frissítsd a `+page.svelte` tab listát
+7. [ ] **Teszt**: `tests/core/ujforras.test.ts` (vitest)
+8. [ ] **Build**: `pnpm check && pnpm build` — nem szabad warning-nak lennie
+9. [ ] **Git**: commit a fenti checklist-tel a message-ben
+
+---
+
+## Gyakori Feladatok Hogyan-ja
+
+### Új core modul létrehozása
+
+```bash
+# 1. Típusdefiníció
+touch src/lib/types/index.ts  # add: export interface NewData { ... }
+
+# 2. Core modul
+touch src/lib/core/new-module.ts  # követni a mintát fent
+
+# 3. Teszt
+touch tests/core/new-module.test.ts
+
+# 4. Regisztrálás
+#   - collector.ts: import + add to collectAll()
+#   - index.ts: import + add to getAllData()
+```
+
+### Új tab hozzáadása
+
+```bash
+# 1. Komponens
+touch src/lib/components/tabs/NewTab.svelte
+
+# 2. +page.svelte: import + add to tab list + add to {#if activeTab === 'newtab'}
+```
+
+### Refactor meglévő kód
+
+Ha a régi Noema v1 kódjából migrálsz:
+- `archive/v4.html` → `lib/components/tabs/*.svelte` (template → komponens)
+- `generate.js` → `lib/core/*.ts` (adatgyűjtés → core modulok)
+- `relay.js` → `routes/api/actions/+server.ts` (relay → API)
+- `action-processor.js` → `lib/core/action-queue.ts` (feldolgozó → core)
+
+---
+
+## Git Workflow
+
+```bash
+# Minden commit előtt:
+pnpm check        # TypeScript + Svelte check
+pnpm test         # vitest unit tesztek
+pnpm build        # Production build
+
+# Commit message formátum:
+# <emoji> <típus>: <rövid leírás>
+# 
+# Részletes leírás, ha kell.
+
+# Példák:
+# 🧠 feat: Logs Viewer tab
+# 🐛 fix: cronHealthy scope bug
+# ♻️ refactor: lib/core/crons.ts moduláris
+# 📝 docs: architecture-v2.md frissítés
+# ✅ test: crons.ts unit tests
+```
+
+---
+
+## Környezet
+
+```bash
+# Telepítés
+pnpm install
+
+# Dev szerver
+pnpm dev             # localhost:5173
+
+# Build
+pnpm build           # production build → build/
+
+# Check (TypeScript + Svelte)
+pnpm check
+
+# Tesztek
+pnpm test            # vitest
+pnpm test:e2e        # playwright (később)
+
+# Prod futtatás
+node build/index.js  # vagy: pnpm preview
+```
+
+---
+
+## Kapcsolódó Fájlok
+
+| Fájl | Mit tartalmaz |
+|------|---------------|
+| `README.md` | Projekt áttekintés, küldetés |
+| `architecture-v2.md` | Részletes v2 migrációs terv |
+| `roadmap.md` | Prioritizált feature lista (19 item) |
+| `CONTRIBUTING.md` | Általános fejlesztési útmutató |
+| `research/competitive-landscape.md` | Versenytárs elemzés, best practice-ek |
+| `research/cursor-integration.md` | Cursor agent használata Noemához |
+| `CHANGELOG.md` | Változáskövetés |
+| `AGENTS.md` | AI agent instrukciók (Alfred + Cursor) |
