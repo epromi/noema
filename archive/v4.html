@@ -12,7 +12,7 @@
   --bg: #0d1117; --card: #161b22; --border: #30363d;
   --text: #c9d1d9; --muted: #8b949e; --accent: #58a6ff;
   --green: #3fb950; --yellow: #d2991d; --red: #f85149;
-  --purple: #a371f7; --orange: #db6d28;
+  --purple: #a371f7; --orange: #db6d28; --blue: #58a6ff;
   --g-bg: #1a3a1a; --y-bg: #3a2a0a; --r-bg: #3a0a0a;
 }
 *{margin:0;padding:0;box-sizing:border-box}
@@ -107,24 +107,43 @@ h1{font-size:1.3em;margin-bottom:0}.subtitle{color:var(--muted);font-size:0.92em
 .h1tl-title{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .h1tl-date{color:var(--muted);font-size:0.92em;white-space:nowrap}
 
-/* ── Cron Pipeline ── */
-.cron-timeline{position:relative;height:42px;background:var(--card);border:1px solid var(--border);border-radius:6px;margin-bottom:12px;overflow:hidden}
-.cron-timeline .tl-track{position:absolute;top:50%;left:30px;right:10px;height:2px;background:var(--border);transform:translateY(-50%)}
-.cron-timeline .tl-tick{position:absolute;top:0;height:100%;width:1px;background:var(--border);opacity:0.5}
-.cron-timeline .tl-label{position:absolute;top:2px;font-size:0.85em;color:var(--muted);transform:translateX(-50%)}
-.cron-timeline .tl-dot{position:absolute;top:50%;width:8px;height:8px;border-radius:50%;transform:translate(-50%,-50%);cursor:pointer;transition:transform 0.15s;z-index:2}
-.cron-timeline .tl-dot:hover{transform:translate(-50%,-50%) scale(1.8);z-index:3}
-.cron-timeline .tl-dot.night{filter:brightness(0.7)}
-.cron-pipeline-table{width:100%;border-collapse:collapse;font-size:0.92em;max-height:500px;overflow-y:auto;display:block}
-.cron-pipeline-table thead{position:sticky;top:0;z-index:2}
-.cron-pipeline-table th{background:var(--card);color:var(--muted);font-weight:600;padding:6px 8px;text-align:left;border-bottom:2px solid var(--border);font-size:0.90em}
-.cron-pipeline-table td{padding:5px 8px;border-bottom:1px solid var(--border);white-space:nowrap}
-.cron-pipeline-table tr:hover td{background:var(--bg)}
-.cron-pipeline-table .group-hdr td{background:var(--card);color:var(--accent);font-weight:700;font-size:0.95em;padding:8px 8px 4px;border-bottom:2px solid var(--accent);letter-spacing:0.5px}
-.cron-pipeline-table .cr-time{font-family:monospace;color:var(--accent);font-weight:600}
-.cron-pipeline-table .cr-sched{color:var(--muted);font-size:0.90em}
-.cron-pipeline-table .cr-dot{width:7px;height:7px;border-radius:50%;display:inline-block}
-.cron-pipeline-table .cr-status{text-align:center;width:30px}
+/* ── Cron Timeline (vertical 24h) ── */
+.cron-timeline-v-wrap{margin-bottom:14px}
+.ct-header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;flex-wrap:wrap}
+.ct-header h2{margin:0;font-size:1em;color:var(--accent)}
+.ct-now-btn{cursor:pointer;background:var(--card);color:var(--accent);border:1px solid var(--border);border-radius:6px;padding:4px 12px;font-size:0.88em;font-weight:700;transition:background .15s,border-color .15s}
+.ct-now-btn:hover{background:var(--bg);border-color:var(--accent)}
+.ct-legend{display:flex;flex-wrap:wrap;gap:12px;font-size:0.82em;color:var(--muted);margin-bottom:8px}
+.ct-legend span{display:inline-flex;align-items:center;gap:5px}
+.ct-legend .ct-leg-dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.cron-timeline-v{background:var(--card);border:1px solid var(--border);border-radius:8px;max-height:520px;overflow-y:auto;position:relative}
+.ct-scroll{padding:6px 0}
+.ct-hour{font-family:monospace;font-size:0.82em;color:var(--muted);padding:2px 10px 2px 12px;border-left:2px solid transparent;opacity:0.55}
+.ct-section{padding:8px 12px 4px;font-size:0.82em;font-weight:700;color:var(--accent);letter-spacing:0.4px;border-top:1px solid var(--border);background:rgba(88,166,255,0.04)}
+.ct-section:first-child{border-top:none}
+.ct-row{display:flex;align-items:center;gap:8px;padding:6px 10px 6px 0;border-left:3px solid var(--border);margin-left:12px;transition:background .15s,opacity .15s;font-size:0.90em}
+.ct-row:hover{background:rgba(255,255,255,0.04)}
+.ct-row.ct-past{opacity:0.45}
+.ct-row.ct-status-g{border-left-color:var(--green)}
+.ct-row.ct-status-y{border-left-color:var(--yellow)}
+.ct-row.ct-status-r{border-left-color:var(--red)}
+.ct-row.ct-next-up{border-left-color:var(--blue);box-shadow:inset 0 0 12px rgba(88,166,255,0.12);background:rgba(88,166,255,0.05)}
+.ct-time{font-family:monospace;color:var(--accent);font-weight:600;min-width:46px;text-align:right;flex-shrink:0;font-size:0.88em}
+.ct-body{flex:1;display:flex;align-items:center;gap:8px;min-width:0}
+.ct-icon{flex-shrink:0;font-size:1em}
+.ct-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ct-countdown{color:var(--muted);font-size:0.86em;white-space:nowrap;flex-shrink:0;font-family:monospace}
+.ct-now{display:flex;align-items:center;gap:8px;padding:8px 10px 8px 0;margin:4px 0 4px 12px;border-left:3px solid var(--red);position:relative}
+.ct-now-line{flex:1;text-align:center;font-weight:700;font-size:0.88em;color:var(--red);background:linear-gradient(90deg,transparent,rgba(248,81,73,0.15),transparent);padding:4px 8px;border-radius:4px;animation:ct-now-pulse 2s ease-in-out infinite}
+@keyframes ct-now-pulse{0%,100%{opacity:1;box-shadow:0 0 0 rgba(248,81,73,0)}50%{opacity:0.85;box-shadow:0 0 14px rgba(248,81,73,0.35)}}
+/* ── Processor Timer Bar ── */
+.processor-timer-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px;margin-bottom:12px;border-radius:8px;border:1px solid var(--border);background:var(--card);font-size:0.90em;flex-wrap:wrap}
+.processor-timer-bar.pt-idle{border-color:var(--border);color:var(--muted)}
+.processor-timer-bar.pt-queue{border-color:var(--green);color:var(--green)}
+.processor-timer-bar.pt-running{border-color:var(--blue);color:var(--blue)}
+.processor-timer-bar.pt-offline{border-color:var(--red);color:var(--red)}
+.pt-main{font-weight:700;flex:1;min-width:180px}
+.pt-sub{font-size:0.86em;opacity:0.85;white-space:nowrap}
 .stale-0{color:var(--green)}.stale-3{color:var(--yellow)}.stale-7{color:var(--red)}
 .blindspots{font-size:0.90em;color:var(--yellow);line-height:1.6;word-break:break-all}
 
@@ -135,6 +154,9 @@ h1{font-size:1.3em;margin-bottom:0}.subtitle{color:var(--muted);font-size:0.92em
 @media(max-width:800px){
   .metrics-bar{grid-template-columns:repeat(3,1fr)}
   .kanban{grid-template-columns:1fr}.grid-2,.grid-3{grid-template-columns:1fr}
+  .ct-row{flex-wrap:wrap;padding-right:8px}
+  .ct-countdown{width:100%;text-align:right;padding-left:54px}
+  .processor-timer-bar{flex-direction:column;align-items:flex-start}
 }
 @media(max-width:500px){
   body{padding:10px}.metrics-bar{grid-template-columns:1fr 1fr}.tab-btn{padding:6px 8px;font-size:0.85em}
@@ -261,10 +283,22 @@ h1{font-size:1.3em;margin-bottom:0}.subtitle{color:var(--muted);font-size:0.92em
     <div class="kb-col"><h4>🧑 András</h4><div id="kb-andras">—</div></div>
   </div>
 
-  <!-- Cron Pipeline -->
-  <h2 style="color:var(--accent);font-size:1em;margin:18px 0 10px">⏰ Cron Pipeline (24h)</h2>
-  <div class="cron-timeline" id="cron-timeline"></div>
-  <div class="cron-pipeline-table" id="cron-pipeline">Loading…</div>
+  <!-- Cron Timeline (vertical 24h) -->
+  <div class="cron-timeline-v-wrap" style="margin-top:18px">
+    <div class="ct-header">
+      <h2>⏰ Cron Timeline (24h)</h2>
+      <button type="button" class="ct-now-btn" id="ct-now-btn" title="Scroll to current time">📍 NOW</button>
+    </div>
+    <div class="ct-legend">
+      <span><span class="ct-leg-dot" style="background:var(--green)"></span> OK</span>
+      <span><span class="ct-leg-dot" style="background:var(--red)"></span> Error</span>
+      <span><span class="ct-leg-dot" style="background:var(--yellow)"></span> Warning</span>
+      <span>🔴 NOW vonal</span>
+    </div>
+    <div class="cron-timeline-v" id="cron-timeline-v">
+      <div class="ct-scroll" id="cron-timeline-scroll">Loading…</div>
+    </div>
+  </div>
 
   <!-- Noema Product Research -->
   <h2 style="color:var(--accent);font-size:1em;margin:18px 0 10px">🧠 Noema Product Research</h2>
@@ -429,6 +463,12 @@ h1{font-size:1.3em;margin-bottom:0}.subtitle{color:var(--muted);font-size:0.92em
     <div class="card"><h3>🧪 Last QA Report</h3>
       <div id="np-qareport" style="font-size:0.90em;max-height:300px;overflow-y:auto">Loading…</div>
     </div>
+  </div>
+
+  <!-- Processor Timer -->
+  <div class="processor-timer-bar pt-idle" id="processor-timer-bar">
+    <span class="pt-main" id="processor-timer-main">⏳ Processor: idle — betöltés…</span>
+    <span class="pt-sub" id="processor-timer-sub"></span>
   </div>
 
   <!-- Development Packages -->
@@ -690,90 +730,151 @@ if(D.h1) {
   document.getElementById('h1-programs').innerHTML = D.h1.programs||'—';
 }
 
-// ── Cron Pipeline (Timeline + Table) ──
-if(D.cronGrid && D.cronGrid.length) {
-  const icons = {alfred:'👔',porter:'🚪',edwin:'🚀',scout:'🏕️',viktor:'🛡️',otto:'🗄️',albert:'🔍',cortex:'🧠',hugo:'📚',main:'🏠',system:'🤖'};
-  // Parse schedule to minutes-since-midnight for timeline
-  const parseTime = (sched) => {
-    if (!sched || sched==='—'||sched==='auto') return null;
-    // "01:30 daily", "06-23 hourly", "04:30 /3d", "every 2h", "12,15,18,21"
-    const hm = sched.match(/(\d{1,2}):(\d{2})/);
-    if (hm) return parseInt(hm[1])*60+parseInt(hm[2]);
-    // "06-23 hourly" → use first hour
-    const range = sched.match(/^(\d{1,2})-/);
-    if (range) return parseInt(range[1])*60;
-    // "12,15,18,21" → use first
-    const comma = sched.match(/^(\d{1,2}),/);
-    if (comma) return parseInt(comma[1])*60;
-    return null;
-  };
-  // Timeline
-  const tlWidth = '100%';
-  let tlDots = '';
-  for (const c of D.cronGrid) {
-    const m = parseTime(c.sched);
-    if (m === null) continue;
-    const left = (m/1440*100).toFixed(1);
-    const isNight = m < 360 || m > 1320; // before 06:00 or after 22:00
-    const color = c.status==='g'?'var(--green)':c.status==='r'?'var(--red)':'var(--yellow)';
-    tlDots += `<div class="tl-dot${isNight?' night':''}" style="left:${left}%;background:${color}" title="${c.name}: ${c.sched}"></div>`;
+// ── Cron Timeline (vertical 24h) ──
+const CRON_ICONS = {alfred:'👔',porter:'🚪',edwin:'🚀',scout:'🏕️',viktor:'🛡️',otto:'🗄️',albert:'🔍',cortex:'🧠',hugo:'📚',main:'🏠',system:'🤖'};
+const CRON_SECTIONS = [
+  {key:'night', label:'🌙 ÉJSZAKA (00:00–06:00)', min:0, max:360},
+  {key:'morning', label:'🌅 REGGEL (06:00–08:00)', min:360, max:480},
+  {key:'spanning', label:'🌐 EGÉSZ NAP (több időpont / range)', spanning:true},
+  {key:'day', label:'☀️ NAPPAL (08:00–18:00)', min:480, max:1080},
+  {key:'evening', label:'🌆 ESTE (18:00–24:00)', min:1080, max:1440},
+  {key:'auto', label:'🔄 AUTOMATIKUS (nincs fix idő)', min:9999, max:Infinity}
+];
+
+function cronSortScore(c) {
+  const m = parseDisplayMinutes(c.sched);
+  if (isSpanningSched(c.sched)) return 400;
+  if (m === null) return 9999;
+  return m;
+}
+
+function cronSectionFor(c) {
+  if (isSpanningSched(c.sched)) return 'spanning';
+  const m = parseDisplayMinutes(c.sched);
+  const t = m === null ? 9999 : m;
+  if (t >= 9999) return 'auto';
+  if (t < 360) return 'night';
+  if (t < 480) return 'morning';
+  if (t < 1080) return 'day';
+  return 'evening';
+}
+
+function cronEmoji(c) {
+  const desc = c.desc || '';
+  if (desc) {
+    const cp = desc.codePointAt(0);
+    if (cp && cp > 0x2500) return String.fromCodePoint(cp);
   }
-  // Tick marks
-  let tlTicks = '';
-  for (let h=0;h<=24;h+=2) {
-    const left = (h/24*100).toFixed(1);
-    tlTicks += `<div class="tl-tick" style="left:${left}%"></div><div class="tl-label" style="left:${left}%">${String(h).padStart(2,'0')}:00</div>`;
+  return CRON_ICONS[c.agent] || '🤖';
+}
+
+function cronCountdownLabel(c, nowMs) {
+  if (isSpanningSched(c.sched)) {
+    const next = computeNextRun(c.sched, c.last, new Date(nowMs));
+    return next ? formatCountdown(next, nowMs) : 'hourly';
   }
-  document.getElementById('cron-timeline').innerHTML = tlTicks+'<div class="tl-track"></div>'+tlDots;
-  
-  // Detect spanning schedules (ranges or multi-time)
-  const isSpanning = (sched) => {
-    if (!sched || sched==='—'||sched==='auto') return false;
-    if (/^\d{1,2}-\d{1,2}/.test(sched)) return true; // "06-23 hourly"
-    if ((sched.match(/,/g)||[]).length >= 2) return true; // "12,15,18,21"
-    return false;
-  };
-  // Sort by time: spanning items between REGGEL and NAPPAL
-  const sortScore = (c) => {
-    const m = parseTime(c.sched) ?? 9999;
-    if (isSpanning(c.sched)) return 400; // between 360-480 (REGGEL) and 480+ (NAPPAL)
-    return m;
-  };
-  const sorted = [...D.cronGrid].sort((a,b) => sortScore(a)-sortScore(b));
-  // Group by period
-  const periods = [
-    {label:'🌙 ÉJSZAKA (00:00–06:00)', min:0, max:360},
-    {label:'🌅 REGGEL (06:00–08:00)', min:360, max:480},
-    {label:'🌐 EGÉSZ NAP (több időpont / range)', spanning:true},
-    {label:'☀️ NAPPAL (08:00–18:00)', min:480, max:1080},
-    {label:'🌆 ESTE (18:00–24:00)', min:1080, max:1440},
-    {label:'🔄 AUTOMATIKUS (nincs fix idő)', min:9999, max:Infinity}
-  ];
-  let rows = '';
-  for (const p of periods) {
-    const group = sorted.filter(c => {
-      if (p.spanning) return isSpanning(c.sched);
-      if (isSpanning(c.sched)) return false; // spanning → only in EGÉSZ NAP
-      const m = parseTime(c.sched);
-      const t = m === null ? 9999 : m;
-      return t >= p.min && t < p.max;
-    });
-    if (group.length === 0) continue;
-    rows += `<tr class="group-hdr"><td colspan="6">${p.label} (${group.length})</td></tr>`;
-    for (const c of group) {
-      const color = c.status==='g'?'var(--green)':c.status==='r'?'var(--red)':'var(--yellow)';
-      rows += `<tr>
-        <td class="cr-time">${c.sched||'—'}</td>
-        <td>${c.name||'—'}</td>
-        <td>${icons[c.agent]||'🤖'} ${c.agent}</td>
-        <td class="cr-sched">${c.desc||'—'}</td>
-        <td style="font-size:0.90em;color:var(--muted)">${c.last||'—'}</td>
-        <td class="cr-status"><span class="cr-dot" style="background:${color}"></span></td>
-      </tr>`;
+  if (c.sched === 'auto') return c.next && c.next !== '—' ? c.next : 'auto';
+  const next = computeNextRun(c.sched, c.last, new Date(nowMs));
+  return next ? formatCountdown(next, nowMs) : (c.next && c.next !== '—' ? c.next : '—');
+}
+
+function renderCronTimeline() {
+  const scrollEl = document.getElementById('cron-timeline-scroll');
+  if (!scrollEl || !D.cronGrid || !D.cronGrid.length) {
+    if (scrollEl) scrollEl.innerHTML = '<div style="padding:16px;color:var(--muted)">No cron data</div>';
+    return;
+  }
+
+  const now = new Date();
+  const nowMs = now.getTime();
+  const nowMins = now.getHours() * 60 + now.getMinutes() + now.getSeconds() / 60;
+
+  const enriched = D.cronGrid.map(c => {
+    const displayMin = parseDisplayMinutes(c.sched);
+    const nextMs = computeNextRun(c.sched, c.last, now);
+    return {
+      ...c,
+      displayMin: displayMin === null ? cronSortScore(c) : displayMin,
+      nextMs,
+      section: cronSectionFor(c),
+      sortScore: cronSortScore(c)
+    };
+  });
+
+  let nextUpId = null;
+  let soonest = Infinity;
+  for (const c of enriched) {
+    if (c.nextMs && c.nextMs < soonest) {
+      soonest = c.nextMs;
+      nextUpId = c.id;
     }
   }
-  document.getElementById('cron-pipeline').innerHTML = 
-    `<table style="width:100%"><thead><tr><th>⏱️</th><th>Cron</th><th>Agent</th><th>Leírás</th><th>Utolsó</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
+
+  const items = [];
+  for (const c of enriched) {
+    items.push({type:'cron', sort: c.sortScore, data: c});
+  }
+  items.push({type:'now', sort: nowMins, data: null});
+  items.sort((a, b) => a.sort - b.sort || (a.type === 'now' ? 1 : 0) - (b.type === 'now' ? 1 : 0));
+
+  let html = '';
+  let lastHour = -1;
+  let lastSection = '';
+
+  for (const item of items) {
+    if (item.type === 'now') {
+      const h = now.getHours();
+      if (h !== lastHour) {
+        html += `<div class="ct-hour">${String(h).padStart(2,'0')}:00</div>`;
+        lastHour = h;
+      }
+      html += `<div class="ct-now" id="ct-now-marker" data-mins="${nowMins.toFixed(1)}">
+        <span class="ct-time">${formatClock(now)}</span>
+        <span class="ct-now-line">▐▐▐▐ NOW ${formatClock(now)} ▐▐▐▐</span>
+      </div>`;
+      continue;
+    }
+
+    const c = item.data;
+    const mins = c.displayMin;
+    const hour = Math.floor(mins / 60);
+    if (hour !== lastHour && mins < 9999) {
+      html += `<div class="ct-hour">${formatTimeLabel(mins)}</div>`;
+      lastHour = hour;
+    }
+
+    if (c.section !== lastSection) {
+      const sec = CRON_SECTIONS.find(s => s.key === c.section);
+      const count = enriched.filter(x => x.section === c.section).length;
+      html += `<div class="ct-section">${sec ? sec.label : c.section} — ${count} cron${count === 1 ? '' : 's'}</div>`;
+      lastSection = c.section;
+    }
+
+    const statusCls = c.status === 'g' ? 'ct-status-g' : c.status === 'r' ? 'ct-status-r' : 'ct-status-y';
+    const isPast = !isSpanningSched(c.sched) && c.sched !== 'auto' && mins < 9999 && mins < nowMins;
+    const isNext = c.id === nextUpId;
+    const timeLabel = mins < 9999 && !isSpanningSched(c.sched) ? formatTimeLabel(mins) : '';
+    const countdown = cronCountdownLabel(c, nowMs);
+
+    html += `<div class="ct-row ${statusCls}${isPast ? ' ct-past' : ''}${isNext ? ' ct-next-up' : ''}" title="${(c.desc||'').replace(/"/g,'&quot;')}">
+      <span class="ct-time">${timeLabel}</span>
+      <span class="ct-body">
+        <span class="ct-icon">${cronEmoji(c)}</span>
+        <span class="ct-name">${c.name || '—'}</span>
+        <span class="ct-countdown">${countdown}</span>
+      </span>
+    </div>`;
+  }
+
+  scrollEl.innerHTML = html || '<div style="padding:16px;color:var(--muted)">No scheduled crons</div>';
+}
+
+if (D.cronGrid && D.cronGrid.length) {
+  renderCronTimeline();
+  document.getElementById('ct-now-btn')?.addEventListener('click', () => {
+    document.getElementById('ct-now-marker')?.scrollIntoView({behavior:'smooth', block:'center'});
+  });
+  setInterval(renderCronTimeline, 5000);
 }
 
 // ── Noema Product Research ──
@@ -1159,6 +1260,85 @@ function actionBtn(action, id, description, label) {
   document.addEventListener('touchmove', onMove, {passive:false});
   document.addEventListener('mouseup', onEnd);
   document.addEventListener('touchend', onEnd);
+})();
+
+// ── Processor Timer — poll relay every 5s ──
+(function processorTimer() {
+  const RELAY = 'http://127.0.0.1:18998';
+  const bar = document.getElementById('processor-timer-bar');
+  const mainEl = document.getElementById('processor-timer-main');
+  const subEl = document.getElementById('processor-timer-sub');
+  if (!bar || !mainEl) return;
+
+  let nextMs = 0;
+  let offline = false;
+  let runningPkg = null;
+  let queueSize = 0;
+
+  function formatIdleCountdown(ms) {
+    const diff = ms - Date.now();
+    if (diff <= 0) return 'most';
+    const secs = Math.ceil(diff / 1000);
+    if (secs < 60) return secs + 's';
+    const mins = Math.floor(secs / 60);
+    const rem = secs % 60;
+    return rem ? mins + 'm ' + rem + 's' : mins + 'm';
+  }
+
+  function renderRunning(running) {
+    bar.className = 'processor-timer-bar pt-running';
+    mainEl.textContent = '🖊️ Cursor: ' + running + ' — folyamatban…';
+    subEl.textContent = '';
+  }
+
+  function renderQueue(queue) {
+    bar.className = 'processor-timer-bar pt-queue';
+    mainEl.textContent = '⚡ Processor: ' + queue + ' elem a sorban — most indul';
+    subEl.textContent = '';
+  }
+
+  function renderIdle() {
+    bar.className = 'processor-timer-bar pt-idle';
+    mainEl.textContent = '⏳ Processor: idle — következő ellenőrzés ' + formatIdleCountdown(nextMs) + ' múlva';
+    subEl.textContent = nextMs ? 'következő trigger: ' + formatIdleCountdown(nextMs) : '';
+  }
+
+  function renderOffline() {
+    bar.className = 'processor-timer-bar pt-offline';
+    mainEl.textContent = '❓ Processor: timer offline';
+    subEl.textContent = '';
+  }
+
+  function paint() {
+    if (offline) { renderOffline(); return; }
+    if (runningPkg) renderRunning(runningPkg);
+    else if (queueSize > 0) renderQueue(queueSize);
+    else renderIdle();
+  }
+
+  async function refresh() {
+    try {
+      const [ntRes, rRes] = await Promise.all([
+        fetch(RELAY + '/next-trigger'),
+        fetch(RELAY + '/running')
+      ]);
+      if (!ntRes.ok || !rRes.ok) throw new Error('relay HTTP error');
+      const nt = await ntRes.json();
+      const r = await rRes.json();
+      offline = false;
+      nextMs = nt.nextMs || 0;
+      queueSize = nt.queue || 0;
+      runningPkg = r.running || null;
+      paint();
+    } catch {
+      offline = true;
+      paint();
+    }
+  }
+
+  refresh();
+  setInterval(paint, 1000);
+  setInterval(refresh, 5000);
 })();
 </script>
 </body>
