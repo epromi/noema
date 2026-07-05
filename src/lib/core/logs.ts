@@ -76,10 +76,7 @@ export function parseLogLine(
 }
 
 /** Filter log entries by dashboard filter mode. */
-export function filterLogs(
-  entries: LogEntry[],
-  filter: LogFilter,
-): LogEntry[] {
+export function filterLogs(entries: LogEntry[], filter: LogFilter): LogEntry[] {
   if (filter === "all") return entries;
   if (filter === "errors") return entries.filter((e) => e.level === "ERROR");
   if (filter === "warnings") return entries.filter((e) => e.level === "WARN");

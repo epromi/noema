@@ -1,28 +1,28 @@
 <script lang="ts">
-  import '../app.css';
-  import { setContext } from 'svelte';
-  import DevJobIndicator from '$lib/components/DevJobIndicator.svelte';
+  import "../app.css";
+  import { setContext } from "svelte";
+  import DevJobIndicator from "$lib/components/DevJobIndicator.svelte";
 
   const TABS = [
-    { id: 'overview', label: '🏠 Overview' },
-    { id: 'agents', label: '🤖 Agents' },
-    { id: 'crons', label: '⏰ Crons' },
-    { id: 'orchestrator', label: '⚡ Orchestrator' },
-    { id: 'h1', label: '🏴 HackerOne' },
-    { id: 'viktor', label: '🛡️ Viktor' },
-    { id: 'brainstorm', label: '🧠 Brainstorm' },
-    { id: 'bills', label: '📋 Bills' },
-    { id: 'research', label: '🔬 Research' },
-    { id: 'logs', label: '📋 Logs' },
-    { id: 'noema', label: '🧠 Noema' }
+    { id: "overview", label: "🏠 Overview" },
+    { id: "agents", label: "🤖 Agents" },
+    { id: "crons", label: "⏰ Crons" },
+    { id: "orchestrator", label: "⚡ Orchestrator" },
+    { id: "h1", label: "🏴 HackerOne" },
+    { id: "viktor", label: "🛡️ Viktor" },
+    { id: "brainstorm", label: "🧠 Brainstorm" },
+    { id: "bills", label: "📋 Bills" },
+    { id: "research", label: "🔬 Research" },
+    { id: "logs", label: "📋 Logs" },
+    { id: "noema", label: "🧠 Noema" },
   ] as const;
 
-  let activeTab = $state<(typeof TABS)[number]['id']>('overview');
+  let activeTab = $state<(typeof TABS)[number]["id"]>("overview");
 
-  setContext('noema-active-tab', {
+  setContext("noema-active-tab", {
     get current() {
       return activeTab;
-    }
+    },
   });
 
   let { children } = $props();

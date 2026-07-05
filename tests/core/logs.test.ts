@@ -23,13 +23,17 @@ describe("logs", () => {
     expect(parseLogTimestamp("[Sun 05/03/2026  9:11:17.67] OpenClaw")).toBe(
       "Sun 05/03/2026  9:11:17.67",
     );
-    expect(parseLogTimestamp('{"ts":"2026-04-22T17:10:04.475Z","event":"x"}')).toBe(
-      "2026-04-22T17:10:04.475Z",
-    );
+    expect(
+      parseLogTimestamp('{"ts":"2026-04-22T17:10:04.475Z","event":"x"}'),
+    ).toBe("2026-04-22T17:10:04.475Z");
   });
 
   it("parseLogLine builds structured entries", () => {
-    const entry = parseLogLine("2026-07-05 ERROR relay timeout", 1, "relay.log");
+    const entry = parseLogLine(
+      "2026-07-05 ERROR relay timeout",
+      1,
+      "relay.log",
+    );
     expect(entry?.level).toBe("ERROR");
     expect(entry?.source).toBe("relay.log");
     expect(entry?.timestamp).toBe("2026-07-05");

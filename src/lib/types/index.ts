@@ -402,6 +402,51 @@ export interface LogData {
   error?: string;
 }
 
+export type AuditEventType =
+  | "SESSION_START"
+  | "AGENT_SPAWN"
+  | "CRON_TRIGGER"
+  | "CRON_COMPLETE"
+  | "ERROR"
+  | "ACTION";
+
+export type AuditTimeRange = "24h" | "7d" | "all";
+
+export type AuditEventFilter = AuditEventType | "all";
+
+export type AuditSeverity = "info" | "warn" | "error";
+
+export interface AuditEvent {
+  id: string;
+  type: AuditEventType;
+  timestampMs: number;
+  title: string;
+  detail?: string;
+  agentId?: string;
+  sessionKey?: string;
+  cronJobId?: string;
+  severity: AuditSeverity;
+}
+
+export type AuditEventCounts = Record<AuditEventType, number>;
+
+export interface AuditTrailFilter {
+  sessionKey?: string;
+  agentId?: string;
+  eventType?: AuditEventFilter;
+  timeRange?: AuditTimeRange;
+}
+
+export interface AuditTrailData {
+  events: AuditEvent[];
+  total: number;
+  sessions: string[];
+  agents: string[];
+  counts: AuditEventCounts;
+  updatedAt: number;
+  error?: string;
+}
+
 export interface DashboardData {
   meta: DashboardMeta;
   crons: CronData;
@@ -415,6 +460,7 @@ export interface DashboardData {
   noema: NoemaData;
   actionQueue: ActionQueueData;
   logs: LogData;
+  auditTrail: AuditTrailData;
 }
 
 /** SSR page load payload (+page.server.ts → +page.svelte). */
