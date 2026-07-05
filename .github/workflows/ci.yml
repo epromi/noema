@@ -16,8 +16,14 @@ jobs:
         with:
           node-version: 22
 
-      - name: Syntax check (v1 generator)
-        run: node --check generate.js && node --check relay.js && node --check action-processor.js
+      - name: Syntax check (v1 scripts)
+        run: |
+          node --check generate.cjs && echo "✅ generate.cjs"
+          node --check relay.cjs && echo "✅ relay.cjs"
+          node --check action-processor.cjs && echo "✅ action-processor.cjs"
+          node --check scripts/spec-review-agent.cjs && echo "✅ spec-review-agent.cjs"
+          node --check lib/cron-schedule.cjs && echo "✅ cron-schedule.cjs"
+          echo "All syntax checks passed"
 
       - name: Template integrity
         run: |
@@ -34,15 +40,12 @@ jobs:
 
   validate-v2:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: .
     steps:
       - uses: actions/checkout@v4
 
       - uses: pnpm/action-setup@v4
         with:
-          version: 9
+          version: 11
 
       - uses: actions/setup-node@v4
         with:
