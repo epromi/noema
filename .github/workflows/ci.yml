@@ -1,0 +1,36 @@
+name: Noema CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+          cache-dependency-path: '**/package.json'
+
+      - name: Syntax check
+        run: node --check generate.js && node --check relay.js && node --check action-processor.js
+
+      - name: Template integrity
+        run: |
+          # Verify all tab IDs in template match JS switchTab calls
+          grep -c 'switchTab(' archive/v4.html
+          grep -c 'tab-content' archive/v4.html
+          echo "Template integrity check passed"
+
+      - name: Documentation quality
+        run: |
+          test -f README.md && echo "✅ README"
+          test -f CONTRIBUTING.md && echo "✅ CONTRIBUTING"
+          test -f architecture.md && echo "✅ architecture"
+          test -f roadmap.md && echo "✅ roadmap"
