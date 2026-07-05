@@ -1,25 +1,32 @@
 # PKG-025: Brainstorm + Bills + Research Tabs
 
 **Size:** M | **Effort:** 1.5-2h | **Priority:** P1 | **Status:** spec  
-**Depends on:** PKG-021 ✅ | **Spec date:** 2026-07-05
+**Depends on:** PKG-021 ✅ | **Spec date:** 2026-07-05  
+**Review:** v2
 
 ## 🎯 Mit
 
-Három kisebb tab egy pakkban: Brainstorming, Bills (számlák + open loop-ok), Research.
+Három kisebb tab egy pakkban. Plusz egy új data source: `getBrainstorm()` hozzáadása a `noema.ts`-hez — a brainstorm adatok eddig nem voltak a core modulokban.
 
-### F1: Brainstorm Tab
+### F0: Brainstorm Data Source — `src/lib/core/noema.ts`
 
-`src/lib/components/tabs/Brainstorm.svelte`:
+⚠️ **Ez a data source még NEM létezik** — a PKG-025 hozza létre.
 
-**Grid** kategóriánként:
-- Pénzügyi AGI, Productivity AGI, Infrastrukturális AGI, Opportunity Scouting
-- Minden kategória: kártyák ötletekkel
-- Státusz jelölés: aktív / parkoló / kész
-- Új ötlet input mező (opcionális, low prio)
+`getBrainstorm()` függvény hozzáadása `noema.ts`-hez:
+- Beolvassa `memory/brainstorming/action-tracker.md`-t a provider-en keresztül
+- Parse-olja a szekciókat: autoexec, autonotify, approval, weekend, backlog
+- Visszaadja: `{ sections: {key, label, items: [{name, status, done}]}, pending: number }`
+- Type: `BrainstormData` hozzáadása `src/lib/types/index.ts`-hez
 
-### F2: Bills Tab
+### F1: Brainstorm Tab — `src/lib/components/tabs/Brainstorm.svelte`
 
-`src/lib/components/tabs/Bills.svelte`:
+**Grid** kategóriánként (autoexec, autonotify, approval, weekend, backlog):
+- Minden kategória: címke + item kártyák
+- Item: név, státusz (✅ kész / ⏳ folyamat / 📋 pending)
+- Pending counter a tab header-ben
+- Adat: `noema.ts` → getBrainstorm()
+
+### F2: Bills Tab — `src/lib/components/tabs/Bills.svelte`
 
 **Számlák**:
 - Táblázat: Név, Összeg, Határidő, Státusz (paid/pending/overdue), Link
@@ -29,40 +36,45 @@ Három kisebb tab egy pakkban: Brainstorming, Bills (számlák + open loop-ok), 
 **Open Loop-ok**:
 - Lista: ID, leírás, kor, prioritás szín (⚠️ 🚩 🔴)
 - Escalation szintek: 3-6d ⚠️, 7-13d 🚩, 14+d 🔴
-- Adat: `noema.ts` → open loops adat
+- Adat: `bills.ts` → getBills() → openLoops mező
 
-### F3: Research Tab
-
-`src/lib/components/tabs/Research.svelte`:
+### F3: Research Tab — `src/lib/components/tabs/Research.svelte`
 
 **Kutatási listák**:
-- Otto Nightly QA eredmények (utolsó 3)
-- Dashboard QA eredmények  
-- Active research items
-- Kilépési stratégiák / strategic initiatives
+- Dashboard Research proposals (autoFix, propose, idea count)
+- Otto Nightly QA (utolsó 3 run)
+- Kilépési stratégiák
+- Adat: `research.ts` → getResearch()
 
 ## 📐 Scope
 
 ### Mit érint
+- `src/lib/core/noema.ts` — ÚJ: getBrainstorm() függvény
+- `src/lib/types/index.ts` — ÚJ: BrainstormData, BrainstormSection típusok
 - `src/lib/components/tabs/Brainstorm.svelte` — ÚJ
 - `src/lib/components/tabs/Bills.svelte` — ÚJ
 - `src/lib/components/tabs/Research.svelte` — ÚJ
 - `src/routes/+page.svelte` — tab routing
-- `src/routes/+page.server.ts` — brainstorm data (lehet új funkció)
+- `tests/core/noema.test.ts` — brainstorm data source teszt
+
+### Mit NEM érint
+- Más core modul — CSAK noema.ts (getBrainstorm)
+- Cron pipeline / Viktor — azok másik PKG-ban
 
 ### Fázisok
 
 | Fázis | Mit | Fájlok |
 |-------|-----|--------|
-| **Phase 1** | Brainstorm.svelte: kategória grid | `tabs/Brainstorm.svelte` |
-| **Phase 2** | Bills.svelte: számlák + open loop-ok | `tabs/Bills.svelte` |
-| **Phase 3** | Research.svelte: QA + research lista | `tabs/Research.svelte` |
-| **Phase 4** | +page.svelte: tab routing frissítés | `+page.svelte` |
-| **Phase 5** | Teszt: `pnpm check` ✅, `pnpm test` ✅ |
+| **Phase 1** | noema.ts: getBrainstorm() + types: BrainstormData | `core/noema.ts`, `types/index.ts` |
+| **Phase 2** | Brainstorm.svelte: kategória grid action-tracker adatokból | `tabs/Brainstorm.svelte` |
+| **Phase 3** | Bills.svelte: számlák + open loop-ok | `tabs/Bills.svelte` |
+| **Phase 4** | Research.svelte: QA + research lista | `tabs/Research.svelte` |
+| **Phase 5** | +page.svelte routing + teszt: `pnpm check` ✅ + `pnpm test` ✅ | `+page.svelte` |
 
 ## ✅ Acceptance Criteria
 
-1. Brainstorm tab: grid látszik kategóriákkal, ötletekkel
-2. Bills tab: számlák határidővel + open loop-ok escalation színkóddal
-3. Research tab: QA eredmények + research lista
-4. `pnpm check` ✅, `pnpm test` ✅
+1. getBrainstorm() parse-olja a action-tracker.md-t → sections + pending count
+2. Brainstorm tab: kategóriák látszanak, item-ek státusszal, pending counter
+3. Bills tab: számlák + open loop-ok escalation színkódokkal
+4. Research tab: QA eredmények + proposals
+5. `pnpm check` ✅, `pnpm test` ✅ (meglévő tesztek nem törnek)

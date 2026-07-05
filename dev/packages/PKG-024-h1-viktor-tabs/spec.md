@@ -1,15 +1,16 @@
-# PKG-024: H1 + Viktor Tab
+# PKG-024: H1 + Viktor Tabs
 
 **Size:** M | **Effort:** 1.5-2h | **Priority:** P1 | **Status:** spec  
-**Depends on:** PKG-021 ✅ | **Spec date:** 2026-07-05
+**Depends on:** PKG-021 ✅ | **Spec date:** 2026-07-05  
+**Review:** v2 (issue 2 fixed — no Viktor overlap with PKG-022; MINI vs FULL explicit)
 
 ## 🎯 Mit
 
-HackerOne stats + program lista, és Viktor security audit dashboard.
+Két önálló tab komponens: H1 (HackerOne stats + program lista) és Viktor (TELJES security audit dashboard).
 
-### F1: H1 Tab
+⚠️ **Viktor elhatárolás**: PKG-022 Agents tab alján CSAK 2 szám (`Total: X | Recall: Y%`). ITT van a TELJES Viktor dashboard (trend, blind spots, pending repos).
 
-`src/lib/components/tabs/H1.svelte`:
+### F1: H1 Tab — `src/lib/components/tabs/H1.svelte`
 
 **Stat kártyák** (4):
 - Open reports (szám)
@@ -23,24 +24,22 @@ HackerOne stats + program lista, és Viktor security audit dashboard.
 - Adat: `h1.ts` → getH1Data()
 
 **Earnings** (ha van adat):
-- Total earnings
-- Utolsó payout-ok
+- Total earnings, utolsó payout-ok
 
-### F2: Viktor Tab
+### F2: Viktor Tab — `src/lib/components/tabs/Viktor.svelte`
 
-`src/lib/components/tabs/Viktor.svelte`:
+A TELJES Viktor security audit dashboard (nem csak mini stats):
 
-**Stat kártyák**:
-- Total audits, Recall %, Pending repos, Failed audits
+**Stat kártyák** (4):
+- Total audits | Recall % | Pending repos | Failed
 - Circuit státusz (Normal/Warning/Tripped)
 
 **Recall trend**:
-- Mini chart vagy számsor: utolsó 5 run recall %-ai
+- Utolsó 5 run recall %-ai (számsor)
 - Trend irány (↑ javul, ↓ romlik, → stagnál)
 
 **Blind spots**:
-- CWE lista (vesszővel elválasztva, wrap)
-- Szín: sárga (warning)
+- CWE lista, sárga warning szín
 
 **Pending repos**:
 - Lista: repo név, prioritás, age
@@ -49,22 +48,25 @@ HackerOne stats + program lista, és Viktor security audit dashboard.
 
 ### Mit érint
 - `src/lib/components/tabs/H1.svelte` — ÚJ
-- `src/lib/components/tabs/Viktor.svelte` — ÚJ (vagy az Agents tab része)
-- `src/routes/+page.svelte` — tab routing
-- `src/lib/types/index.ts` — ha kell új típus
+- `src/lib/components/tabs/Viktor.svelte` — ÚJ (TELJES Viktor, nem mini)
+- `src/routes/+page.svelte` — tab routing (h1 + viktor)
+
+### Mit NEM érint
+- Agents tab MINI Viktor — az PKG-022 (ott CSAK 2 szám: Total + Recall)
 
 ### Fázisok
 
 | Fázis | Mit | Fájlok |
 |-------|-----|--------|
-| **Phase 1** | H1.svelte: stat kártyák + program lista | `tabs/H1.svelte` |
-| **Phase 2** | Viktor.svelte: audit stats + recall + blind spots | `tabs/Viktor.svelte` |
-| **Phase 3** | +page.svelte: h1 és viktor tab bekötés | `+page.svelte` |
-| **Phase 4** | Teszt: adatok renderelnek, `pnpm check` ✅ |
+| **Phase 1** | H1.svelte: stat kártyák + program lista + earnings | `tabs/H1.svelte` |
+| **Phase 2** | Viktor.svelte: stat kártyák + recall trend + blind spots + pending repos | `tabs/Viktor.svelte` |
+| **Phase 3** | +page.svelte: h1 + viktor tab routing | `+page.svelte` |
+| **Phase 4** | Teszt: render ellenőrzés, `pnpm check` ✅, `pnpm test` ✅ | Manuális |
 
 ## ✅ Acceptance Criteria
 
-1. H1 tab: statok + program lista látszik
-2. Viktor tab: recall %, blind spots, pending repos látszik
-3. Priority program-ok kiemelve
-4. `pnpm check` ✅, `pnpm test` ✅
+1. H1 tab: statok + program lista + earnings látszik
+2. Viktor tab: recall trend (5 run), blind spots, pending repos
+3. Priority program-ok ⭐ kiemelve
+4. NINCS Viktor duplikáció PKG-022-vel (ott csak 2 szám, itt minden)
+5. `pnpm check` ✅, `pnpm test` ✅

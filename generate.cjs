@@ -723,9 +723,13 @@ const payload = JSON.stringify({
       if (cols.length < 5) return '';
       const [pkgId, name, phase, , size] = cols;
       const deps = cols[cols.length - 1] || '—';
-      const isDone = phase.startsWith('✅');
+      const isDone = phase.startsWith('✅') || phase.startsWith('⏭️') || phase.startsWith('❌') || phase.startsWith('⏸️');
+      const isAbsorbed = phase.startsWith('⏭️');
+      const isFailed = phase.startsWith('❌');
+      const isPaused = phase.startsWith('⏸️');
+      const isActive = !isDone;
       const sizeBadge = `<span style="color:${sizeColors[size] || ''};font-weight:700;font-size:0.82em">${size}</span>`;
-      const borderColor = isDone ? 'var(--green)' : 'var(--accent)';
+      const borderColor = isDone ? (isFailed ? 'var(--red)' : (isAbsorbed ? 'var(--muted)' : (isPaused ? 'var(--yellow)' : 'var(--green)'))) : 'var(--accent)';
       const bgStyle = isDone ? 'opacity:0.6' : '';
 
       let detailHtml = '';
@@ -756,8 +760,16 @@ const payload = JSON.stringify({
       let html = `<div onclick="togglePkg('${rowId}')" style="font-size:0.88em;padding:6px 8px;margin-bottom:3px;background:var(--card);border-left:3px solid ${borderColor};border-radius:3px;line-height:1.5;display:flex;align-items:center;gap:8px;cursor:pointer;${bgStyle}" onmouseenter="this.style.opacity='0.85'" onmouseout="this.style.opacity='${isDone ? '0.6' : '1'}'">`;
       html += `<span style="flex:1"><strong>${pkgId}</strong> ${name} ${sizeBadge} <span style="color:var(--muted);font-size:0.82em">${deps !== '—' ? '→ ' + deps : ''}</span> <span style="font-size:0.75em;color:var(--accent);opacity:0.6">▸</span></span>`;
       if (isDone) {
-        html += `<span style="color:var(--green);font-weight:700;font-size:0.82em;white-space:nowrap">✅</span>`;
-        html += `<button class="log-btn" onclick="event.stopPropagation();viewLog('${pkgId}',this.parentElement)" title="Dev log megtekintése">📋 Log</button>`;
+        if (isAbsorbed) {
+          html += `<span style="color:var(--muted);font-weight:700;font-size:0.82em;white-space:nowrap">⏭️</span>`;
+        } else if (isFailed) {
+          html += `<span style="color:var(--red);font-weight:700;font-size:0.82em;white-space:nowrap">❌</span>`;
+        } else if (isPaused) {
+          html += `<span style="color:var(--yellow);font-weight:700;font-size:0.82em;white-space:nowrap">⏸️</span>`;
+        } else {
+          html += `<span style="color:var(--green);font-weight:700;font-size:0.82em;white-space:nowrap">✅</span>`;
+          html += `<button class="log-btn" onclick="event.stopPropagation();viewLog('${pkgId}',this.parentElement)" title="Dev log megtekintése">📋 Log</button>`;
+        }
       } else {
         html += `<button onclick="event.stopPropagation();sendAction('implement','${pkgId}','${pkgId}: ${name.replace(/'/g, "\\'")}',this,'▶ Mehet')" style="cursor:pointer;background:var(--green);color:#fff;border:none;border-radius:4px;padding:2px 10px;font-size:0.82em;font-weight:700;white-space:nowrap;flex-shrink:0">▶ Mehet</button>`;
         activePropCount++;
@@ -776,7 +788,7 @@ const payload = JSON.stringify({
       for (const row of rows) {
         const cols = row.split('|').map(c => c.trim()).filter(c => c);
         if (cols.length < 5) continue;
-        if (cols[2].startsWith('✅')) doneRows.push(cols);
+        if (cols[2].startsWith('✅') || cols[2].startsWith('⏭️') || cols[2].startsWith('❌') || cols[2].startsWith('⏸️')) doneRows.push(cols);
         else pendingRows.push(cols);
       }
 

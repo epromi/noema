@@ -1,11 +1,12 @@
 # PKG-021: Data Pipeline + Overview Tab
 
 **Size:** L | **Effort:** 2-3h | **Priority:** P1 | **Status:** spec  
-**Depends on:** PKG-001 ✅, PKG-002/003/004/005 ✅ | **Spec date:** 2026-07-05
+**Depends on:** PKG-001 ✅, PKG-002/003/004/005 ✅ | **Spec date:** 2026-07-05  
+**Review:** v2 (issues 1,2,7 fixed)
 
 ## 🎯 Mit
 
-A SvelteKit dashboard első érdemi tab-ja: Overview. Plusz a teljes data pipeline beüzemelése — `+page.server.ts` betölt MINDEN adatot a core modulokból, `+page.svelte` rendereli a megfelelő tab komponenst.
+A SvelteKit dashboard első érdemi tab-ja: Overview. Plusz a teljes data pipeline beüzemelése — `+page.server.ts` betölt MINDEN adatot a core modulokból, `+page.svelte` rendereli a megfelelő tab komponenst. A `+layout.svelte` tab sorát is ez a PKG igazítja a valós implementációs tervhez.
 
 ### F1: Data Pipeline — page.server.ts
 
@@ -67,13 +68,25 @@ noema → <Noema ...> (már kész)
 
 `src/lib/types/index.ts` bővítése az új PageData típusokkal.
 
+### F5: Layout Tab Alignment
+
+A `+layout.svelte` TABS tömbjének frissítése hogy match-eljen a valós implementációval:
+- **Bekerül**: `h1`, `viktor`, `activity`
+- **Kikerül**: `kpis` (nincs rá adatforrás, későbbi PKG)
+- **Marad**: overview, agents, crons, orchestrator, brainstorm, bills, research, noema
+
+### F6: Data Shape Validation
+
+Mielőtt a komponensek használnák az adatokat, ellenőrizni kell hogy mind a 9 core modul hívás visszaad-e értelmes adatot. Ha valamelyik üres/null/error → graceful fallback ("N/A" vagy "No data"), NE crash-eljen a dashboard.
+
 ## 📐 Scope
 
 ### Mit érint
-- `src/routes/+page.server.ts` — data loading
-- `src/routes/+page.svelte` — tab routing
+- `src/routes/+page.server.ts` — data loading (9 core modul + validation)
+- `src/routes/+page.svelte` — tab routing (if/else lánc)
+- `src/routes/+layout.svelte` — TABS tömb update
 - `src/lib/components/tabs/Overview.svelte` — ÚJ: overview komponens
-- `src/lib/types/index.ts` — típusok bővítése
+- `src/lib/types/index.ts` — típusok bővítés
 - `tests/core/` — ha új core funkció kell
 
 ### Mit NEM érint
@@ -86,12 +99,12 @@ noema → <Noema ...> (már kész)
 
 | Fázis | Mit | Fájlok |
 |-------|-----|--------|
-| **Phase 1** | page.server.ts: minden core modul betöltése | `+page.server.ts` |
+| **Phase 1** | page.server.ts: core modul hívások + data shape validation + graceful fallback | `+page.server.ts` |
 | **Phase 2** | Types: PageData bővítés | `types/index.ts` |
-| **Phase 3** | Overview.svelte: metrics bar, agent grid, H1 cards, system health | `tabs/Overview.svelte` |
-| **Phase 4** | +page.svelte: tab routing (if/else lánc) | `+page.svelte` |
-| **Phase 5** | Teszt: data loading működik, Overview renderel, tab váltás működik | Manuális böngésző |
-| **Phase 6** | `pnpm check` ✅, `pnpm test` ✅ |
+| **Phase 3** | +layout.svelte: TABS tömb update (h1, viktor, activity be, kpis ki) | `+layout.svelte` |
+| **Phase 4** | Overview.svelte: metrics bar, agent grid, H1 cards, system health | `tabs/Overview.svelte` |
+| **Phase 5** | +page.svelte: tab routing (if/else lánc mind a 11 tab-ra) | `+page.svelte` |
+| **Phase 6** | Teszt: data loading működik, Overview renderel, tab váltás működik | Manuális + `pnpm check` ✅ + `pnpm test` ✅ |
 
 ## 🎨 Design
 

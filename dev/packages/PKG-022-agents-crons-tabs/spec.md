@@ -1,56 +1,60 @@
 # PKG-022: Agents + Crons Tab
 
 **Size:** M | **Effort:** 1.5-2h | **Priority:** P1 | **Status:** spec  
-**Depends on:** PKG-021 ✅ (data pipeline) | **Spec date:** 2026-07-05
+**Depends on:** PKG-021 ✅ (data pipeline) | **Spec date:** 2026-07-05  
+**Review:** v2 (issues 2,3 fixed)
 
 ## 🎯 Mit
 
-Két tab komponens: Agents (teljes agent tábla Viktor al-tabbal) és Crons (cron tábla a meglévő crons.ts adatokból).
+Két tab komponens: Agents (teljes agent tábla mini Viktor statokkal) és Crons (egyszerű lista tábla).
 
-### F1: Agents Tab
+### F1: Agents Tab — `src/lib/components/tabs/Agents.svelte`
 
-`src/lib/components/tabs/Agents.svelte` — minden agent részletes nézetben:
+Teljes agent tábla:
 
 **Táblázat**:
-- Oszlopok: Emoji, Agent név, Státusz pötty (🟢🟡🔴), Státusz szöveg, Stale szint (0d/3d/7d színkód), Last run, Schedule, Role
+- Oszlopok: Emoji, Agent név, Státusz pötty (🟢🟡🔴), Státusz szöveg, Last run, Schedule, Model, Role
 - Rendezés: státusz szerint (red→yellow→green), azon belül ABC
-- Stale detection: <1d zöld, 1-3d sárga, >3d piros border
-- Hover: tooltip extra infóval
+- Stale detection a `lastRun` mezőből: friss (<1d zöld), 1-3d sárga, >3d piros border
 
-**Viktor al-szekció** (az Agents tab alján):
-- Total audits, Recall %, Pending repos, Failed
-- Recall trend (utolsó 2 run)
-- Blind spots lista
+**MINI Viktor stat sor** (az Agents tab alján, CSAK 2 szám):
+- Total audits: X | Recall: Y% | Pending repos: Z
+- Ez NEM a teljes Viktor dashboard — az a PKG-024-ben van.
 
-### F2: Crons Tab
+### F2: Crons Tab — `src/lib/components/tabs/Crons.svelte`
 
-`src/lib/components/tabs/Crons.svelte` — cron lista a crons.ts adatokból:
+Egyszerű cron lista tábla (NEM a pipeline timeline — az a PKG-023 orchestrator tab-ban):
 
-**Táblázat** a legacy cron pipeline mintájára:
-- Oszlopok: Időpont, Cron név, Agent (emoji + név), Leírás, Utolsó futás, Státusz pötty
-- Csoportosítás: ÉJSZAKA / REGGEL / NAPPAL / ESTE / AUTOMATIKUS
-- Színkód: OK (zöld), Error (piros), Warning (sárga)
+**Táblázat**:
+- Oszlopok: Cron név, Agent, Schedule (időpont), Leírás, Last run, OK/Error
+- Egyszerű lista, nincs csoportosítás, nincs timeline sáv
+- Színkód: OK (zöld pötty), Error (piros pötty)
+- Adat: `crons.ts` → getCrons()
 
 ## 📐 Scope
 
 ### Mit érint
 - `src/lib/components/tabs/Agents.svelte` — ÚJ
-- `src/lib/components/tabs/Crons.svelte` — ÚJ
+- `src/lib/components/tabs/Crons.svelte` — ÚJ (egyszerű lista, nem pipeline)
 - `src/routes/+page.svelte` — tab routing bővítés
-- `src/routes/+page.server.ts` — extra adat ha kell
+
+### Mit NEM érint
+- Cron pipeline / timeline — az PKG-023
+- Teljes Viktor dashboard — az PKG-024
+- Viktor blind spots / trend — az PKG-024
 
 ### Fázisok
 
 | Fázis | Mit | Fájlok |
 |-------|-----|--------|
-| **Phase 1** | Agents.svelte: táblázat + Viktor al-szekció | `tabs/Agents.svelte` |
-| **Phase 2** | Crons.svelte: csoportosított cron tábla | `tabs/Crons.svelte` |
-| **Phase 3** | +page.svelte: agents és crons tab-ok bekötése | `+page.svelte` |
-| **Phase 4** | Teszt: mindkét tab renderel, adatok helyesek | Manuális + `pnpm check` |
+| **Phase 1** | Agents.svelte: táblázat + MINI Viktor stats (2 szám) | `tabs/Agents.svelte` |
+| **Phase 2** | Crons.svelte: egyszerű cron lista | `tabs/Crons.svelte` |
+| **Phase 3** | +page.svelte: agents és crons tab routing | `+page.svelte` |
+| **Phase 4** | Teszt: render ellenőrzés, `pnpm check` ✅, `pnpm test` ✅ | Manuális |
 
 ## ✅ Acceptance Criteria
 
-1. Agents tab: minden agent látszik, státusz színkódok helyesek
-2. Viktor adatok látszanak (recall, pending, blind spots)
-3. Crons tab: cron-ok csoportosítva, időpontok helyesek
+1. Agents tab: minden agent látszik státusszal + stale jelöléssel
+2. Agents tab alján MINI Viktor: `Total: X | Recall: Y% | Pending: Z` (max 1 sor)
+3. Crons tab: egyszerű cron lista (nincs csoportosítás, nincs timeline)
 4. `pnpm check` ✅, `pnpm test` ✅
