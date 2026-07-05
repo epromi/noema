@@ -21,6 +21,7 @@
 | PKG-010 | **Agent Decision Trace** | 📋 F0 | F-20 P2 | L | 3-4h | PKG-001+003 |
 | PKG-011 | Session Health Scoring | 📋 F0 | F-21 P2 | M | 2-3h | PKG-003 |
 | PKG-012 | OTel Export (opcionális) | 📋 F0 | F-22 P3 | S | 1h | PKG-002..005 |
+| PKG-016 | Development Log Enhance | 📋 F0 | F-05 P1 | S | 0.5h | PKG-001+014 |
 
 ## Függőségi Sorrend
 
@@ -28,6 +29,7 @@
 PKG-001 (scaffold)         ← ELSŐ
   ├── PKG-014 (log viewer) ← UI-only, bármikor
   ├── PKG-015 (expandable) ← UI-only, ✅ KÉSZ
+  ├── PKG-016 (dev log)     ← UI enhancement
   └── PKG-013 (provider) 🧱 ← MÁSODIK (MINDEN core modul ezen keresztül megy)
         ├── PKG-002 (crons)
         │     ├── PKG-006 (logs viewer)
@@ -42,7 +44,7 @@ PKG-001 (scaffold)         ← ELSŐ
               └── PKG-012 (OTel)
 
 AJÁNLOTT SORREND:
-  1. PKG-001 → 2. PKG-013 🧱 → 3-6. PKG-002..005
+  1. PKG-001 → 2. PKG-016 → 3. PKG-013 🧱 → 4-7. PKG-002..005
   7. PKG-009 (SSE) → 8. PKG-014 → 9. PKG-006 → 10. PKG-008 → 11. PKG-007
   12. PKG-011 → 13. PKG-010 → 14. PKG-012 (low prio)
 
