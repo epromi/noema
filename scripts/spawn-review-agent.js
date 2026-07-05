@@ -114,11 +114,11 @@ ${hasDangerousPatterns ? '- ⚠️  DANGEROUS PATTERNS (eval, innerHTML) — rev
 ## YOUR TASK
 
 ### Phase 1: Auto-Fix (what you CAN fix automatically)
-1. **Lint/Format**: Run `cd ${NOEMA_DIR} && git pull --rebase && npx eslint --fix --quiet src/ && npx prettier --write "src/**/*.{ts,svelte,js,cjs}"`
+1. **Lint/Format**: Run \`cd ${NOEMA_DIR} && git pull --rebase && npx eslint --fix --quiet src/ && npx prettier --write "src/**/*.{ts,svelte,js,cjs}"\`
 2. **Missing Tests**: For each core module without a test file, generate a basic test stub (NOT empty — include imports, describe block, at least one real test)
 3. **Low Coverage**: Add additional test cases targeting untested branches
-4. After fixes: run `cd ${NOEMA_DIR} && pnpm test --coverage` to verify
-5. **Commit fixes**: `cd ${NOEMA_DIR} && git add -A && git commit -m "🔧 Review fixes: ${PKG_ID} (lint+tests+coverage)" && git push`
+4. After fixes: run \`cd ${NOEMA_DIR} && pnpm test --coverage\` to verify
+5. **Commit fixes**: \`cd ${NOEMA_DIR} && git add -A && git commit -m "🔧 Review fixes: ${PKG_ID} (lint+tests+coverage)" && git push\`
 
 ### Phase 2: Validation
 1. Re-run: \`cd ${NOEMA_DIR} && npx eslint --quiet src/\`
