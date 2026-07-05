@@ -28,7 +28,7 @@
 | PKG-007 | Audit Trail | ✅ F5 | F-06 P1 | M | ✅ kész | PKG-001+003 |
 | PKG-008 | Cron Health Timeline | 📋 F0 | F-07 P1 | S | 1h | PKG-001+002 |
 | PKG-009 | SSE Live Updates | ✅ F5 | F-17↑ | M | ✅ kész | PKG-001+002+003 |
-| PKG-010 | **Agent Decision Trace** | 📋 F0 | F-20 P2 | L | 3-4h | PKG-001+003 |
+| PKG-010 | **Agent Decision Trace** | ✅ F5 | F-20 P2 | L | ✅ kész | PKG-001+003 |
 | PKG-011 | Session Health Scoring | 📋 F0 | F-21 P2 | M | 2-3h | PKG-003 |
 | PKG-012 | OTel Export (opcionális) | 📋 F0 | F-22 P3 | S | 1h | PKG-002..005 |
 | PKG-026 | **Dev Job Floating Indicator** 🧩 | ✅ F5 | — | S | ✅ kész | PKG-021 |
