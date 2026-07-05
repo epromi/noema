@@ -145,6 +145,10 @@ h1{font-size:1.3em;margin-bottom:0}.subtitle{color:var(--muted);font-size:0.92em
   .log-panel pre { font-family:'Fira Code','Cascadia Code',monospace; font-size:0.78em; color:var(--muted); white-space:pre-wrap; word-break:break-all; line-height:1.5; margin:0; }
   .log-btn { cursor:pointer; background:var(--accent); color:#fff; border:none; border-radius:4px; padding:2px 8px; font-size:0.78em; font-weight:700; margin-left:4px; flex-shrink:0; }
   .log-btn:hover { opacity:0.85; }
+  /* ── Expandable Package Details ── */
+  .pkg-row { cursor:pointer; transition:opacity 0.15s; }
+  .pkg-row:hover { background:var(--accent); }
+  .pkg-detail { display:none; }
 </style>
 </head>
 <body>
@@ -880,7 +884,9 @@ if(D.noema) {
   document.getElementById('np-proposallist').innerHTML = np.proposals||'⏳ Nincs aktív proposal. A Research cron (01:00) generálja őket.';
 }
 
-// ── Dashboard Interactive Actions (Direct to Alfred) ──
+// ── Dashboard Interactive Actions — with Log Viewer ──
+let logPollers = {};
+
 function sendAction(action, id, description, btn, label) {
   const origLabel = label || '▶';
   btn.textContent = '⏳ ...';
@@ -895,11 +901,19 @@ function sendAction(action, id, description, btn, label) {
   .then(data => {
     if (data.ok) {
       if (action === 'implement') {
-        // Proposal approved → stays queued
-        btn.textContent = '⏳ Sorban';
+        btn.textContent = '⏳';
         btn.style.background = 'var(--yellow)';
-        btn.disabled = true;
         btn.style.opacity = '0.7';
+        // Add 📋 log button next to button
+        const parent = btn.parentElement;
+        if (!parent.querySelector('.log-btn')) {
+          const logBtn = document.createElement('button');
+          logBtn.className = 'log-btn';
+          logBtn.textContent = '📋 Log';
+          logBtn.title = 'Kattints a Cursor log megtekintéséhez';
+          logBtn.onclick = function(e) { e.stopPropagation(); toggleLog(id, parent); };
+          parent.appendChild(logBtn);
+        }
       } else {
         btn.textContent = '✅';
         btn.style.background = 'var(--accent)';
@@ -916,6 +930,58 @@ function sendAction(action, id, description, btn, label) {
     btn.style.background = 'var(--yellow)';
     setTimeout(() => { btn.textContent = origLabel; btn.style.background = 'var(--green)'; btn.disabled = false; btn.style.opacity = '0.85'; }, 2000);
   });
+}
+
+// ── Cursor Log Viewer ──
+function toggleLog(pkgId, parentRow) {
+  const panelId = 'logpanel-' + pkgId.replace(/[^a-zA-Z0-9-]/g,'');
+  let panel = document.getElementById(panelId);
+  if (panel) {
+    panel.classList.toggle('active');
+    if (!panel.classList.contains('active')) { stopLogPoll(pkgId); }
+    return;
+  }
+  panel = document.createElement('div');
+  panel.id = panelId;
+  panel.className = 'log-panel active';
+  panel.innerHTML = '<pre id="logpre-' + panelId + '">⏳ Betöltés...</pre>';
+  parentRow.after(panel);
+  fetchLog(pkgId, panelId);
+  logPollers[pkgId] = setInterval(function() { fetchLog(pkgId, panelId); }, 3000);
+}
+
+function fetchLog(pkgId, panelId) {
+  fetch('http://127.0.0.1:18998/log/' + encodeURIComponent(pkgId))
+    .then(r => r.text())
+    .then(txt => {
+      const pre = document.getElementById('logpre-' + panelId);
+      if (pre) {
+        pre.textContent = txt;
+        pre.parentElement.scrollTop = pre.parentElement.scrollHeight;
+      }
+    })
+    .catch(function(e) {
+      const pre = document.getElementById('logpre-' + panelId);
+      if (pre) pre.textContent = '❌ Hiba: ' + e.message;
+    });
+}
+
+function stopLogPoll(pkgId) {
+  if (logPollers[pkgId]) { clearInterval(logPollers[pkgId]); delete logPollers[pkgId]; }
+}
+
+// ── Expandable Package Details ──
+function togglePkg(rowId) {
+  const el = document.getElementById(rowId);
+  if (!el) return;
+  const isVisible = el.style.display === 'block';
+  el.style.display = isVisible ? 'none' : 'block';
+  // Rotate chevron on parent row
+  const row = el.previousElementSibling;
+  if (row) {
+    const chevron = row.querySelector('span[style*="▸"]');
+    if (chevron) chevron.textContent = isVisible ? '▸' : '▾';
+  }
 }
 
 function proposalBtn(p) {

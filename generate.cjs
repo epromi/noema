@@ -732,15 +732,43 @@ const payload = JSON.stringify({
         const sizeBadge = `<span style="color:${sizeColors[size]||''};font-weight:700;font-size:0.82em">${size}</span>`;
         const borderColor = isDone ? 'var(--green)' : 'var(--accent)';
         const bgStyle = isDone ? 'opacity:0.6' : '';
-        packagesHtml += `<div style="font-size:0.88em;padding:6px 8px;margin-bottom:3px;background:var(--card);border-left:3px solid ${borderColor};border-radius:3px;line-height:1.5;display:flex;align-items:center;gap:8px;${bgStyle}">`;
-        packagesHtml += `<span style="flex:1"><strong>${pkgId}</strong> ${name} ${sizeBadge} <span style="color:var(--muted);font-size:0.82em">${deps!=='—'?'→ '+deps:''}</span></span>`;
+
+        // Read spec.md for expandable detail panel
+        let detailHtml = '';
+        try {
+          const pkgDir = fs.readdirSync(path.join(W,'projects/noema/dev/packages')).find(d => d.startsWith(pkgId));
+          if (pkgDir) {
+            const specPath = path.join(W,'projects/noema/dev/packages',pkgDir,'spec.md');
+            if (fs.existsSync(specPath)) {
+              const spec = fs.readFileSync(specPath,'utf8');
+              const descMatch = spec.match(/\*\*Mit\*\*:\s*(.+)/);
+              const scopeSection = spec.match(/\*\*Scope\*\*:\s*\n([\s\S]*?)(?=\n###|\n##|\n\*\*)/);
+              const phases = [];
+              const phaseRegex = /### (F\d)\s*[\u2013\-]\s*(.+?)(?=\n- \[)/g;
+              let pm;
+              while ((pm = phaseRegex.exec(spec)) !== null) {
+                phases.push(`<span style="color:var(--muted)">${pm[1]}</span> ${pm[2].replace(/</g,'&lt;')}`);
+              }
+              const desc = (descMatch ? descMatch[1].replace(/</g,'&lt;') : name);
+              const scopeItems = scopeSection ? scopeSection[1].trim().split('\n').filter(l => l.trim()).map(l => l.replace(/^-\s*`?/,'').replace(/`$/,'').trim()).join(' · ') : '';
+              detailHtml = `<div style="padding:4px 0 2px 0;color:var(--muted);font-size:0.84em">${desc}</div>`;
+              if (scopeItems) detailHtml += `<div style="font-size:0.80em;color:var(--muted);opacity:0.7">📁 ${scopeItems}</div>`;
+              if (phases.length > 0) detailHtml += `<div style="font-size:0.80em;margin-top:2px">${phases.slice(0,4).join(' <span style="color:var(--border)">│</span> ')}</div>`;
+            }
+          }
+        } catch {}
+
+        const rowId = 'pkgrow-' + pkgId.replace(/[^a-zA-Z0-9-]/g,'');
+        packagesHtml += `<div onclick="togglePkg('${rowId}')" style="font-size:0.88em;padding:6px 8px;margin-bottom:3px;background:var(--card);border-left:3px solid ${borderColor};border-radius:3px;line-height:1.5;display:flex;align-items:center;gap:8px;cursor:pointer;${bgStyle}" onmouseenter="this.style.opacity='0.85'" onmouseout="this.style.opacity='${isDone?'0.6':'1'}'">`;
+        packagesHtml += `<span style="flex:1"><strong>${pkgId}</strong> ${name} ${sizeBadge} <span style="color:var(--muted);font-size:0.82em">${deps!=='—'?'→ '+deps:''}</span> <span style="font-size:0.75em;color:var(--accent);opacity:0.6">▸</span></span>`;
         if (isDone) {
           packagesHtml += `<span style="color:var(--green);font-weight:700;font-size:0.82em;white-space:nowrap">✅ KÉSZ</span>`;
         } else {
-          packagesHtml += `<button onclick="sendAction('implement','${pkgId}','${pkgId}: ${name.replace(/'/g,"\\'")}',this,'▶ Mehet')" style="cursor:pointer;background:var(--green);color:#fff;border:none;border-radius:4px;padding:2px 10px;font-size:0.82em;font-weight:700;white-space:nowrap;flex-shrink:0">▶ Mehet</button>`;
+          packagesHtml += `<button onclick="event.stopPropagation();sendAction('implement','${pkgId}','${pkgId}: ${name.replace(/'/g,"\\'")}',this,'▶ Mehet')" style="cursor:pointer;background:var(--green);color:#fff;border:none;border-radius:4px;padding:2px 10px;font-size:0.82em;font-weight:700;white-space:nowrap;flex-shrink:0">▶ Mehet</button>`;
           activePropCount++;
         }
         packagesHtml += '</div>';
+        packagesHtml += `<div id="${rowId}" class="pkg-detail" style="display:none;margin:-2px 0 4px 0;padding:8px 10px;background:var(--card);border-left:3px solid var(--border);border-radius:0 3px 3px 0;font-size:0.84em;line-height:1.6">${detailHtml}</div>`;
       }
     } catch (e) { packagesHtml = '<span style="color:var(--red)">Package index hiba: '+e.message+'</span>'; }
     

@@ -8,6 +8,8 @@
 |-----|-----|-------|---------|-------|-------------|----------|
 | PKG-001 | SvelteKit Scaffold | ✅ F5 | — | L | ✅ kész | — |
 | PKG-013 | **Provider Abstraction Layer** 🧱 | ✅ F5 | F-23 P1 | M | ✅ kész | PKG-001 |
+| PKG-014 | Dev Loop Log Viewer | 📋 F2 | F-05 P1 | S | 0.5h | PKG-001 |
+| PKG-015 | Expandable Package Rows | ✅ F5 | — | S | ✅ kész | PKG-001 |
 | PKG-002 | Core: Cron Data | 📋 F0 | — | S | 0.5-1h | PKG-013 |
 | PKG-003 | Core: Agent Data | 📋 F0 | — | S | 0.5-1h | PKG-013 |
 | PKG-004 | Core: Health & Heartbeat | 📋 F0 | — | S | 0.5h | PKG-013 |
@@ -24,6 +26,8 @@
 
 ```
 PKG-001 (scaffold)         ← ELSŐ
+  ├── PKG-014 (log viewer) ← UI-only, bármikor
+  ├── PKG-015 (expandable) ← UI-only, ✅ KÉSZ
   └── PKG-013 (provider) 🧱 ← MÁSODIK (MINDEN core modul ezen keresztül megy)
         ├── PKG-002 (crons)
         │     ├── PKG-006 (logs viewer)
@@ -39,10 +43,11 @@ PKG-001 (scaffold)         ← ELSŐ
 
 AJÁNLOTT SORREND:
   1. PKG-001 → 2. PKG-013 🧱 → 3-6. PKG-002..005
-  7. PKG-009 (SSE) → 8. PKG-006 → 9. PKG-008 → 10. PKG-007
-  11. PKG-011 → 12. PKG-010 → 13. PKG-012 (low prio)
+  7. PKG-009 (SSE) → 8. PKG-014 → 9. PKG-006 → 10. PKG-008 → 11. PKG-007
+  12. PKG-011 → 13. PKG-010 → 14. PKG-012 (low prio)
 
-⚠️ PKG-013 priorizálva (F-23 P1) — enélkül a core modulok OpenClaw-hoz láncolódnak
+✅ KÉSZ: PKG-001, PKG-013, PKG-015
+🔨 Folyamatban: PKG-014 (F2)
 ```
 
 ## Forrás Kulcs
