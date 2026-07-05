@@ -363,6 +363,15 @@ export interface DevLoopRunningData {
   error?: string;
 }
 
+/** Dev-loop floating indicator: next processor run + queue + active package. */
+export interface DevJobStatus {
+  nextMs: number;
+  queue: number;
+  running: string | null;
+  updatedAt: number;
+  error?: string;
+}
+
 export type ImplementState = "idle" | "running" | "done" | "error" | "offline";
 
 export interface DashboardMeta {

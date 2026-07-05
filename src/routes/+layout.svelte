@@ -1,6 +1,7 @@
 <script lang="ts">
   import '../app.css';
   import { setContext } from 'svelte';
+  import DevJobIndicator from '$lib/components/DevJobIndicator.svelte';
 
   const TABS = [
     { id: 'overview', label: '🏠 Overview' },
@@ -47,4 +48,5 @@
   </nav>
 
   {@render children?.()}
+  <DevJobIndicator />
 </div>
