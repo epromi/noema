@@ -1,6 +1,6 @@
 # Noema 🧠 — Fejlesztési Útiterv
 
-> Forrás: competitive-landscape.md + user visszajelzések + Noema Research cron javaslatok
+> Forrás: competitive-landscape.md + industry-review-2026.md + user visszajelzések + Noema Research cron javaslatok
 > Frissítve: 2026-07-05
 
 ---
@@ -47,6 +47,7 @@
 | **F-11** | **Auto-Generated Wiki** — Agent fájlokból, configból, skill-ekből auto-generált, kereshető dokumentáció. Read-only, filesystem-ből élőben | Hermes Dashboard | 4-6h | 📋 Kutatva |
 | **F-12** | **Subagent Status Panel** — Session-enként: spawn time, státusz, tool call count, completion time, success/error. Timeline vizualizáció | Hermes Dashboard | 2-3h | 📋 Kutatva |
 | **F-13** | **Template JS Kiszervezés** — A ~920 soros HTML-ből a JS renderer kiszervezése külön `<script>` fájlba. Karbantarthatóság ↑ | Code Quality | 1-2h | 📋 Kutatva |
+| **F-20** | **Reasoning Trace Viewer** 🔥 — Agent session-ök `<thinking>` blokkjainak kinyerése és vizualizációja. Plan-act-observe fázisok, tool választási indoklások, chain-of-thought timeline. Ez a legnagyobb gap az iparági standard-ekhez képest | Industry Review 2026 | 4-6h | 📋 Kutatva |
 
 ---
 
@@ -60,6 +61,8 @@
 | **F-17** | **WebSocket Real-Time** — Push frissítések page refresh helyett. SSE vagy WebSocket a relay.js-en keresztül | Mission Control | 8-12h | 📋 Kutatva |
 | **F-18** | **Több Téma** — Light mode, kontraszt mód, több színséma (mint a Hermes Studio 8 témája) | Hermes Studio | 3-5h | 📋 Kutatva |
 | **F-19** | **Mobile PWA** — Reszponzív design optimalizálás mobilon, PWA manifest, offline cache | Hermes Studio | 4-6h | 📋 Kutatva |
+| **F-21** | **Eval Scoring Engine** — Automatikus minőségbírálat agent session-ökön. Trace → score (0-100) → fail flag → vissza az agent-hez feedback loop. Braintrust/Otel pattern | Industry Review 2026 | 6-10h | 📋 Kutatva |
+| **F-22** | **OTel GenAI Export** — OpenTelemetry GenAI v1.41 span export a core modulokból. Standard formátum, Grafana/Jaeger kompatibilitás. Noema = frontend, OTel = backend | Industry Review 2026 | 5-8h | 📋 Kutatva |
 
 ---
 
@@ -80,10 +83,10 @@
 | Prioritás | Összes | Kész | Függőben |
 |-----------|--------|------|----------|
 | 🔴 P0 | 4 | 3 | 1 |
-| 🟡 P1 | 4 | 0 | 4 |
-| 🟢 P2 | 5 | 0 | 5 |
-| ⚪ P3 | 6 | 0 | 6 |
-| **Összes** | **19** | **3** | **16** |
+| 🟡 P1 | 5 | 0 | 5 |
+| 🟢 P2 | 7 | 0 | 7 |
+| ⚪ P3 | 8 | 0 | 8 |
+| **Összes** | **24** | **3** | **21** |
 
 ---
 
@@ -92,7 +95,8 @@
 1. **Noema Research cron** (01:00) — automatikusan keres feature ötleteket a competitive landscape-ből + web research-ből
 2. **Noema Nightly QA** (03:00) — review-zza a kódminőséget, technikai adósságot jelez
 3. **Alfred** — manuális kutatás alapján, felhasználói kérésre
-4. **András** — közvetlen feature request
+4. **Industry Review** — időszakos összevetés iparági best practice-ekkel (`research/industry-review-2026.md`)
+5. **András** — közvetlen feature request
 
 Minden új feature:
 - Kap egy F-XX ID-t
