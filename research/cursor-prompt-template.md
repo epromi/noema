@@ -2,92 +2,60 @@
 
 > How Alfred generates prompts for the Cursor CLI when implementing Noema packages.
 > See: `research/dev-loop-architecture.md`, `scripts/dev-loop.sh`
+> **Actual prompt file**: `prompts/cursor-implement.txt` (the bare prompt, no docs)
 
-## Template
+## How It Works
 
-```
-You are implementing a package for the Noema monitoring dashboard (SvelteKit v2).
+`dev-loop.sh` reads `prompts/cursor-implement.txt`, replaces the `PKG_PLACEHOLDER` token with the actual package ID, and appends the expected file list from the spec. The prompt template itself is a clean, documentation-free text file.
 
-## CRITICAL RULES (read FIRST)
+## Prompt File
 
-1. `lib/core/` = plain TypeScript/JavaScript — ZERO Svelte imports, ZERO browser APIs
-2. `lib/components/` = Svelte UI only — receives data via props from parent
-3. Max 5 files per phase — if a package has 10 files, do NOT implement all at once
-4. Every `lib/core/*.ts` module MUST have a corresponding `tests/core/*.test.ts`
-5. Run `pnpm check` after each phase — do NOT proceed if it fails
-6. Output ONLY the implementation — no explanations unless something fails
+**Location**: `prompts/cursor-implement.txt`
 
-## PROJECT STRUCTURE
-
-projects/noema/
-├── lib/
-│   ├── core/          ← framework-agnostic data layer (NO Svelte imports)
-│   │   ├── types/     ← shared TypeScript types
-│   │   ├── crons.ts
-│   │   ├── agents.ts
-│   │   ├── health.ts
-│   │   └── ...
-│   └── components/    ← Svelte UI components (ONLY rendering)
-│       ├── tabs/      ← dashboard tab components
-│       └── shared/    ← reusable UI pieces
-├── tests/
-│   └── core/          ← unit tests for lib/core/
-├── dev/
-│   └── packages/      ← package specs
-└── src/
-    └── routes/
-        └── +page.svelte  ← main dashboard page
-
-## PACKAGE SPEC
-
-Read the full spec from: dev/packages/<PKG_ID>/spec.md
-
-## INSTRUCTIONS
-
-1. Read the spec at dev/packages/<PKG_ID>/spec.md
-2. Implement F1 (core) phase FIRST, verify, THEN F2 (UI), THEN F3-F5
-3. After ALL phases: run 'pnpm check' to verify
-4. If any phase fails, STOP and explain what went wrong
-```
+Key elements:
+1. **CRITICAL RULES** (6 mandatory constraints — core/UI separation, max 5 files/phase, tests required)
+2. **PROJECT STRUCTURE** (tree view for Cursor context)
+3. **PACKAGE SPEC** pointer (dev/packages/<PKG>/spec.md)
+4. **INSTRUCTIONS** (phase-by-phase: F1 core → verify → F2 UI → verify → F3-F5)
 
 ## Size-Specific Variants
 
-### M packages (3-5 files)
+### All packages (S/M/L) — Single Cursor run, max 5 files/phase
 
-Use the base template above. Cursor handles this well in one pass.
+Use `prompts/cursor-implement.txt` as-is. Cursor handles all sizes in one pass as long as per-phase file limits are respected.
 
-### L packages (6-10 files)
+**S (1-2 files)**: One phase, fast
+**M (3-5 files)**: 2-3 phases, moderate
+**L (6-10 files)**: Split into TWO Cursor runs:
 
-**Split into two Cursor runs:**
-
-Run 1 — Core modules only (F1):
+**Run 1: Core only (F1)**
 ```
-<base template>
-...
+<same as cursor-implement.txt but add:>
 ## INSTRUCTIONS
 Implement ONLY F1 (core) phase. Create all lib/core/*.ts modules and tests.
-Do NOT create any Svelte components.
+Do NOT create any Svelte components. Stop after F1.
 Run pnpm check when done.
 ```
 
-Run 2 — UI only (F2+):
+**Run 2: UI + Integration (F2-F5)**
 ```
-<base template>
-...
-## INSTRUCTIONS  
-Implement F2 (UI) + F3 (integration) + F4 (tests).
-Core modules are already done (F1). Create Svelte components only.
-The core modules are at lib/core/<names>.ts — import from them.
+<same as cursor-implement.txt but add:>
+## INSTRUCTIONS
+Core modules (F1) are already done at lib/core/<names>.ts.
+Implement F2 (UI) + F3 (integration) + F4 (tests) + F5 (merge).
+Import from existing core modules — do NOT recreate them.
 Run pnpm check when done.
 ```
+
+**Mandatory context for EVERY Cursor run**: `projects/noema/CONTRIBUTING.md` is read FIRST (prompt Rule 0).
 
 ### Debugging failed runs
 
-If Cursor produces broken output:
+Minimal fix prompt:
 ```
 Read the file <filepath>.
-There's a bug: <describe the bug>.
-Fix ONLY this bug, do NOT change anything else.
+Bug: <one-line description>.
+Fix ONLY this bug. Do NOT change anything else.
 Run pnpm check to verify.
 ```
 
@@ -95,21 +63,28 @@ Run pnpm check to verify.
 
 | Size | Model | Why |
 |------|-------|-----|
-| S | Alfred (DD V4 Pro) | Not worth Cursor overhead |
-| M | sonnet-4 (default) | Good balance of speed/quality |
-| L | sonnet-4 | First choice, fallback to opus-4 if fails |
+| S | sonnet-4 | Simple — fast turnaround |
+| M | sonnet-4 | Default — good balance |
+| L (core) | sonnet-4 | Core logic benefits from planning |
+| L (UI) | sonnet-4 | Component generation is straightforward |
 
-Add `--model sonnet-4` or `--model opus-4` to the cursor command if needed.
+All packages use Cursor. Add `--model <name>` to the cursor command in dev-loop.sh if switching.
 
-## Verification Checklist (Alfred's job after Cursor)
+## Verification Checklist
 
-After Cursor finishes, Alfred checks:
+After Cursor finishes, **dev-loop.sh (Phase 5) automatically checks**:
 
-- [ ] `pnpm check` passes (no TypeScript errors)
-- [ ] `pnpm build` succeeds (can bundle)
-- [ ] All files listed in spec exist
-- [ ] `lib/core/*.ts` has ZERO Svelte imports (grep check)
-- [ ] `lib/components/*.svelte` has NO `exec()`, `sessions_*`, `read()`, `write()` calls
-- [ ] Tests exist for every core module
-- [ ] Git status is clean or has only expected changes
-- [ ] No leftover debug files, temp files, or commented-out code
+| Check | What | Severity |
+|-------|------|----------|
+| Files exist | All expected files from spec created? | CRITICAL |
+| pnpm check | TypeScript compiles without errors? | CRITICAL |
+| ZERO Svelte imports in `lib/core/` | grep for `from 'svelte'` | CRITICAL |
+| NO system calls in `lib/components/` | grep for `exec(`, `sessions_`, `read(`, `write(` | CRITICAL |
+| Git status | Only expected files changed? | WARNING |
+
+## Adding to dev-loop.sh
+
+The prompt template is read by `dev-loop.sh` Phase 3. To modify the prompt:
+
+1. Edit `prompts/cursor-implement.txt` (for all packages)
+2. Or add package-specific overrides in the spec's `## Cursor Overrides` section (future)

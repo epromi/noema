@@ -715,18 +715,43 @@ const payload = JSON.stringify({
       healthScore = Math.round(healthScore * (cronHealthy/3));
     } catch { cronListHtml = '<span style="color:var(--muted)">Cron lekérdezés sikertelen</span>'; }
 
-    // Active proposals from Research
-    let proposalsHtml = '⏳ Nincs aktív proposal. A Research cron (01:00) generálja őket.';
+    // Development packages from INDEX.md
+    let packagesHtml = '';
     let activePropCount = 0;
     try {
-      const rf = fs.readdirSync(path.join(W,'memory/research/noema')).sort().reverse().slice(0,3);
-      for (const f of rf) {
-        const content = fs.readFileSync(path.join(W,'memory/research/noema',f),'utf8');
-        const props = content.match(/📋 PROPOSE.*/g) || [];
-        if (props.length > 0) {
-          activePropCount += props.length;
-          if (proposalsHtml.includes('Nincs aktív')) proposalsHtml = '';
-          proposalsHtml += `<div style="margin-bottom:4px"><span style="color:var(--muted);font-size:0.88em">${f}</span><br>${props.map(p => `<span style="font-size:0.88em">${p.trim()}</span>`).join('<br>')}</div>`;
+      const indexMd = fs.readFileSync(path.join(W,'projects/noema/dev/packages/INDEX.md'),'utf8');
+      // Parse table rows: | PKG-XXX | Name | F0 | ... | S | 1h | DEP |
+      const rows = indexMd.split('\n').filter(l => l.match(/^\| PKG-\d{3}\s*\|/));
+      const sizeColors = { S: 'var(--green)', M: 'var(--yellow)', L: 'var(--accent)', XL: 'var(--red)' };
+      for (const row of rows) {
+        const cols = row.split('|').map(c => c.trim()).filter(c => c);
+        if (cols.length < 5) continue;
+        const [pkgId, name, phase, , size] = cols;
+        const deps = cols[cols.length-1] || '—';
+        const sizeBadge = `<span style="color:${sizeColors[size]||''};font-weight:700;font-size:0.82em">${size}</span>`;
+        packagesHtml += `<div style="font-size:0.88em;padding:6px 8px;margin-bottom:3px;background:var(--card);border-left:3px solid var(--accent);border-radius:3px;line-height:1.5;display:flex;align-items:center;gap:8px">`;
+        packagesHtml += `<span style="flex:1"><strong>${pkgId}</strong> ${name} ${sizeBadge} <span style="color:var(--muted);font-size:0.82em">${deps!=='—'?'→ '+deps:''}</span></span>`;
+        packagesHtml += `<button onclick="sendAction('implement','${pkgId}','${pkgId}: ${name.replace(/'/g,"\\'")}',this,'▶ Mehet')" style="cursor:pointer;background:var(--green);color:#fff;border:none;border-radius:4px;padding:2px 10px;font-size:0.82em;font-weight:700;white-space:nowrap;flex-shrink:0">▶ Mehet</button>`;
+        packagesHtml += '</div>';
+        activePropCount++;
+      }
+    } catch (e) { packagesHtml = '<span style="color:var(--red)">Package index hiba: '+e.message+'</span>'; }
+    
+    // Research proposals from nightly cron (secondary)
+    let researchHtml = '';
+    try {
+      const rd = path.join(W,'memory/research/noema');
+      if (fs.existsSync(rd)) {
+        const rf = fs.readdirSync(rd).sort().reverse().slice(0,3);
+        const researchLines = [];
+        for (const f of rf) {
+          const content = fs.readFileSync(path.join(rd,f),'utf8');
+          const props = content.match(/📋 PROPOSE.*/g) || [];
+          if (props.length > 0) researchLines.push(...props.map(p => p.trim()));
+        }
+        if (researchLines.length > 0) {
+          researchHtml = '<hr style="margin:10px 0;border-color:var(--border)"><div style="font-size:0.85em;color:var(--muted);margin-bottom:4px">🔮 Research cron javaslatok (hamarosan):</div>';
+          researchHtml += researchLines.slice(0,8).map(l => `<div style="font-size:0.84em;opacity:0.7">${l}</div>`).join('');
         }
       }
     } catch {}
@@ -735,12 +760,12 @@ const payload = JSON.stringify({
       healthScore, healthLabel,
       cronsHealthy: cronHealthy||0, cronsTotal: 3, cronHealth: (cronHealthy||0)/3,
       qaLatest, qaLabel, qaScore: qaLatest==='⏳'?'?':'g',
-      activeProposals: activePropCount, proposalsLabel: activePropCount>0?'aktív':'pending',
+      activeProposals: activePropCount, proposalsLabel: activePropCount>0?activePropCount+' csomag':'pending',
       architecture: arch, codeMetrics,
       projectCrons: cronListHtml||'—',
       changelog: changelogHtml,
       qaReport: qaReportHtml,
-      proposals: proposalsHtml
+      proposals: packagesHtml + researchHtml
     };
   })()
 });

@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 jobs:
-  validate:
+  validate-v1:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -15,16 +15,13 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: 'npm'
-          cache-dependency-path: '**/package.json'
 
-      - name: Syntax check
+      - name: Syntax check (v1 generator)
         run: node --check generate.js && node --check relay.js && node --check action-processor.js
 
       - name: Template integrity
         run: |
-          # Verify all tab IDs in template match JS switchTab calls
-          grep -c 'switchTab(' archive/v4.html
+          grep -c 'data-tab=' archive/v4.html
           grep -c 'tab-content' archive/v4.html
           echo "Template integrity check passed"
 
@@ -34,3 +31,32 @@ jobs:
           test -f CONTRIBUTING.md && echo "✅ CONTRIBUTING"
           test -f architecture.md && echo "✅ architecture"
           test -f roadmap.md && echo "✅ roadmap"
+
+  validate-v2:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: .
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm check
+
+      - name: Build
+        run: pnpm build
+
+      - name: Test
+        run: pnpm test
