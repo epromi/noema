@@ -1,4 +1,9 @@
-You are implementing a package for the Noema monitoring dashboard (SvelteKit v2).
+You are implementing a package for the Noema monitoring dashboard.
+
+**⚠️ TARGET CHECK (read FIRST):**
+- If the spec's "Scope → Mit érint" section lists `archive/v4.html` → implement in `archive/v4.html` + `generate.cjs` (legacy dashboard). DO NOT touch `src/lib/` or `src/routes/`.
+- If it lists `src/lib/core/` or `src/lib/components/` → implement in SvelteKit (project structure below).
+- If it lists BOTH → implement in both.
 
 ## CRITICAL RULES (read FIRST)
 

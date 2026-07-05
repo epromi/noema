@@ -1,7 +1,14 @@
 # PKG-019: Cron Sidebar — Mindig látható oldalsáv
 
+**🚨 TARGET: `archive/v4.html` (LEGACY DASHBOARD) — NOT SvelteKit! 🚨**
+
+> EZ A CSOMAG A `projects/noema/archive/v4.html` FÁJLT MÓDOSÍTJA.
+> NE használj `src/lib/`-et, `+layout.svelte`-t, vagy SvelteKit komponenseket.
+> A dashboard egy statikus HTML fájl amit a `relay.cjs` szolgál ki.
+> CSS és JS inline az `archive/v4.html`-ben.
+
 **Size:** M | **Effort:** 1.5-2h | **Priority:** P1 | **Status:** spec  
-**Depends on:** PKG-017 (Cron Timeline) ✅ | **Spec date:** 2026-07-05
+**Depends on:** PKG-017 (Cron Timeline) ⏸️ | **Spec date:** 2026-07-05 | **Retry:** 2 (first attempt: wrong SvelteKit target)
 
 ## 🎯 Mit
 
