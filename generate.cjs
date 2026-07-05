@@ -719,7 +719,7 @@ const payload = JSON.stringify({
     let packagesHtml = '';
     let activePropCount = 0;
 
-    function renderPackageRow(cols, sizeColors) {
+    function renderPackageRow(cols, sizeColors, pkgStatuses) {
       if (cols.length < 5) return '';
       const [pkgId, name, phase, , size] = cols;
       const deps = cols[cols.length - 1] || '—';
@@ -758,7 +758,30 @@ const payload = JSON.stringify({
 
       const rowId = 'pkgrow-' + pkgId.replace(/[^a-zA-Z0-9-]/g, '');
       let html = `<div onclick="togglePkg('${rowId}')" style="font-size:0.88em;padding:6px 8px;margin-bottom:3px;background:var(--card);border-left:3px solid ${borderColor};border-radius:3px;line-height:1.5;display:flex;align-items:center;gap:8px;cursor:pointer;${bgStyle}" onmouseenter="this.style.opacity='0.85'" onmouseout="this.style.opacity='${isDone ? '0.6' : '1'}'">`;
-      html += `<span style="flex:1"><strong>${pkgId}</strong> ${name} ${sizeBadge} <span style="color:var(--muted);font-size:0.82em">${deps !== '—' ? '→ ' + deps : ''}</span> <span style="font-size:0.75em;color:var(--accent);opacity:0.6">▸</span></span>`;
+      // Build dependency display with status markers
+      let depDisplay = '';
+      if (deps !== '—' && deps.trim()) {
+        // Expand range notation (e.g. PKG-001..005 → individual PKGs)
+        // Normalize + shorthand: PKG-014+016 → PKG-014, PKG-016
+        const plusExpanded = deps.replace(/PKG-(\d{3})\+(\d{3})/g, (_, a, b) => `PKG-${a}, PKG-${b}`);
+        const normalized = plusExpanded.replace(/\+/g, ', ');
+        const expanded = normalized.replace(/PKG-(\d{3})\.\.(\d{3})/g, (_, start, end) => {
+          const s = parseInt(start), e = parseInt(end);
+          return Array.from({length: e - s + 1}, (_, i) => `PKG-${String(s + i).padStart(3, '0')}`).join(', ');
+        });
+        const depPkgs = [...expanded.matchAll(/PKG-\d{3}/g)].map(m => m[0]);
+        const depBadges = depPkgs.map(dp => {
+          const s = pkgStatuses[dp];
+          if (s === '✅') return `<span style="color:var(--green)">${dp}✅</span>`;
+          if (s === '⏭️') return `<span style="color:var(--muted)">${dp}⏭️</span>`;
+          if (s === '⏸️') return `<span style="color:var(--yellow)">${dp}⏸️</span>`;
+          if (s === '❌') return `<span style="color:var(--red)">${dp}❌</span>`;
+          return `<span style="color:var(--muted);opacity:0.6">${dp}⏳</span>`;
+        });
+        depDisplay = `<span style="color:var(--muted);font-size:0.82em">→ ${depBadges.join(' ')}</span>`;
+      }
+      
+      html += `<span style="flex:1"><strong>${pkgId}</strong> ${name} ${sizeBadge} ${depDisplay} <span style="font-size:0.75em;color:var(--accent);opacity:0.6">▸</span></span>`;
       if (isDone) {
         if (isAbsorbed) {
           html += `<span style="color:var(--muted);font-weight:700;font-size:0.82em;white-space:nowrap">⏭️</span>`;
@@ -785,20 +808,71 @@ const payload = JSON.stringify({
       const sizeColors = { S: 'var(--green)', M: 'var(--yellow)', L: 'var(--accent)', XL: 'var(--red)' };
       const doneRows = [];
       const pendingRows = [];
+      // Track all pkg statuses for dependency ordering
+      const pkgStatuses = {};
       for (const row of rows) {
         const cols = row.split('|').map(c => c.trim()).filter(c => c);
         if (cols.length < 5) continue;
+        // Store status: '✅', '⏭️', '❌', '⏸️', or '📋' for pending
+        pkgStatuses[cols[0]] = (cols[2].startsWith('✅') || cols[2].startsWith('⏭️') || cols[2].startsWith('❌') || cols[2].startsWith('⏸️')) 
+          ? cols[2].charAt(0) === '✅' ? '✅' : (cols[2].charAt(0) === '⏭️' ? '⏭️' : (cols[2].charAt(0) === '❌' ? '❌' : '⏸️'))
+          : '📋';
         if (cols[2].startsWith('✅') || cols[2].startsWith('⏭️') || cols[2].startsWith('❌') || cols[2].startsWith('⏸️')) doneRows.push(cols);
         else pendingRows.push(cols);
       }
 
+      // Sort pending rows: no dependencies → all deps done → some deps done → none done
+      function expandDepRanges(depText) {
+        if (!depText || depText === '—') return [];
+        const plusExpanded = depText.replace(/PKG-(\d{3})\+(\d{3})/g, (_, a, b) => `PKG-${a}, PKG-${b}`);
+        const normalized = plusExpanded.replace(/\+/g, ', ');
+        const expanded = normalized.replace(/PKG-(\d{3})\.\.(\d{3})/g, (_, start, end) => {
+          const s = parseInt(start), e = parseInt(end);
+          return Array.from({length: e - s + 1}, (_, i) => `PKG-${String(s + i).padStart(3, '0')}`).join(', ');
+        });
+        return [...expanded.matchAll(/PKG-\d{3}/g)].map(m => m[0]);
+      }
+      function getDepScore(cols) {
+        const depsCol = cols[cols.length - 1] || '—';
+        if (depsCol === '—') return 0; // No deps → first
+        const depPkgs = expandDepRanges(depsCol);
+        if (depPkgs.length === 0) return 0;
+        const doneCount = depPkgs.filter(dp => {
+          const s = pkgStatuses[dp];
+          return s === '✅' || s === '⏭️' || s === '⏸️';
+        }).length;
+        if (doneCount === depPkgs.length) return 1;  // All deps done
+        if (doneCount > 0) return 2;                   // Some deps done
+        return 3;                                       // No deps done
+      }
+      pendingRows.sort((a, b) => {
+        const sa = getDepScore(a);
+        const sb = getDepScore(b);
+        if (sa !== sb) return sa - sb;
+        // Within same category: fewer deps first, then name order
+        const da = expandDepRanges(a[a.length - 1] || '—').length;
+        const db = expandDepRanges(b[b.length - 1] || '—').length;
+        if (da !== db) return da - db;
+        return (a[0] || '').localeCompare(b[0] || '');
+      });
+
       if (doneRows.length > 0) {
         packagesHtml += `<div style="font-size:0.85em;font-weight:700;color:var(--green);margin:8px 0 6px 0">✅ Kész (${doneRows.length})</div>`;
-        for (const cols of doneRows) packagesHtml += renderPackageRow(cols, sizeColors);
+        for (const cols of doneRows) packagesHtml += renderPackageRow(cols, sizeColors, pkgStatuses);
       }
       if (pendingRows.length > 0) {
+        // Split pending: ready-to-implement vs waiting-on-deps
+        const readyRows = pendingRows.filter(r => getDepScore(r) === 0);
+        const depsDoneRows = pendingRows.filter(r => getDepScore(r) === 1);
+        const depsPartialRows = pendingRows.filter(r => getDepScore(r) === 2);
+        const depsBlockedRows = pendingRows.filter(r => getDepScore(r) === 3);
+
         packagesHtml += `<div style="font-size:0.85em;font-weight:700;color:var(--accent);margin:12px 0 6px 0">📋 Fejlesztésre vár (${pendingRows.length})</div>`;
-        for (const cols of pendingRows) packagesHtml += renderPackageRow(cols, sizeColors);
+        
+        for (const cols of readyRows) packagesHtml += renderPackageRow(cols, sizeColors, pkgStatuses);
+        for (const cols of depsDoneRows) packagesHtml += renderPackageRow(cols, sizeColors, pkgStatuses);
+        for (const cols of depsPartialRows) packagesHtml += renderPackageRow(cols, sizeColors, pkgStatuses);
+        for (const cols of depsBlockedRows) packagesHtml += renderPackageRow(cols, sizeColors, pkgStatuses);
       }
     } catch (e) { packagesHtml = '<span style="color:var(--red)">Package index hiba: ' + e.message + '</span>'; }
     
