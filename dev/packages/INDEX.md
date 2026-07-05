@@ -31,7 +31,7 @@
 | PKG-010 | **Agent Decision Trace** | 📋 F0 | F-20 P2 | L | 3-4h | PKG-001+003 |
 | PKG-011 | Session Health Scoring | 📋 F0 | F-21 P2 | M | 2-3h | PKG-003 |
 | PKG-012 | OTel Export (opcionális) | 📋 F0 | F-22 P3 | S | 1h | PKG-002..005 |
-| PKG-026 | **Dev Job Floating Indicator** 🧩 | 📋 F0 | — | S | 15-30min | PKG-021 |
+| PKG-026 | **Dev Job Floating Indicator** 🧩 | ✅ F5 | — | S | ✅ kész | PKG-021 |
 
 ## Függőségi Sorrend
 
