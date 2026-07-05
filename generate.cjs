@@ -728,12 +728,19 @@ const payload = JSON.stringify({
         if (cols.length < 5) continue;
         const [pkgId, name, phase, , size] = cols;
         const deps = cols[cols.length-1] || '—';
+        const isDone = phase.startsWith('✅');
         const sizeBadge = `<span style="color:${sizeColors[size]||''};font-weight:700;font-size:0.82em">${size}</span>`;
-        packagesHtml += `<div style="font-size:0.88em;padding:6px 8px;margin-bottom:3px;background:var(--card);border-left:3px solid var(--accent);border-radius:3px;line-height:1.5;display:flex;align-items:center;gap:8px">`;
+        const borderColor = isDone ? 'var(--green)' : 'var(--accent)';
+        const bgStyle = isDone ? 'opacity:0.6' : '';
+        packagesHtml += `<div style="font-size:0.88em;padding:6px 8px;margin-bottom:3px;background:var(--card);border-left:3px solid ${borderColor};border-radius:3px;line-height:1.5;display:flex;align-items:center;gap:8px;${bgStyle}">`;
         packagesHtml += `<span style="flex:1"><strong>${pkgId}</strong> ${name} ${sizeBadge} <span style="color:var(--muted);font-size:0.82em">${deps!=='—'?'→ '+deps:''}</span></span>`;
-        packagesHtml += `<button onclick="sendAction('implement','${pkgId}','${pkgId}: ${name.replace(/'/g,"\\'")}',this,'▶ Mehet')" style="cursor:pointer;background:var(--green);color:#fff;border:none;border-radius:4px;padding:2px 10px;font-size:0.82em;font-weight:700;white-space:nowrap;flex-shrink:0">▶ Mehet</button>`;
+        if (isDone) {
+          packagesHtml += `<span style="color:var(--green);font-weight:700;font-size:0.82em;white-space:nowrap">✅ KÉSZ</span>`;
+        } else {
+          packagesHtml += `<button onclick="sendAction('implement','${pkgId}','${pkgId}: ${name.replace(/'/g,"\\'")}',this,'▶ Mehet')" style="cursor:pointer;background:var(--green);color:#fff;border:none;border-radius:4px;padding:2px 10px;font-size:0.82em;font-weight:700;white-space:nowrap;flex-shrink:0">▶ Mehet</button>`;
+          activePropCount++;
+        }
         packagesHtml += '</div>';
-        activePropCount++;
       }
     } catch (e) { packagesHtml = '<span style="color:var(--red)">Package index hiba: '+e.message+'</span>'; }
     
