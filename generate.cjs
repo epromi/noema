@@ -757,7 +757,7 @@ const payload = JSON.stringify({
       html += `<span style="flex:1"><strong>${pkgId}</strong> ${name} ${sizeBadge} <span style="color:var(--muted);font-size:0.82em">${deps !== '—' ? '→ ' + deps : ''}</span> <span style="font-size:0.75em;color:var(--accent);opacity:0.6">▸</span></span>`;
       if (isDone) {
         html += `<span style="color:var(--green);font-weight:700;font-size:0.82em;white-space:nowrap">✅</span>`;
-        html += `<button class="log-btn" onclick="event.stopPropagation();viewLog('${pkgId}',this.parentElement)" style="background:var(--muted)" title="Dev log megtekintése">📋 Log</button>`;
+        html += `<button class="log-btn" onclick="event.stopPropagation();viewLog('${pkgId}',this.parentElement)" title="Dev log megtekintése">📋 Log</button>`;
       } else {
         html += `<button onclick="event.stopPropagation();sendAction('implement','${pkgId}','${pkgId}: ${name.replace(/'/g, "\\'")}',this,'▶ Mehet')" style="cursor:pointer;background:var(--green);color:#fff;border:none;border-radius:4px;padding:2px 10px;font-size:0.82em;font-weight:700;white-space:nowrap;flex-shrink:0">▶ Mehet</button>`;
         activePropCount++;

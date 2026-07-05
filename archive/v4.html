@@ -977,8 +977,15 @@ function stopLogPoll(pkgId) {
 
 // Static log view for completed packages (no polling)
 function viewLog(pkgId, parentRow) {
+  // If panel already visible in parent, close it
+  const panelId = 'logpanel-' + pkgId.replace(/[^a-zA-Z0-9-]/g,'');
+  const existing = document.getElementById(panelId);
+  if (existing && existing.classList.contains('active')) {
+    existing.classList.remove('active');
+    stopLogPoll(pkgId);
+    return;
+  }
   toggleLog(pkgId, parentRow);
-  stopLogPoll(pkgId);
 }
 
 // ── Expandable Package Details ──
