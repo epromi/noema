@@ -16,7 +16,7 @@
 | PKG-005 | Core: H1 Data | ✅ F5 | — | M | ✅ kész | PKG-013 |
 | PKG-016 | Development Log Enhance | ✅ F5 | F-05 P1 | S | ✅ kész | PKG-001+014 |
 | PKG-025 | Brainstorm + Bills + Research Tabs | 📋 F0 | — | M | 1.5-2h | PKG-021 |
-| PKG-024 | H1 + Viktor Tabs | 📋 F0 | — | M | 1.5-2h | PKG-021 |
+| PKG-024 | H1 + Viktor Tabs | ✅ F5 | — | M | ✅ kész | PKG-021 |
 | PKG-023 | Orchestrator Tab | ✅ F5 | — | L | ✅ kész | PKG-021, PKG-022 |
 | PKG-022 | Agents + Crons Tabs | ✅ F5 | — | M | ✅ kész | PKG-021 |
 | PKG-021 | Data Pipeline + Overview Tab | ✅ F5 | — | L | ✅ kész | PKG-001..005 |
