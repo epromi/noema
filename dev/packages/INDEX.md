@@ -8,7 +8,7 @@
 |-----|-----|-------|---------|-------|-------------|----------|
 | PKG-001 | SvelteKit Scaffold | ✅ F5 | — | L | ✅ kész | — |
 | PKG-013 | **Provider Abstraction Layer** 🧱 | ✅ F5 | F-23 P1 | M | ✅ kész | PKG-001 |
-| PKG-014 | Dev Loop Log Viewer | 📋 F2 | F-05 P1 | S | 0.5h | PKG-001 |
+| PKG-014 | Dev Loop Log Viewer | ✅ F5 | F-05 P1 | S | ✅ kész | PKG-001 |
 | PKG-015 | Expandable Package Rows | ✅ F5 | — | S | ✅ kész | PKG-001 |
 | PKG-002 | Core: Cron Data | 📋 F0 | — | S | 0.5-1h | PKG-013 |
 | PKG-003 | Core: Agent Data | 📋 F0 | — | S | 0.5-1h | PKG-013 |
