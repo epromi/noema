@@ -1,6 +1,6 @@
 # Noema 🧠 — Development Package Index
 
-> Utolsó frissítés: 2026-07-05 16:36
+> Utolsó frissítés: 2026-07-05 18:35
 
 ## Aktív Csomagok
 
@@ -31,6 +31,7 @@
 | PKG-010 | **Agent Decision Trace** | 📋 F0 | F-20 P2 | L | 3-4h | PKG-001+003 |
 | PKG-011 | Session Health Scoring | 📋 F0 | F-21 P2 | M | 2-3h | PKG-003 |
 | PKG-012 | OTel Export (opcionális) | 📋 F0 | F-22 P3 | S | 1h | PKG-002..005 |
+| PKG-026 | **Dev Job Floating Indicator** 🧩 | 📋 F0 | — | S | 15-30min | PKG-021 |
 
 ## Függőségi Sorrend
 
@@ -63,6 +64,9 @@ AJÁNLOTT SORREND:
   PKG-021 (Overview + pipeline) → PKG-022 (Agents + Crons) →
   PKG-023 (Orchestrator) → PKG-024 (H1 + Viktor) →
   PKG-025 (Brainstorm + Bills + Research)
+
+🧩 KOMPONENSEK (globális widget-ek):
+  PKG-026 (Dev Job Indicator) — draggable floating panel, minden tab-on
 
 ✅ KÉSZ: PKG-001, PKG-013, PKG-014, PKG-015, PKG-002, PKG-003, PKG-004, PKG-005, PKG-016, PKG-017 (reverted)
 ❌ REVERTED: PKG-017 (orchestrator tab), PKG-019 (wrong SvelteKit target)
