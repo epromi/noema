@@ -14,6 +14,7 @@ import type {
   ActionQueueData,
   BrainstormData,
   LogData,
+  AuditTrailData,
 } from "$lib/types";
 import type { PageServerLoad } from "./$types";
 
@@ -167,6 +168,25 @@ function emptyLogs(): LogData {
   };
 }
 
+function emptyAuditTrail(): AuditTrailData {
+  return {
+    events: [],
+    total: 0,
+    sessions: [],
+    agents: [],
+    counts: {
+      SESSION_START: 0,
+      AGENT_SPAWN: 0,
+      CRON_TRIGGER: 0,
+      CRON_COMPLETE: 0,
+      ERROR: 0,
+      ACTION: 0,
+    },
+    updatedAt: Date.now(),
+    error: "No data",
+  };
+}
+
 /** Ensure every core module section is present and arrays are never null. */
 function validatePageData(data: Partial<DashboardData>): DashboardData {
   const crons = data.crons ?? emptyCrons();
@@ -216,6 +236,12 @@ function validatePageData(data: Partial<DashboardData>): DashboardData {
     logs: {
       ...(data.logs ?? emptyLogs()),
       entries: data.logs?.entries ?? [],
+    },
+    auditTrail: {
+      ...(data.auditTrail ?? emptyAuditTrail()),
+      events: data.auditTrail?.events ?? [],
+      sessions: data.auditTrail?.sessions ?? [],
+      agents: data.auditTrail?.agents ?? [],
     },
   };
 }

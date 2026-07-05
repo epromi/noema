@@ -14,6 +14,7 @@
     { id: "bills", label: "📋 Bills" },
     { id: "research", label: "🔬 Research" },
     { id: "logs", label: "📋 Logs" },
+    { id: "audit", label: "📜 Audit" },
     { id: "noema", label: "🧠 Noema" },
   ] as const;
 

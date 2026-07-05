@@ -10,6 +10,7 @@ import { getHealth } from "./health.js";
 import { getNoema, getActionQueue, getBrainstorm } from "./noema.js";
 import { getResearch } from "./research.js";
 import { getLogs } from "./logs.js";
+import { getAuditTrail } from "./audit-trail.js";
 import {
   getDevLoopLog,
   getRunningDevLoop,
@@ -32,6 +33,7 @@ export async function getAllData(
     noema,
     actionQueue,
     logs,
+    auditTrail,
   ] = await Promise.all([
     getCrons(p),
     getAgents(p),
@@ -44,6 +46,7 @@ export async function getAllData(
     getNoema(p),
     getActionQueue(p),
     getLogs(p),
+    getAuditTrail(p),
   ]);
 
   return {
@@ -59,6 +62,7 @@ export async function getAllData(
     noema,
     actionQueue,
     logs,
+    auditTrail,
   };
 }
 
@@ -70,6 +74,7 @@ export {
   getH1Data,
   getHealth,
   getLogs,
+  getAuditTrail,
   getNoema,
   getActionQueue,
   getBrainstorm,

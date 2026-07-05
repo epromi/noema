@@ -10,6 +10,7 @@
   import Bills from "$lib/components/tabs/Bills.svelte";
   import Research from "$lib/components/tabs/Research.svelte";
   import LogsViewer from "$lib/components/tabs/LogsViewer.svelte";
+  import AuditTrail from "$lib/components/tabs/AuditTrail.svelte";
   import H1 from "$lib/components/tabs/H1.svelte";
   import Viktor from "$lib/components/tabs/Viktor.svelte";
   import type { ImplementState } from "$lib/types";
@@ -161,6 +162,8 @@
     <Research research={data.research} />
   {:else if activeTab === "logs"}
     <LogsViewer logs={data.logs} />
+  {:else if activeTab === "audit"}
+    <AuditTrail auditTrail={data.auditTrail} />
   {:else if activeTab === "noema"}
     <Noema
       packages={data.devPackages.packages}

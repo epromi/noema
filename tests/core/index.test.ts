@@ -41,6 +41,7 @@ describe("index (getAllData)", () => {
     expect(data.noema).toBeDefined();
     expect(data.actionQueue).toBeDefined();
     expect(data.logs).toBeDefined();
+    expect(data.auditTrail).toBeDefined();
   }, 15000);
 
   it("named exports are callable", async () => {
