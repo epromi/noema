@@ -1,70 +1,55 @@
-# PKG-010: Reasoning Trace Viewer (F-20)
+# PKG-010: Agent Decision Trace (F-20)
 
-> Státusz: 📋 Spec kész | Méret: L | Roadmap: F-20 P1
-> Forrás: Industry Review 2026 — Braintrust "4 pillars", Zylos.ai "reasoning visibility gap"
+> Státusz: 📋 Spec kész | Méret: L | Roadmap: F-20 P2 (leminősítve P1→P2)
+> ⚠️ Átnevezve: "Reasoning Trace Viewer" → "Agent Decision Trace" — lásd review notes
+
+## Korrekció (2026-07-05 11:00)
+
+**Félreértés**: A Braintrust "reasoning steps" pillére az LLM **belső gondolkodási lánca** egy API híváson belül. A Zylos.ai maga mondja: "fundamentally difficult" — azaz nyitott kutatási probléma, nem pedig hiányzó feature.
+
+**Amit MI tudunk**: Agent session-ök tool call timeline-ja — mit csinált, milyen sorrendben, milyen argumentumokkal, mi volt az eredmény. Ez a "döntési fa" látható, a "gondolatmenet" nem.
+
+**Érték**: A Hermes Studio "Audit Trail"-jénél több — nem csak eseménylista, hanem strukturált döntési fa: melyik tool-t miért hívta (tool output → következő tool választás), hol akadt el, hol loop-olt.
 
 ## Spec
 
-**Mit**: Agent session-ök `<thinking>` blokkjainak kinyerése és vizualizációja a Noema dashboard-on. Plan-act-observe fázisok, tool választási indoklások, chain-of-thought trace-ek interaktív timeline-on.
+**Mit**: Agent session-ök teljes tool call fájának kinyerése és vizualizációja — döntési lánc, nem gondolati lánc. Mit csinált az agent, milyen sorrendben, mi volt az egyes tool hívások eredménye, hogyan befolyásolta az output a következő döntést.
 
-**Miért**: Jelenleg CSAK az output-ot látjuk (mit csinált az agent, milyen tool-t hívott). Azt NEM látjuk hogy MIÉRT. A Braintrust szerint a reasoning trace az agent observability #1 pillére. Ez a Noema legnagyobb differentiator-a a Hermes ecosystem-től.
+**Honnan**: `sessions_history` → assistant messages + tool_use blokkok → feldolgozás
 
 **Scope**:
-- `lib/core/reasoning-trace.ts` — session history parse-olás, `<thinking>` blokk kinyerés
-- `lib/components/tabs/ReasoningTrace.svelte` — timeline vizualizáció
-- OpenClaw session history API: `thinking` blocks elérhetők-e? Ha nem: session transcript parse
+- `lib/core/decision-trace.ts` — tool call timeline parse-olás session history-ból
+- `lib/components/tabs/DecisionTrace.svelte` — faszerkezet vizualizáció
+- Tool call-ok közötti kapcsolat: mi trigger-elte a következő tool-t?
 
 **Out of scope**:
-- Nem mentjük külön a trace-eket (csak session history-ból olvassuk)
-- Nem score-oljuk a trace minőségét (az PKG-011)
-- Nincs "agent replay" (az PKG-011 része)
+- NEM próbáljuk kinyerni a modell "gondolatait" (nem elérhető)
+- NEM használunk külső LLM-et a döntések magyarázatára
+- NEM score-oljuk a trace-t (PKG-011 scope)
 
 ## Fázisok
 
-### F0 — Spec (~20 perc)
-- [ ] `sessions_history` API teszt: thinking blokk elérhető-e
-- [ ] Session transcript formátum feltérképezése
-- [ ] Milyen agent session-ök érhetők el, mennyi trace anyag van
-- [ ] Vizualizációs library választás (D3.js timeline vs CSS-only)
+### F0 — Verifikáció (~20 perc)
+- [ ] `sessions_history` API teszt: tool_use blokkok elérhetők-e
+- [ ] Milyen formátumban jön a session history (JSON struktúra)
+- [ ] Mennyi session érhető el, milyen hosszúak
+- [ ] Vizualizáció: fa vs timeline
 
-### F1 — Core: Reasoning Extractor (~60-90 perc)
-- [ ] `lib/types/index.ts`: ReasoningStep, ReasoningTrace, ReasoningData típusok
-- [ ] `lib/core/reasoning-trace.ts`: 
-  - `getReasoningTrace(sessionKey)` — egy session trace kinyerése
-  - Regex: `<thinking>...</thinking>` blokkok
-  - `classifyStep()` — PLAN / ACT / OBSERVE / DECIDE fázisok
-  - `extractToolDecision()` — melyik tool, miért
-  - `getRecentTraces(limit=10)` — utolsó N session trace
-- [ ] Fallback: ha nincs thinking blokk → session timeline tool call-okból
-- [ ] `tests/core/reasoning-trace.test.ts`: legalább 3 teszteset
+### F1 — Core (~60-90 perc)
+- [ ] `lib/types/index.ts`: DecisionStep, DecisionTrace típusok
+- [ ] `lib/core/decision-trace.ts`:
+  - `getDecisionTrace(sessionKey)` — tool call-ok sorrendben
+  - Tool call → output → következő tool kapcsolat
+  - `detectLoops()` — ismétlődő tool call pattern
+  - `detectBottlenecks()` — hosszú tool hívások
+- [ ] `tests/core/decision-trace.test.ts`
 - [ ] `pnpm check` ZÖLD
 
-### F2 — UI: Trace Timeline (~60-90 perc)
-- [ ] `ReasoningTrace.svelte`: interaktív timeline
-  - Bal oldal: idővonal, színkódolt fázisok (PLAN=kék, ACT=zöld, OBSERVE=sárga, DECIDE=lila)
-  - Jobb oldal: kiválasztott lépés részletei (thinking szöveg, tool választás, argumentumok)
-  - Hover: tooltip a teljes thinking blokkal
-- [ ] Session választó dropdown
-- [ ] Filter: csak PLAN/ACT/OBSERVE/DECIDE
-- [ ] `+page.svelte`: tab felvétele
+### F2 — UI (~60-90 perc)
+- [ ] `DecisionTrace.svelte`: bal oldal = fa, jobb oldal = részletek
+- [ ] Session választó
+- [ ] Tool call kártyák: tool név, argumentumok, output preview, latency
+- [ ] Loop kiemelés (piros keret)
 - [ ] `pnpm check` ZÖLD
 
-### F3 — Integráció (~20 perc)
-- [ ] `lib/core/collector.ts`: `getRecentTraces()` regisztrálása
-- [ ] `lib/core/index.ts`: `getAllData()` frissítése
-- [ ] `pnpm check` ZÖLD
-
-### F4 — Teszt (~20 perc)
-- [ ] `pnpm test` ZÖLD
-- [ ] `pnpm build` ZÖLD
-- [ ] Manuális: valós session trace megjelenik
-
-### F5 — Merge (~10 perc)
-- [ ] Git commit: "🧠 feat: Reasoning Trace Viewer (F-20, PKG-010)"
-- [ ] Push
-
-## Log
-
-| Idő | Fázis | Mi történt |
-|-----|-------|------------|
-| 2026-07-05 10:50 | F0 | Spec elkészítve |
+### F3-F5: Integráció, teszt, merge (mint az eredeti spec)

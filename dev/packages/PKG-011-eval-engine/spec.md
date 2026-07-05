@@ -1,76 +1,68 @@
-# PKG-011: Eval Scoring Engine (F-21)
+# PKG-011: Agent Session Health Scoring (F-21)
 
-> Státusz: 📋 Spec kész | Méret: L | Roadmap: F-21 P2
-> Forrás: Industry Review 2026 — Braintrust eval layer, DigitalApplied "eval gates"
+> Státusz: 📋 Spec kész | Méret: M (leminősítve L→M) | Roadmap: F-21 P2
+> ⚠️ Átnevezve: "Eval Scoring Engine" → "Agent Session Health Scoring" — lásd review notes
+
+## Korrekció (2026-07-05 11:00)
+
+**Félreértés**: A Braintrust "eval layer" LLM válaszok minőségét pontozza (prompt engineering, regression tesztelés). A Noema-nak nem LLM eval-ra van szüksége, hanem **agent session egészség pontozásra** — rendszer szintű metrika.
+
+**Amit MI tudunk**: Minden agent session-ről tudjuk hogy:
+- Befejeződött-e vagy timeout-olt
+- Hány tool call volt, hány hibás
+- Volt-e loop (ugyanaz a tool call 3x+)
+- Ismerjük a session hosszát
+
+Ezek rendszer-metrikák, nem LLM minőségi metrikák. Ez JOBB mint az LLM eval mert konkrét, mérhető, szubjektivitás-mentes.
 
 ## Spec
 
-**Mit**: Automatikus minőségbírálat agent session-ökön. Minden lefutott agent session kap egy score-t (0-100) a trace alapján. A score figyelembe veszi: hibák száma, loop-ok, felesleges tool hívások, timeout, sikeres completion. A fail-ök visszakerülnek az agent-hez feedback loop-ként.
+**Mit**: Agent session-ök egészségének automatikus pontozása (0-100) rendszer-metrikák alapján. Score trend követése agent-enként. A pontozás NEM LLM-alapú — tisztán szabály-alapú, determinisztikus.
 
-**Miért**: Az iparág szerint az eval layer alapkövetelmény. "Production trace scoring and feeding failures back into the eval suite" — Braintrust. Jelenleg QA cron csak statikus ellenőrzés (template, adatfrissesség). Nem tudjuk hogy egy agent session JÓ volt-e vagy csak NEM HIBA.
+**Miért**: Jelenleg bináris a kép: "lefutott" vagy "nem". De egy session lehet "lefutott de 15 felesleges tool call-al" vagy "lefutott de 5 loop-pal". A health score ezt teszi láthatóvá.
 
 **Scope**:
-- `lib/core/eval-engine.ts` — scoring logika
-- `lib/components/tabs/EvalPanel.svelte` — score dashboard
-- Score-ok perzisztálása: `memory/state/agent-scores.jsonl`
-- Feedback loop: fail → cron trigger / agent újra spawn
+- `lib/core/session-health.ts` — pontozó motor
+- `lib/components/tabs/SessionHealth.svelte` — score dashboard
+- Perzisztálás: `memory/state/session-scores.jsonl`
+- Trend riasztás: ha egy agent score-ja romlik 3 egymást követő session-ben
 
 **Out of scope**:
-- Nem valós idejű (batch processing, nightly)
-- Nem használ külső LLM-et scoring-ra (szabály-alapú)
-- Nincs "human review" UI (később)
+- Nem LLM válasz minőség (nincs "jó volt-e a válasz" pontozás)
+- Nem használ külső LLM-et
+- Nincs feedback loop (az action queue-ban Alfred látja)
+
+## Scoring Kritériumok
+
+| Kritérium | Súly | Mit mér |
+|-----------|------|---------|
+| **Completion** | 35% | Sikeresen befejeződött? Timeout nélkül? |
+| **Efficiency** | 30% | Tool call-ok száma / hasznos tool call-ok aránya |
+| **Error rate** | 20% | Hibás tool hívások aránya |
+| **Loop penalty** | 15% | Ismétlődő tool call pattern (ugyanaz 3x+) |
+
+A súlyozás NEM Braintrust-ből jön — saját rendszer-metrika.
 
 ## Fázisok
 
-### F0 — Spec (~15 perc)
-- [ ] Scoring kritériumok definiálása
-- [ ] Súlyozás meghatározása
-- [ ] Feedback loop architektúra tervezése
+### F0 — Scoring kalibráció (~30 perc)
+- [ ] Valós session-ök áttekintése: mi a "normális" tool call szám?
+- [ ] Threshold-ok meghatározása agent-enként
+- [ ] Teszt session-ök score kézi validálása
 
-### F1 — Core: Scoring Engine (~60 perc)
-- [ ] `lib/types/index.ts`: EvalScore, EvalCriteria, EvalData típusok
-- [ ] `lib/core/eval-engine.ts`:
-  - `scoreSession(sessionKey)` — egy session score-olása
-  - Kritériumok:
-    - **Completion** (30%) — sikeresen befejeződött?
-    - **Error rate** (25%) — hiba tool hívások aránya
-    - **Efficiency** (20%) — felesleges/spam tool hívások
-    - **Loop detection** (15%) — ismétlődő tool hívás pattern
-    - **Timeout** (10%) — közel volt-e a timeout-hoz
-  - `scoreAllRecent(limit=20)` — utolsó N session
-  - `getScoreTrend()` — score trend (javul/romlik)
-- [ ] `tests/core/eval-engine.test.ts`: legalább 5 teszteset
+### F1 — Core (~45 perc)
+- [ ] `lib/types/index.ts`: HealthScore, ScoreBreakdown típusok
+- [ ] `lib/core/session-health.ts`:
+  - `scoreSession(sessionKey)` — 0-100 score
+  - `getScoreTrend(agentId)` — utolsó 10 session trend
+  - `getAgentHealthReport()` — összes agent score summary
+- [ ] `tests/core/session-health.test.ts`
 - [ ] `pnpm check` ZÖLD
 
-### F2 — UI: Score Dashboard (~60 perc)
-- [ ] `EvalPanel.svelte`: 
-  - Score trend chart (utolsó 20 session)
-  - Kritériumbontás (miért kapta ezt a score-t)
-  - Agent-enkénti átlag score
-  - 🔴/🟡/🟢 threshold vizualizáció
-- [ ] `+page.svelte`: tab felvétele
+### F2 — UI (~45 perc)
+- [ ] `SessionHealth.svelte`: agent-enkénti score kártyák + trend
+- [ ] Score bontás: melyik kritérium milyen
+- [ ] 🔴🟡🟢 threshold: <40 / 40-70 / >70
 - [ ] `pnpm check` ZÖLD
 
-### F3 — Integráció: Feedback Loop (~45 perc)
-- [ ] `scripts/eval-processor.js`: nightly futás
-  - scoreAllRecent → JSONL
-  - fail threshold alatt: flag `memory/state/action-queue.md`-ben
-  - Alfred automatikusan látja az action queue-ban
-- [ ] Cron: `noema-eval` (daily, 02:00)
-- [ ] `lib/core/collector.ts`: eval data regisztrálása
-- [ ] `pnpm check` ZÖLD
-
-### F4 — Teszt (~20 perc)
-- [ ] `pnpm test` ZÖLD
-- [ ] `pnpm build` ZÖLD
-- [ ] Manuális: valós session score helyesnek tűnik
-
-### F5 — Merge (~10 perc)
-- [ ] Git commit: "🧠 feat: Eval Scoring Engine (F-21, PKG-011)"
-- [ ] Push
-
-## Log
-
-| Idő | Fázis | Mi történt |
-|-----|-------|------------|
-| 2026-07-05 10:50 | F0 | Spec elkészítve |
+### F3-F5: Integráció, teszt, merge

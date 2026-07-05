@@ -1,71 +1,38 @@
-# PKG-012: OTel GenAI Export (F-22)
+# PKG-012: OTel Export (F-22)
 
-> Státusz: 📋 Spec kész | Méret: M | Roadmap: F-22 P2
-> Forrás: Industry Review 2026 — DigitalApplied "OTel GenAI v1.41", Zylos.ai convergence analysis
+> Státusz: 📋 Spec kész | Méret: S (leminősítve M→S) | Roadmap: F-22 P3 (leminősítve P2→P3)
+> ⚠️ Prioritás csökkentve — lásd review notes
+
+## Korrekció (2026-07-05 11:00)
+
+**Túlzó keretezés**: Az OTel GenAI egy valós iparági szabvány DE:
+- Elosztott, multi-service rendszerekhez tervezték
+- Single-user, single-machine dashboard esetén az OTel collector + span infra aránytalan overhead
+- A "konvergencia" az LLM observability platformok (LangSmith, Langfuse) között van — nem a mi kategóriánk
+
+**Valós érték**: Ha egyszer Noema adatot akarunk küldeni Grafana-ba, akkor az OTel span formátum a standard. De ez nem "gap" — ez opcionális integráció.
+
+**Átkeretezve**: P2→P3, "industry gap" → "opcionális integráció"
 
 ## Spec
 
-**Mit**: OpenTelemetry GenAI span export a Noema core modulokból. Minden adatgyűjtési művelet (agent státusz, cron trigger, session trace) automatikusan OTel span-ként exportálódik. Noema a "frontend" vizualizáció, OTel a "backend" trace formátum.
-
-**Miért**: Az OTel GenAI v1.41 az iparági konvergencia pont. Langfuse, Arize, LangSmith, Braintrust mind OTel-re épül. Ha Noema is OTel span-eket exportál, a trace-eket bármilyen külső eszközben (Grafana, Jaeger, Zipkin) meg tudjuk nyitni. Nem zárjuk be magunkat egy zárt formátumba.
+**Mit**: Opcionális OTel span export. Ha a felhasználó akarja, bekapcsolja és a Noema core modulok span-eket küldenek OTLP endpoint-ra. Ha nincs collector, file-ba ír.
 
 **Scope**:
-- `lib/core/otel-exporter.ts` — OTel SDK wrapper
-- Standard GenAI span típusok: AGENT_SPAWN, TOOL_CALL, SESSION_COMPLETE, CRON_TRIGGER
-- Export: OTLP HTTP (localhost:4318) + file fallback (JSON)
-- Opcionális: collector indítása (Docker, de nem kötelező)
+- `lib/core/otel-exporter.ts` — lightweight wrapper, NEM az OTel JS SDK (túl nagy)
+- Span típusok: CRON_RUN, AGENT_SPAWN, SESSION_COMPLETE, DATA_COLLECT
+- Export: OTLP HTTP (opcionális) + file fallback (mindig)
 
-**Out of scope**:
-- Nem telemetria minden egyes tool call-ról (túl drága lenne)
-- Csak a Noema core modulokból exportál, nem az agent runtime-ból
-- Nincs distributed tracing (single machine)
+## Fázisok (egyszerűsítve, S méret)
 
-## Fázisok
+### F1 — Core (~30 perc)
+- [ ] `lib/core/otel-exporter.ts`: saját lightweight span format (nem OTel SDK)
+  - `startSpan(name, attributes)` → `endSpan()` 
+  - Export JSONL-be: `memory/state/spans.jsonl`
+- [ ] OTLP HTTP endpoint ha konfigurálva van
 
-### F0 — Spec (~15 perc)
-- [ ] OTel JS SDK verzió ellenőrzése
-- [ ] GenAI semantic conventions v1.41 áttekintése
-- [ ] Export target eldöntése: OTLP endpoint + file fallback
+### F2 — Integráció (~15 perc)
+- [ ] Környezeti változó: `NOEMA_OTEL_ENDPOINT` (ha üres → file only)
+- [ ] Collector ciklus végén flush
 
-### F1 — Core: OTel Exporter (~60 perc)
-- [ ] `lib/types/index.ts`: OtelSpan, SpanKind, SpanStatus típusok
-- [ ] `lib/core/otel-exporter.ts`:
-  - `initOtel()` — SDK inicializálás (opcionális, ha nincs collector → file fallback)
-  - `startSpan(name, kind, attributes)` → span objektum
-  - `endSpan(span, status)` → lezárás
-  - `createAgentSpawnSpan(agentId, task)` → AGENT_SPAWN
-  - `createToolCallSpan(agentId, tool, args, result)` → TOOL_CALL
-  - `createCronTriggerSpan(cronId, label, result)` → CRON_TRIGGER
-  - `createSessionSpan(sessionKey, agentId)` → SESSION_COMPLETE
-  - `exportTraces()` → OTLP HTTP POST + file write
-- [ ] Auto-export: minden collector ciklus végén hívódik
-- [ ] `tests/core/otel-exporter.test.ts`: span creation + export
-- [ ] `pnpm check` ZÖLD
-
-### F2 — Integráció (~30 perc)
-- [ ] `lib/core/collector.ts`: span creation az adatgyűjtések köré
-- [ ] Környezeti változók:
-  - `OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318` (default)
-  - `OTEL_DISABLED=true` → file-only fallback
-- [ ] File export: `memory/state/otel-spans.jsonl` (új soronként egy span)
-- [ ] `pnpm check` ZÖLD
-
-### F3 — Dokumentáció (~15 perc)
-- [ ] `otel-setup.md`: hogyan kell OTel collector-t indítani
-- [ ] Grafana + Jaeger integrációs példa
-- [ ] No OTel collector? File-ból is működik
-
-### F4 — Teszt (~20 perc)
-- [ ] `pnpm test` ZÖLD
-- [ ] `pnpm build` ZÖLD
-- [ ] Manuális: span-ok megjelennek a JSONL fájlban
-
-### F5 — Merge (~10 perc)
-- [ ] Git commit: "🧠 feat: OTel GenAI Export (F-22, PKG-012)"
-- [ ] Push
-
-## Log
-
-| Idő | Fázis | Mi történt |
-|-----|-------|------------|
-| 2026-07-05 10:50 | F0 | Spec elkészítve |
+### F3 — Merge (~5 perc)
