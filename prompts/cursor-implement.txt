@@ -9,7 +9,8 @@ Key constraints (from CONTRIBUTING.md + architecture-v2.md):
 1. `src/lib/core/` = plain TypeScript/JavaScript — ZERO Svelte imports, ZERO browser APIs
 2. `src/lib/components/` = Svelte UI only — receives data via props from parent
 3. Max 5 files per phase — if a package has 10 files, do NOT implement all at once
-4. Every `src/lib/core/*.ts` module MUST have a corresponding `tests/core/*.test.ts`
+4. Every `src/lib/core/*.ts` module MUST have a corresponding `tests/core/*.test.ts` with meaningful assertions (not just `expect(true).toBe(true)`)
+4a. All core modules must have ≥70% test coverage — verify with `pnpm test --coverage` before finishing
 5. `src/lib/core/` modulok SOHA nem hívnak OpenClaw API-t közvetlenül — minden `src/lib/providers/` adapteren keresztül
 6. Run `pnpm check` after each phase — do NOT proceed if it fails
 7. Output ONLY the implementation — no explanations unless something fails

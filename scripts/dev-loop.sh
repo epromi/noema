@@ -236,20 +236,66 @@ fi
 echo ""
 
 # ─── 5b: Test Suite ──────────────────────────────────────────────────────
-banner "5b: Test Suite"
+banner "5b: Test Suite + Coverage"
+
+COVERAGE_THRESHOLD=70
 
 if [ "$HAS_PKG" -eq 1 ]; then
   if [ -f "vitest.config.ts" ] || [ -f "vitest.config.js" ] || grep -q '"test"' package.json 2>/dev/null; then
-    if pnpm test --reporter=verbose 2>&1 | tee -a "$REVIEW_LOG" || true; then
+    # Run tests WITH coverage
+    TEST_PASSED=0
+    if pnpm test --reporter=verbose --coverage 2>&1 | tee /tmp/noema-coverage-${PKG_ID}.txt || true; then
       TEST_EXIT=${PIPESTATUS[0]:-0}
-      if [ "$TEST_EXIT" -eq 0 ]; then
-        review_ok "All tests passing"
-      else
-        FAILED_TESTS=$(grep -c 'FAIL\|✗' "$REVIEW_LOG" 2>/dev/null || echo "?")
-        review_warn "Tests failing ($FAILED_TESTS failures) — review required"
-      fi
     else
-      review_warn "Test run crashed — check $REVIEW_LOG"
+      TEST_EXIT=${PIPESTATUS[0]:-1}
+    fi
+
+    # Parse coverage lines from vitest output
+    COV_FILE="/tmp/noema-coverage-${PKG_ID}.txt"
+    cat "$COV_FILE" >> "$REVIEW_LOG"
+
+    # Extract statement/line coverage %% from vitest
+    COV_LINE=$(grep -oP 'All files[[:space:]]+\|?[[:space:]]*\K[0-9.]+(?=\s*\|)' "$COV_FILE" 2>/dev/null | head -1 || echo "")
+    if [ -z "$COV_LINE" ]; then
+      # Try alternative format
+      COV_LINE=$(grep -oP 'Lines[[:space:]]*:[[:space:]]*\K[0-9.]+(?=%)' "$COV_FILE" 2>/dev/null | head -1 || echo "")
+    fi
+    COV_LINE="${COV_LINE:-0}"
+
+    if [ "$TEST_EXIT" -eq 0 ]; then
+      review_ok "Tests passing"
+      TEST_PASSED=1
+    else
+      FAILED_TESTS=$(grep -c 'FAIL\|✗' "$COV_FILE" 2>/dev/null || echo "?")
+      review_warn "Tests failing ($FAILED_TESTS failures) — review required"
+    fi
+
+    # Coverage gate
+    COV_OK=$(echo "$COV_LINE >= $COVERAGE_THRESHOLD" | bc 2>/dev/null || echo 0)
+    if [ "$COV_OK" -eq 1 ]; then
+      review_ok "Coverage: ${COV_LINE}% (≥${COVERAGE_THRESHOLD}%)"
+    else
+      review_warn "Coverage: ${COV_LINE}% (below ${COVERAGE_THRESHOLD}% threshold)"
+    fi
+
+    # Check: do all core/*.ts files have corresponding test files?
+    MISSING_TESTS=0
+    if [ -d "$PROJECT_DIR/src/lib/core" ] && [ -d "$PROJECT_DIR/tests" ]; then
+      for core_file in "$PROJECT_DIR"/src/lib/core/*.ts; do
+        [ -f "$core_file" ] || continue
+        base=$(basename "$core_file" .ts)
+        test_file="$PROJECT_DIR/tests/core/${base}.test.ts"
+        if [ ! -f "$test_file" ]; then
+          if [ "$MISSING_TESTS" -eq 0 ]; then
+            echo ""
+          fi
+          echo "    ⚠️  Missing test: tests/core/${base}.test.ts"
+          MISSING_TESTS=$((MISSING_TESTS + 1))
+        fi
+      done
+    fi
+    if [ "$MISSING_TESTS" -gt 0 ]; then
+      review_fail "$MISSING_TESTS core module(s) without test file"
     fi
   else
     echo "    (no test config — skip)"
