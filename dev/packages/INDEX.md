@@ -15,6 +15,11 @@
 | PKG-004 | Core: Health & Heartbeat | ✅ F5 | — | S | ✅ kész | PKG-013 |
 | PKG-005 | Core: H1 Data | ✅ F5 | — | M | ✅ kész | PKG-013 |
 | PKG-016 | Development Log Enhance | ✅ F5 | F-05 P1 | S | ✅ kész | PKG-001+014 |
+| PKG-025 | Brainstorm + Bills + Research Tabs | 📋 F0 | — | M | 1.5-2h | PKG-021 |
+| PKG-024 | H1 + Viktor Tabs | 📋 F0 | — | M | 1.5-2h | PKG-021 |
+| PKG-023 | Orchestrator Tab | 📋 F0 | — | M | 1.5-2h | PKG-021 |
+| PKG-022 | Agents + Crons Tabs | 📋 F0 | — | M | 1.5-2h | PKG-021 |
+| PKG-021 | Data Pipeline + Overview Tab | 📋 F0 | — | L | 2-3h | PKG-001..005 |
 | PKG-020 | Action Queue — Több választási lehetőség | 📋 F0 | — | M | 1.5-2h | PKG-001 |
 | PKG-019 | Cron Sidebar — Mindig látható oldalsáv | ❌ (wrong target: SvelteKit, reverted) | F-07 P1 | M | — | PKG-001+017 |
 | PKG-018 | Log Panel Auto-Refresh Fix | 📋 F0 | — | S | 15min | PKG-014+016 |
@@ -54,8 +59,13 @@ AJÁNLOTT SORREND:
   7. PKG-009 (SSE) → 8. PKG-014 → 9. PKG-006 → 10. PKG-008 → 11. PKG-007
   12. PKG-011 → 13. PKG-010 → 14. PKG-012 (low prio)
 
-✅ KÉSZ: PKG-001, PKG-013, PKG-015
-🔨 Folyamatban: PKG-014 (F2)
+🚀 SVELTEKIT TAB-OK (amíg nincs teljes paritás):
+  PKG-021 (Overview + pipeline) → PKG-022 (Agents + Crons) →
+  PKG-023 (Orchestrator) → PKG-024 (H1 + Viktor) →
+  PKG-025 (Brainstorm + Bills + Research)
+
+✅ KÉSZ: PKG-001, PKG-013, PKG-014, PKG-015, PKG-002, PKG-003, PKG-004, PKG-005, PKG-016, PKG-017 (reverted)
+❌ REVERTED: PKG-017 (orchestrator tab), PKG-019 (wrong SvelteKit target)
 ```
 
 ## Forrás Kulcs
