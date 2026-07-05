@@ -655,10 +655,10 @@ const payload = JSON.stringify({
   noema: (() => {
     const pf = (f) => { try { return fs.statSync(path.join(W,f)).size } catch { return 0 } };
     const pl = (f) => { try { return fs.readFileSync(path.join(W,f),'utf8').split('\n').length } catch { return 0 } };
-    const genLines = pl('projects/noema/generate.js'); const relayLines = pl('projects/noema/relay.js');
+    const genLines = pl('projects/noema/generate.cjs'); const relayLines = pl('projects/noema/relay.js');
     const procLines = pl('projects/noema/action-processor.js');
     const totalLoc = genLines + relayLines + procLines;
-    const genSize = pf('projects/noema/generate.js'); const relaySize = pf('projects/noema/relay.js');
+    const genSize = pf('projects/noema/generate.cjs'); const relaySize = pf('projects/noema/relay.js');
     const procSize = pf('projects/noema/action-processor.js');
     const htmlSize = pf('projects/noema/dashboard.html');
     const totalSize = genSize + relaySize + procSize + htmlSize;
@@ -679,11 +679,11 @@ const payload = JSON.stringify({
     } catch {}
 
     // Architecture diagram
-    const arch = `  generate.js ──► dashboard.html\n   (${(genSize/1024).toFixed(1)}KB)       (${(htmlSize/1024).toFixed(1)}KB)\n       ▲                  │\n  22+ data srcs      HTTP :8080\n       │                  │\n  relay.js ◄── Browser gombok\n   (${(relaySize/1024).toFixed(1)}KB)          :18998\n       │\n  action-processor.js\n   (${(procSize/1024).toFixed(1)}KB)      10p timer\n       │\n  Gateway API ──► Alfred`;
+    const arch = `  generate.cjs ──► dashboard.html\n   (${(genSize/1024).toFixed(1)}KB)       (${(htmlSize/1024).toFixed(1)}KB)\n       ▲                  │\n  22+ data srcs      HTTP :8080\n       │                  │\n  relay.js ◄── Browser gombok\n   (${(relaySize/1024).toFixed(1)}KB)          :18998\n       │\n  action-processor.js\n   (${(procSize/1024).toFixed(1)}KB)      10p timer\n       │\n  dev-loop.sh ──► Cursor`;
 
     // Code metrics HTML
     const codeMetrics = `
-      <div class="metric"><span class="lbl">generate.js</span><span class="val">${genLines} sor · ${(genSize/1024).toFixed(1)}KB</span></div>
+      <div class="metric"><span class="lbl">generate.cjs</span><span class="val">${genLines} sor · ${(genSize/1024).toFixed(1)}KB</span></div>
       <div class="metric"><span class="lbl">relay.js</span><span class="val">${relayLines} sor · ${(relaySize/1024).toFixed(1)}KB</span></div>
       <div class="metric"><span class="lbl">action-processor.js</span><span class="val">${procLines} sor · ${(procSize/1024).toFixed(1)}KB</span></div>
       <div class="metric"><span class="lbl">dashboard.html (kimenet)</span><span class="val">${(htmlSize/1024).toFixed(1)}KB</span></div>
