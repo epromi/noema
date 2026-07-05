@@ -18,7 +18,7 @@
 | PKG-025 | Brainstorm + Bills + Research Tabs | 📋 F0 | — | M | 1.5-2h | PKG-021 |
 | PKG-024 | H1 + Viktor Tabs | 📋 F0 | — | M | 1.5-2h | PKG-021 |
 | PKG-023 | Orchestrator Tab | 📋 F0 | — | L | 2-3h | PKG-021, PKG-022 |
-| PKG-022 | Agents + Crons Tabs | 📋 F0 | — | M | 1.5-2h | PKG-021 |
+| PKG-022 | Agents + Crons Tabs | ✅ F5 | — | M | ✅ kész | PKG-021 |
 | PKG-021 | Data Pipeline + Overview Tab | ✅ F5 | — | L | ✅ kész | PKG-001..005 |
 | PKG-020 | Action Queue — Több választási lehetőség | ⏭️ (absorbed by PKG-023) | — | M | — | — |
 | PKG-019 | Cron Sidebar — Mindig látható oldalsáv | ❌ (reverted, wrong target) | F-07 P1 | M | — | PKG-001+017 |
