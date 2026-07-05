@@ -15,6 +15,7 @@
 | PKG-004 | Core: Health & Heartbeat | ✅ F5 | — | S | ✅ kész | PKG-013 |
 | PKG-005 | Core: H1 Data | ✅ F5 | — | M | ✅ kész | PKG-013 |
 | PKG-016 | Development Log Enhance | ✅ F5 | F-05 P1 | S | ✅ kész | PKG-001+014 |
+| PKG-018 | Log Panel Auto-Refresh Fix | 📋 F0 | — | S | 15min | PKG-014+016 |
 | PKG-017 | Cron Timeline + Processor Timer | ✅ F5 | F-07 P1 | M | ✅ kész | PKG-001+002 |
 | PKG-006 | Logs Viewer Tab | 📋 F0 | F-05 P1 | S | 1h | PKG-001+002 |
 | PKG-007 | Audit Trail | 📋 F0 | F-06 P1 | M | 1.5-2h | PKG-001+003 |
