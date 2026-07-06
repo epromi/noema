@@ -1,6 +1,6 @@
 # Noema 🧠 — Development Package Index
 
-> Utolsó frissítés: 2026-07-06 18:20
+> Utolsó frissítés: 2026-07-06 18:32
 
 ## Aktív Csomagok
 
@@ -40,6 +40,9 @@
 | PKG-032 | **Overview — CPU Terhelés + Top Process-ek** 📊 | ✅ F5 | — | S | ✅ kész | PKG-004, PKG-021 |
 | PKG-033 | **Dev Package Log + Queue — Teljes Körű Fix** 🔧 | 📋 F0 | — | M | 1.5h | PKG-014, PKG-016, PKG-018, PKG-026 |
 | PKG-034 | **Package Row — Lenyitható Részletek** 🔽 | 📋 F0 | — | S | 30m | PKG-015, PKG-021 |
+| PKG-035 | **Build Integrity Check — Soha Többé Sérült Build** 🔒 | 📋 F0 | — | S | 30m | PKG-018, PKG-024 |
+| PKG-036 | **CPU Százalék a Rendszer Sorban** 📊 | 📋 F0 | — | XS | 15m | PKG-032 |
+| PKG-037 | **PKG Lista — Élő Frissítés Fájl Változásra** 🔄 | 📋 F0 | — | S | 30m | PKG-031 |
 
 ## Függőségi Sorrend
 
@@ -80,6 +83,12 @@ AJÁNLOTT SORREND:
   PKG-029 (Collapse Toggle) — egysoros/kibővített váltó gomb a Dev Job panelen
   PKG-030 (Log Freshness) — auto-refresh + fordított időrend a log panelekben
   PKG-031 (Package Clarity) — fázis csoportok, keresés, progress bar, kompakt mód
+  PKG-032 (CPU Load) — CPU terhelés + Top process-ek
+  PKG-033 (Dev Log + Queue) — log filézés + queue státusz + futó PKG jelzés
+  PKG-034 (Expandable Details) — lenyitható részletek
+  PKG-035 (Build Integrity) — sérült build detekció 🔒
+  PKG-036 (CPU Percent) — CPU% a rendszer sorban 📊
+  PKG-037 (Live Refresh) — PKG lista azonnal frissül fájl változásra 🔄
 
 ✅ KÉSZ: PKG-001, PKG-013, PKG-014, PKG-015, PKG-002, PKG-003, PKG-004, PKG-005, PKG-016, PKG-021, PKG-022, PKG-023, PKG-024, PKG-025, PKG-026
 ⚠️  LEGACY-ONLY: PKG-017, PKG-019 (Cursor rossz target — dashboard.html helyett SvelteKit kell)

@@ -225,7 +225,45 @@ CURSOR_LINES=0
 [ -f "$CURSOR_LOG" ] && CURSOR_LINES=$(wc -l < "$CURSOR_LOG" 2>/dev/null || echo 0)
 CREATED_FILES=$(echo "$EXPECTED_FILES" | grep -c . 2>/dev/null || echo 0)
 CREATED_FILES=$((CREATED_FILES - MISSING))
+HAS_PKG="$([ -f "$PROJECT_DIR/package.json" ] && echo 1 || echo 0)"
 log_dev "✅ Phase 4: Cursor Agent — kész ($CREATED_FILES files, $CURSOR_LINES lines)"
+echo ""
+
+# ═══════════════════════════════════════════════════════════════════════════
+banner "PHASE 4b: Build Integrity"
+log_dev "🔍 Phase 4b: Build Integrity — kezdve (max 3 retry)"
+# ═══════════════════════════════════════════════════════════════════════════
+
+BUILD_INTEGRITY_OK=0
+BUILD_INTEGRITY_LOG="$PROJECT_DIR/logs/build-integrity-${PKG_ID}.log"
+
+if [ "$HAS_PKG" -eq 1 ]; then
+  for build_attempt in 1 2 3; do
+    echo "Build integrity check ($build_attempt/3)..."
+    set +e
+    pnpm build 2>&1 | tee "$BUILD_INTEGRITY_LOG"
+    BUILD_EXIT=$?
+    set -e
+
+    if [ "$BUILD_EXIT" -eq 0 ]; then
+      ok "Phase 4b: Build integrity OK"
+      log_dev "✅ Phase 4b: Build Integrity — passed (attempt $build_attempt)"
+      BUILD_INTEGRITY_OK=1
+      break
+    fi
+
+    warn "Build integrity FAILED (attempt $build_attempt/3)"
+    log_dev "❌ Phase 4b: Build Integrity — failed attempt $build_attempt"
+  done
+
+  if [ "$BUILD_INTEGRITY_OK" -eq 0 ]; then
+    fail "Build integrity FAILED after 3 retries — see $BUILD_INTEGRITY_LOG"
+  fi
+else
+  warn "No package.json — skip build integrity"
+  log_dev "⚠️  Phase 4b: Build Integrity — skipped"
+fi
+
 echo ""
 
 # ═══════════════════════════════════════════════════════════════════════════

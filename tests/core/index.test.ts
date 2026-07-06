@@ -42,6 +42,7 @@ describe("index (getAllData)", () => {
     expect(data.actionQueue).toBeDefined();
     expect(data.logs).toBeDefined();
     expect(data.auditTrail).toBeDefined();
+    expect(data.buildIntegrity).toBeDefined();
   }, 15000);
 
   it("named exports are callable", async () => {

@@ -16,6 +16,13 @@ export async function collectOnce(): Promise<DashboardData> {
   collectPromise = (async () => {
     const providers = getProvider();
     const data = await getAllData(providers);
+    if (data.buildIntegrity.alert) {
+      console.error(
+        "[noema] SSR health alert:",
+        data.buildIntegrity.lastError ?? "unknown",
+        `(${data.buildIntegrity.consecutiveFailures} consecutive failures)`,
+      );
+    }
     setCache(data);
     broadcast(data);
     return data;

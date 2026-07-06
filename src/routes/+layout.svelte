@@ -5,7 +5,8 @@
   import { onMount } from "svelte";
   import DevJobIndicator from "$lib/components/DevJobIndicator.svelte";
   import CronSidebar from "$lib/components/layout/CronSidebar.svelte";
-  import type { CronData, DashboardData } from "$lib/types";
+  import BuildIntegrityBanner from "$lib/components/shared/BuildIntegrityBanner.svelte";
+  import type { BuildIntegrityData, CronData, DashboardData } from "$lib/types";
   import type { LayoutData } from "./$types";
 
   const TABS = [
@@ -33,12 +34,15 @@
   let activeTab = $state<TabId>("overview");
   let isMobile = $state(false);
   let sseCrons = $state<CronData | null>(null);
+  let buildIntegrity = $state<BuildIntegrityData | null>(null);
 
   const liveCrons = $derived(sseCrons ?? data.crons);
+  const showBuildAlert = $derived(buildIntegrity?.alert === true);
 
   $effect(() => {
     data.crons;
     sseCrons = null;
+    buildIntegrity = null;
   });
 
   $effect(() => {
@@ -71,6 +75,7 @@
       try {
         const payload = JSON.parse(event.data) as DashboardData;
         if (payload.crons) sseCrons = payload.crons;
+        if (payload.buildIntegrity) buildIntegrity = payload.buildIntegrity;
       } catch {
         /* ignore malformed SSE payloads */
       }
@@ -89,6 +94,12 @@
       <h1>Noema 🧠</h1>
       <p class="subtitle">System Intelligence Dashboard</p>
     </header>
+
+    {#if showBuildAlert}
+      <BuildIntegrityBanner
+        message="Dashboard build sérült — újrabuild szükséges"
+      />
+    {/if}
 
     <nav class="tab-bar" aria-label="Dashboard tabs">
       {#each TABS as tab (tab.id)}

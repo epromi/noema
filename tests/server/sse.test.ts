@@ -38,6 +38,13 @@ function minimalDashboardData(): DashboardData {
       modelMappingAge: 0,
       updatedAt: now,
     },
+    buildIntegrity: {
+      ok: true,
+      alert: false,
+      consecutiveFailures: 0,
+      lastCheckAt: now,
+      updatedAt: now,
+    },
     h1: {
       stats: {
         open: "0",

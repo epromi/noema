@@ -530,11 +530,23 @@ export interface DecisionTraceData {
   error?: string;
 }
 
+export interface BuildIntegrityData {
+  ok: boolean;
+  /** True after 3 consecutive SSR health failures. */
+  alert: boolean;
+  consecutiveFailures: number;
+  lastCheckAt: number;
+  bytes?: number;
+  lastError?: string;
+  updatedAt: number;
+}
+
 export interface DashboardData {
   meta: DashboardMeta;
   crons: CronData;
   agents: AgentData;
   health: HealthData;
+  buildIntegrity: BuildIntegrityData;
   h1: H1Data;
   calendar: CalendarData;
   bills: BillsData;

@@ -18,6 +18,7 @@ import type {
   LogData,
   AuditTrailData,
   DecisionTraceData,
+  BuildIntegrityData,
 } from "$lib/types";
 import type { PageServerLoad } from "./$types";
 
@@ -200,6 +201,16 @@ function emptyDecisionTrace(): DecisionTraceData {
   };
 }
 
+function emptyBuildIntegrity(): BuildIntegrityData {
+  return {
+    ok: true,
+    alert: false,
+    consecutiveFailures: 0,
+    lastCheckAt: Date.now(),
+    updatedAt: Date.now(),
+  };
+}
+
 /** Ensure every core module section is present and arrays are never null. */
 function validatePageData(data: Partial<DashboardData>): DashboardData {
   const crons = data.crons ?? emptyCrons();
@@ -216,6 +227,7 @@ function validatePageData(data: Partial<DashboardData>): DashboardData {
       agents: agents.agents ?? [],
     },
     health: data.health ?? emptyHealth(),
+    buildIntegrity: data.buildIntegrity ?? emptyBuildIntegrity(),
     h1: {
       ...(data.h1 ?? emptyH1()),
       programList: data.h1?.programList ?? [],

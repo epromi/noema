@@ -26,6 +26,7 @@ import {
   phaseIcon,
   truncateName,
 } from "./dev-packages.js";
+import { getBuildIntegrity } from "./build-integrity.js";
 
 export type { GroupedPackages, PackageStats } from "./dev-packages.js";
 
@@ -47,6 +48,7 @@ export async function getAllData(
     logs,
     auditTrail,
     decisionTrace,
+    buildIntegrity,
   ] = await Promise.all([
     getCrons(p),
     getAgents(p),
@@ -61,6 +63,7 @@ export async function getAllData(
     getLogs(p),
     getAuditTrail(p),
     getDecisionTraceData(p),
+    getBuildIntegrity(),
   ]);
 
   return {
@@ -68,6 +71,7 @@ export async function getAllData(
     crons,
     agents,
     health,
+    buildIntegrity,
     h1,
     calendar,
     bills,
@@ -106,4 +110,5 @@ export {
   isDonePackage,
   phaseIcon,
   truncateName,
+  getBuildIntegrity,
 };
