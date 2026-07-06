@@ -1,4 +1,5 @@
 <script lang="ts">
+  import CpuWidget from "$lib/components/shared/CpuWidget.svelte";
   import type {
     AgentData,
     AgentEntry,
@@ -64,6 +65,7 @@
     <span class="sys-item">Uptime: {na(health.uptime)}</span>
     <span class="sys-item">Disk: {na(health.disk)}</span>
     <span class="sys-item">RAM: {na(health.ram)}</span>
+    <CpuWidget cpu={health.cpu} part="bar" />
     {#if health.error}
       <span class="sys-item sys-error">⚠ {health.error}</span>
     {/if}
@@ -110,6 +112,8 @@
       <div class="metric-sub">{na(health.ram)}</div>
     </div>
   </div>
+
+  <CpuWidget cpu={health.cpu} part="list" />
 
   <h3 class="section-title">🤖 Agents</h3>
   {#if agents.error}

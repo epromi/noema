@@ -152,6 +152,10 @@ Summary line one.`;
         if (cmd.includes("uptime")) return "up 2 days";
         if (cmd.includes("df")) return "45% used (20G/50G)";
         if (cmd.includes("free")) return "8G used / 16G total";
+        if (cmd.includes("loadavg")) return "1.20 1.50 1.80 3/200 999";
+        if (cmd.includes("ps -eo")) {
+          return "node  12.5\nbash  0.2";
+        }
         return "ok";
       },
     },

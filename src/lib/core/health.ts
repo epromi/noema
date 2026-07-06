@@ -8,6 +8,7 @@ import type {
   HeartbeatEntry,
   HookState,
 } from "$lib/types";
+import { getCpuData } from "./cpu.js";
 import { safeParseJson } from "./utils.js";
 
 /** Lightweight Gateway health check via REST API — avoids spawning CLI process. */
@@ -101,7 +102,7 @@ export async function getHealth(providers?: AllProviders): Promise<HealthData> {
   const p = providers ?? getProvider();
 
   try {
-    const [uptime, disk, ram, gatewayRaw, heartbeatRaw, hookStateRaw] =
+    const [uptime, disk, ram, gatewayRaw, heartbeatRaw, hookStateRaw, cpu] =
       await Promise.all([
         p.tool
           .execCommand('uptime -p 2>/dev/null || echo "unknown"')
@@ -120,6 +121,7 @@ export async function getHealth(providers?: AllProviders): Promise<HealthData> {
 
         p.filesystem.readState("heartbeat-state.json").catch(() => "{}"),
         p.filesystem.readState("hook-state.json").catch(() => "{}"),
+        getCpuData(p),
       ]);
 
     const hb = safeParseJson<Record<string, Record<string, unknown>>>(
@@ -137,6 +139,7 @@ export async function getHealth(providers?: AllProviders): Promise<HealthData> {
       heartbeat: parseHeartbeatEntries(hb),
       hookState,
       modelMappingAge,
+      cpu,
       updatedAt: Date.now(),
     };
   } catch (err) {

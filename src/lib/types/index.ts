@@ -100,6 +100,29 @@ export interface HookState {
   };
 }
 
+export interface CpuProcess {
+  /** Process name (e.g. "firefox") */
+  name: string;
+  /** Aggregated CPU usage across instances (percent) */
+  cpuPercent: number;
+  /** Number of running instances with this name */
+  count: number;
+}
+
+export interface CpuData {
+  load1: number;
+  load5: number;
+  load15: number;
+  /** Running processes (from /proc/loadavg field 4) */
+  runningProcs: number;
+  /** Total processes (from /proc/loadavg field 4) */
+  totalProcs: number;
+  /** Logical CPU core count — used for load color thresholds */
+  coreCount: number;
+  /** Top aggregated processes by CPU usage (max 8, >1% only) */
+  topProcesses: CpuProcess[];
+}
+
 export interface HealthData {
   uptime: string;
   disk: string;
@@ -109,6 +132,7 @@ export interface HealthData {
   hookState: HookState;
   modelMappingAge: number;
   updatedAt: number;
+  cpu?: CpuData;
   error?: string;
 }
 
