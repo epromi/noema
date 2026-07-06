@@ -38,7 +38,7 @@
 | PKG-030 | **Log Menu Frissesség + Fordított Időrend** 🔄 | 📋 F0 | — | M | 1.5h | PKG-014, PKG-016 |
 | PKG-031 | **Package List Áttekinthetőség** ⭐ | ✅ F5 | — | M | ✅ kész | PKG-021 |
 | PKG-032 | **Overview — CPU Terhelés + Top Process-ek** 📊 | ✅ F5 | — | S | ✅ kész | PKG-004, PKG-021 |
-| PKG-033 | **Dev Package Log + Queue — Teljes Körű Fix** 🔧 | 📋 F0 | — | M | 1.5h | PKG-014, PKG-016, PKG-018, PKG-026 |
+| PKG-033 | **Dev Package Log + Queue — Teljes Körű Fix** 🔧 | ✅ F5 | — | M | ✅ kész | PKG-014, PKG-016, PKG-018, PKG-026 |
 | PKG-034 | **Package Row — Lenyitható Részletek** 🔽 | 📋 F0 | — | S | 30m | PKG-015, PKG-021 |
 | PKG-035 | **Build Integrity Check — Soha Többé Sérült Build** 🔒 | ✅ F5 | — | S | ✅ kész | PKG-018, PKG-024 |
 | PKG-036 | **CPU Százalék a Rendszer Sorban** 📊 | 📋 F0 | — | XS | 15m | PKG-032 |
