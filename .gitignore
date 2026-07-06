@@ -36,3 +36,7 @@ logs/
 /tmp/
 coverage/
 build
+
+# Generated runtime data
+data/
+.openclaw/trajectory-exports/
