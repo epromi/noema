@@ -342,7 +342,7 @@ export async function getDecisionTrace(
   try {
     const sessions = await p.session.listSessions({ limit: 500 });
     const session = sessions.find((s) => s.key === sessionKey);
-    const messages = await p.session.getHistory(sessionKey);
+    const messages = await p.session.getHistory(sessionKey, session?.sessionId, session?.agentId);
     const steps = parseHistoryMessages(messages, sessionKey);
 
     return {

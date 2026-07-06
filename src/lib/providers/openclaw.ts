@@ -246,67 +246,103 @@ export function createOpenClawProviders(
       }
     },
 
-    // ⚡ CLI — on-demand only (decision-trace detail view, not collector)
-    async getHistory(sessionKey: string): Promise<Message[]> {
-      // ⚠️ This spawns a CLI process — acceptable for on-demand use only.
-      try {
-        const raw = await runCmd(
-          "openclaw",
-          [
+    // ⚡ Direct filesystem read — zero CLI spawns, zero process leaks
+    // Session files: ~/.openclaw/agents/<agentId>/sessions/<sessionId>.jsonl
+    async getHistory(
+      sessionKey: string,
+      sessionId?: string,
+      agentId?: string,
+    ): Promise<Message[]> {
+      if (sessionId && agentId) {
+        try {
+          const filePath = join(
+            homedir(),
+            ".openclaw",
+            "agents",
+            agentId,
             "sessions",
-            "export-trajectory",
-            "--session-key",
-            sessionKey,
-            "--json",
-          ],
-          { timeoutMs: 60_000 },
-        );
-        const parsed = parseJson<{
-          messages?: Message[];
-          turns?: Message[];
-          outputDir?: string;
-        }>(raw, {});
-
-        if (parsed.messages?.length) return parsed.messages;
-        if (parsed.turns?.length) return parsed.turns;
-
-        if (parsed.outputDir) {
-          const eventsPath = join(parsed.outputDir, "events.jsonl");
-          const eventsRaw = await readFile(eventsPath, "utf8");
+            `${sessionId}.jsonl`,
+          );
+          const raw = await readFile(filePath, "utf8");
           const messages: Message[] = [];
 
-          for (const line of eventsRaw.trim().split("\n")) {
+          for (const line of raw.trim().split("\n")) {
             if (!line.trim()) continue;
             const event = parseJson<{
               type?: string;
-              ts?: string;
-              data?: Record<string, unknown>;
+              id?: string;
+              timestamp?: number;
+              message?: {
+                role?: string;
+                content?: unknown;
+              };
             }>(line, {});
 
-            if (event.type !== "tool.call" && event.type !== "tool.result")
-              continue;
+            if (!event.type || !event.message) continue;
 
-            messages.push({
-              role: event.type,
-              content: event.data ?? {},
-              timestamp: event.ts ? Date.parse(event.ts) : undefined,
-              toolName:
-                typeof event.data?.name === "string"
-                  ? event.data.name
-                  : typeof event.data?.message === "object" &&
-                      event.data.message &&
-                      "toolName" in event.data.message
-                    ? String(
-                        (event.data.message as { toolName?: string }).toolName,
-                      )
-                    : undefined,
-            });
+            const msg = event.message;
+            const ts =
+              typeof event.timestamp === "number"
+                ? event.timestamp
+                : event.timestamp != null
+                  ? Date.parse(String(event.timestamp))
+                  : undefined;
+
+            if (
+              event.type === "tool_call" &&
+              Array.isArray(msg.content) &&
+              msg.content[0]
+            ) {
+              const block = msg.content[0] as Record<string, unknown>;
+              messages.push({
+                role: "tool.call",
+                content: {
+                  toolCallId: block.id,
+                  name: block.name,
+                  arguments: (block.input ?? {}) as Record<string, unknown>,
+                },
+                timestamp: typeof ts === "number" && Number.isFinite(ts) ? ts : undefined,
+                toolName:
+                  typeof block.name === "string" ? block.name : undefined,
+              });
+            } else if (
+              event.type === "tool_result" &&
+              Array.isArray(msg.content) &&
+              msg.content[0]
+            ) {
+              const block = msg.content[0] as Record<string, unknown>;
+              messages.push({
+                role: "tool.result",
+                content: {
+                  toolCallId: block.tool_use_id,
+                  content: block.content,
+                  isError: block.is_error,
+                },
+                timestamp: typeof ts === "number" && Number.isFinite(ts) ? ts : undefined,
+              });
+            } else if (event.type === "user") {
+              messages.push({
+                role: "user",
+                content: msg.content,
+                timestamp: typeof ts === "number" && Number.isFinite(ts) ? ts : undefined,
+              });
+            } else if (event.type === "assistant") {
+              messages.push({
+                role: "assistant",
+                content: msg.content,
+                timestamp: typeof ts === "number" && Number.isFinite(ts) ? ts : undefined,
+              });
+            }
+            // Skip: thinking, error, subagent_spawn — not tool calls
           }
+
           return messages;
+        } catch {
+          // Session file not found or unreadable — return empty
         }
-      } catch {
-        // History is optional — return empty on failure
       }
+
+      // No sessionId/agentId — can't read from disk, return empty
       return [];
     },
 

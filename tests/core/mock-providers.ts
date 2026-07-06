@@ -41,7 +41,7 @@ export function createMockProviders(
     },
     session: {
       listSessions: async () => defaultSessions,
-      getHistory: async () => [],
+      getHistory: async (_sessionKey, _sessionId, _agentId) => [],
       spawnAgent: async (agentId) => ({
         sessionKey: `agent:${agentId}:spawn`,
         agentId,
