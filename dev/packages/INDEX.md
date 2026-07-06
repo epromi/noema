@@ -1,6 +1,6 @@
 # Noema 🧠 — Development Package Index
 
-> Utolsó frissítés: 2026-07-06 18:07
+> Utolsó frissítés: 2026-07-06 18:10
 
 ## Aktív Csomagok
 
@@ -36,9 +36,9 @@
 | PKG-028 | **Tab Bar Overflow → More ▾** 📐 | 📋 F0 | — | M | 2h | PKG-001 |
 | PKG-029 | **Dev Job Collapse Toggle** 🎛️ | 📋 F0 | — | S | 45m | PKG-026 |
 | PKG-030 | **Log Menu Frissesség + Fordított Időrend** 🔄 | 📋 F0 | — | M | 1.5h | PKG-014, PKG-016 |
-| PKG-031 | **Package List Áttekinthetőség** ⭐ | 📋 F0 | — | M | 2h | PKG-021 |
+| PKG-031 | **Package List Áttekinthetőség** ⭐ | ✅ F5 | — | M | ✅ kész | PKG-021 |
 | PKG-032 | **Overview — CPU Terhelés + Top Process-ek** 📊 | 📋 F0 | — | S | 45m | PKG-004, PKG-021 |
-| PKG-033 | **Dev Package Log — Rendes Megjelenítés + Frissítés** 🔧 | 📋 F0 | — | S | 45m | PKG-014, PKG-016, PKG-018, PKG-026 |
+| PKG-033 | **Dev Package Log — Rendes Megjelenítés + Frissítés** 🔧 | 📋 F0 | — | S | 1h | PKG-014, PKG-016, PKG-018, PKG-026 |
 
 ## Függőségi Sorrend
 
