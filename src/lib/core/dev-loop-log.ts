@@ -123,7 +123,11 @@ export async function writeQueueMarker(
     queuedAt: new Date().toISOString(),
     estimatedMs,
   };
-  await writeFile(queueMarkerPath(logDir, pkgId), JSON.stringify(marker), "utf8");
+  await writeFile(
+    queueMarkerPath(logDir, pkgId),
+    JSON.stringify(marker),
+    "utf8",
+  );
 }
 
 /**
@@ -159,8 +163,7 @@ export async function getDevLoopLog(
     }
 
     await clearQueueMarker(logDir, pkgId);
-    const content =
-      raw.length > TAIL_BYTES ? raw.slice(-TAIL_BYTES) : raw;
+    const content = raw.length > TAIL_BYTES ? raw.slice(-TAIL_BYTES) : raw;
     return { pkgId, content, updatedAt: Date.now() };
   } catch (err) {
     return {
