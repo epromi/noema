@@ -1,6 +1,6 @@
 # Noema 🧠 — Development Package Index
 
-> Utolsó frissítés: 2026-07-05 18:35
+> Utolsó frissítés: 2026-07-06 18:07
 
 ## Aktív Csomagok
 
@@ -34,6 +34,11 @@
 | PKG-026 | **Dev Job Floating Indicator** 🧩 | ✅ F5 | — | S | ✅ kész | PKG-021 |
 | PKG-027 | **Nightly Dash Research → Dev Pipeline** 🤖 | 📋 F0 | — | S | 30m | PKG-013 |
 | PKG-028 | **Tab Bar Overflow → More ▾** 📐 | 📋 F0 | — | M | 2h | PKG-001 |
+| PKG-029 | **Dev Job Collapse Toggle** 🎛️ | 📋 F0 | — | S | 45m | PKG-026 |
+| PKG-030 | **Log Menu Frissesség + Fordított Időrend** 🔄 | 📋 F0 | — | M | 1.5h | PKG-014, PKG-016 |
+| PKG-031 | **Package List Áttekinthetőség** ⭐ | 📋 F0 | — | M | 2h | PKG-021 |
+| PKG-032 | **Overview — CPU Terhelés + Top Process-ek** 📊 | 📋 F0 | — | S | 45m | PKG-004, PKG-021 |
+| PKG-033 | **Dev Package Log — Rendes Megjelenítés + Frissítés** 🔧 | 📋 F0 | — | S | 45m | PKG-014, PKG-016, PKG-018, PKG-026 |
 
 ## Függőségi Sorrend
 
@@ -53,6 +58,7 @@ PKG-001 (scaffold)         ← ELSŐ
         │     └── PKG-010 (decision trace)
         │           └── PKG-011 (health scoring)
         ├── PKG-004 (health)
+        │     └── PKG-032 (CPU load + top procs)
         ├── PKG-005 (H1 data)
         └── PKG-009 (SSE)       ← utolsó foundation
               └── PKG-012 (OTel)
@@ -69,8 +75,11 @@ AJÁNLOTT SORREND:
 
 🧩 KOMPONENSEK (globális widget-ek):
   PKG-026 (Dev Job Indicator) — draggable floating panel, minden tab-on
+  PKG-029 (Collapse Toggle) — egysoros/kibővített váltó gomb a Dev Job panelen
+  PKG-030 (Log Freshness) — auto-refresh + fordított időrend a log panelekben
+  PKG-031 (Package Clarity) — fázis csoportok, keresés, progress bar, kompakt mód
 
-✅ KÉSZ: PKG-001, PKG-013, PKG-014, PKG-015, PKG-002, PKG-003, PKG-004, PKG-005, PKG-016
+✅ KÉSZ: PKG-001, PKG-013, PKG-014, PKG-015, PKG-002, PKG-003, PKG-004, PKG-005, PKG-016, PKG-021, PKG-022, PKG-023, PKG-024, PKG-025, PKG-026
 ⚠️  LEGACY-ONLY: PKG-017, PKG-019 (Cursor rossz target — dashboard.html helyett SvelteKit kell)
 🔄 QUEUED: PKG-027 (Otto → Relay → Processor → Cursor bridge)
 ```

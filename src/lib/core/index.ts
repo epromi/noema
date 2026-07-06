@@ -20,6 +20,17 @@ import {
   getRunningDevLoop,
   getDevPackages,
 } from "./dev-loop-log.js";
+import {
+  computePackageStats,
+  filterPackages,
+  groupPackages,
+  isBlockedPackage,
+  isDonePackage,
+  phaseIcon,
+  truncateName,
+} from "./dev-packages.js";
+
+export type { GroupedPackages, PackageStats } from "./dev-packages.js";
 
 export async function getAllData(
   providers?: AllProviders,
@@ -91,4 +102,11 @@ export {
   getDevLoopLog,
   getRunningDevLoop,
   getDevPackages,
+  computePackageStats,
+  filterPackages,
+  groupPackages,
+  isBlockedPackage,
+  isDonePackage,
+  phaseIcon,
+  truncateName,
 };
