@@ -1,5 +1,5 @@
-import { existsSync, readdirSync, readFileSync } from "node:fs";
-import { join, dirname } from "node:path";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { join, dirname, relative } from "node:path";
 import type { BuildIntegrityData } from "$lib/types";
 
 export const SSR_FAILURE_THRESHOLD = 3;
@@ -61,7 +61,8 @@ export interface BuildArtifactVerification {
   errors: string[];
 }
 
-/** Verify production build artifacts on disk (post-build gate). */
+/** Verify production build artifacts on disk (post-build gate).
+ *  Also checks source freshness — fails if any src/ file is newer than build. */
 export function verifyBuildArtifacts(
   buildDir = join(process.cwd(), "build"),
 ): BuildArtifactVerification {
@@ -69,6 +70,46 @@ export function verifyBuildArtifacts(
   const entry = join(buildDir, "index.js");
   const clientDir = join(buildDir, "client");
   const serverChunksDir = join(buildDir, "server", "chunks");
+
+  // ── Source freshness gate: fail if source changed since last build ──
+  const srcDir = join(process.cwd(), "src");
+  if (existsSync(srcDir) && existsSync(entry)) {
+    const buildMtime = statSync(entry).mtimeMs;
+    const staleFiles: string[] = [];
+
+    function scanSourceDir(dir: string): void {
+      const entries = readdirSync(dir, { withFileTypes: true });
+      for (const entry of entries) {
+        const full = join(dir, entry.name);
+        if (entry.isDirectory()) {
+          scanSourceDir(full);
+        } else if (
+          /\.(ts|js|svelte|css)$/.test(entry.name) &&
+          !entry.name.endsWith(".d.ts") &&
+          !full.includes("node_modules")
+        ) {
+          if (statSync(full).mtimeMs > buildMtime) {
+            staleFiles.push(relative(srcDir, full));
+          }
+        }
+      }
+    }
+
+    scanSourceDir(srcDir);
+
+    if (staleFiles.length > 0) {
+      const preview = staleFiles.slice(0, 10).join(", ");
+      const more =
+        staleFiles.length > 10
+          ? ` +${staleFiles.length - 10} more`
+          : "";
+      errors.push(
+        `❌ Source files newer than build — build stale: ${preview}${more}. Re-run pnpm build.`,
+      );
+    }
+  }
+
+  // ── Artifact existence gates ──
 
   if (!existsSync(entry)) {
     errors.push("❌ build/index.js not found");
