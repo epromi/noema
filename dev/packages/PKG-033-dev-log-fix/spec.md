@@ -363,3 +363,33 @@ A `phase` oszlop dinamikus tartalma:
 - [ ] Amikor egy PKG futás véget ér, a státusz visszaáll
 - [ ] A relay `/running` és `/next-trigger` endpoint-jai működnek
 - [ ] Tailscale-en keresztül is működik (a relay elérése a böngészőből)
+
+
+## 🎯 Mit
+
+_Placeholder — to be filled._
+
+
+## 📐 Scope
+
+_Placeholder — to be filled._
+
+
+## Mit érint
+
+_Placeholder — to be filled._
+
+
+## Mit NEM érint
+
+_Placeholder — to be filled._
+
+
+## Fázisok
+
+_Placeholder — to be filled._
+
+
+## ✅ Acceptance Criteria
+
+_Placeholder — to be filled._

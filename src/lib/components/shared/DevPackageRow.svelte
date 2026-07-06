@@ -6,7 +6,7 @@
     phaseIcon,
     truncateName,
   } from "$lib/core/dev-packages";
-  import type { ImplementState } from "$lib/types";
+  import type { ImplementState, QueueStatus } from "$lib/types";
 
   let {
     pkgId,
@@ -18,6 +18,7 @@
     showLogButton = false,
     logOpen = false,
     logContent = "",
+    queueStatus = null,
     onImplement,
     onLogToggle,
   }: {
@@ -30,6 +31,7 @@
     showLogButton?: boolean;
     logOpen?: boolean;
     logContent?: string;
+    queueStatus?: QueueStatus | null;
     onImplement?: () => void;
     onLogToggle?: () => void;
   } = $props();
@@ -37,6 +39,27 @@
   const blocked = $derived(isBlockedPackage({ id: pkgId, name, phase, done }));
   const displayName = $derived(compact ? truncateName(name) : name);
   const icon = $derived(phaseIcon(phase));
+
+  const displayPhase = $derived.by(() => {
+    if (queueStatus?.running === pkgId) {
+      return { text: "🔄 Fut…", className: "phase-running" };
+    }
+    if (
+      implementState === "running" &&
+      queueStatus?.running &&
+      queueStatus.running !== pkgId
+    ) {
+      const pos =
+        queueStatus.queuePosition != null
+          ? ` (${queueStatus.queuePosition}.)`
+          : "";
+      return { text: `⏳ Sorban${pos}`, className: "phase-queued" };
+    }
+    if (implementState === "running" && !queueStatus?.running) {
+      return { text: "⏳ Sorban áll", className: "phase-queued" };
+    }
+    return { text: phase, className: "" };
+  });
 </script>
 
 <div class="pkg-row" class:done class:compact class:blocked>
@@ -44,10 +67,21 @@
     <span class="pkg-id">{pkgId}</span>
     {#if compact}
       <span class="pkg-name compact-name" title={name}>{displayName}</span>
-      <span class="pkg-phase-icon" title={phase}>{icon}</span>
+      <span
+        class="pkg-phase-icon"
+        class:phase-running={displayPhase.className === "phase-running"}
+        class:phase-queued={displayPhase.className === "phase-queued"}
+        title={displayPhase.text}>{icon}</span
+      >
     {:else}
       <span class="pkg-name">{displayName}</span>
-      <span class="pkg-phase">{phase}</span>
+      <span
+        class="pkg-phase"
+        class:phase-running={displayPhase.className === "phase-running"}
+        class:phase-queued={displayPhase.className === "phase-queued"}
+      >
+        {displayPhase.text}
+      </span>
       {#if !done}
         <ImplementButton
           buttonState={implementState}
@@ -126,8 +160,29 @@
     color: var(--muted);
   }
 
+  .pkg-phase.phase-running,
+  .pkg-phase-icon.phase-running {
+    color: var(--accent);
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+
+  .pkg-phase.phase-queued,
+  .pkg-phase-icon.phase-queued {
+    color: var(--yellow);
+  }
+
   .pkg-phase-icon {
     font-size: 0.9em;
     flex-shrink: 0;
+  }
+
+  @keyframes pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.55;
+    }
   }
 </style>

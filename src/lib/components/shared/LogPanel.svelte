@@ -20,7 +20,7 @@
 
 {#if open}
   <div class="log-panel" role="region" aria-label="Cursor log for {pkgId}">
-    <pre bind:this={preEl}>{content || "⏳ Betöltés..."}</pre>
+    <pre bind:this={preEl}>{content}</pre>
   </div>
 {/if}
 

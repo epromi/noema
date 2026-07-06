@@ -1,6 +1,6 @@
 # Noema 🧠 — Development Package Index
 
-> Utolsó frissítés: 2026-07-06 18:32
+> Utolsó frissítés: 2026-07-06 18:45
 
 ## Aktív Csomagok
 
@@ -43,6 +43,8 @@
 | PKG-035 | **Build Integrity Check — Soha Többé Sérült Build** 🔒 | ✅ F5 | — | S | ✅ kész | PKG-018, PKG-024 |
 | PKG-036 | **CPU Százalék a Rendszer Sorban** 📊 | 📋 F0 | — | XS | 15m | PKG-032 |
 | PKG-037 | **PKG Lista — Élő Frissítés Fájl Változásra** 🔄 | 📋 F0 | — | S | 30m | PKG-031 |
+| PKG-038 | **Agent Detail + Navigáció Átalakítás** 🧭 | 📋 F0 | — | M | 1.5h | PKG-021, PKG-022 |
+| PKG-039 | **Developer Freedom — Cursor Gardening + Research Jogkör** 🌿🔍 | 📋 F0 | — | M | 2.5h | PKG-014, PKG-018, PKG-035 |
 
 ## Függőségi Sorrend
 

@@ -6,7 +6,7 @@
     filterPackages,
     groupPackages,
   } from "$lib/core/dev-packages";
-  import type { DevPackageEntry, ImplementState } from "$lib/types";
+  import type { DevPackageEntry, PkgState } from "$lib/types";
 
   let {
     packages,
@@ -15,15 +15,7 @@
     onLogToggle,
   }: {
     packages: DevPackageEntry[];
-    packageStates: Record<
-      string,
-      {
-        implementState: ImplementState;
-        showLogButton: boolean;
-        logOpen: boolean;
-        logContent: string;
-      }
-    >;
+    packageStates: Record<string, PkgState>;
     onImplement?: (pkgId: string, name: string) => void;
     onLogToggle?: (pkgId: string) => void;
   } = $props();
@@ -94,15 +86,14 @@
     }
   }
 
-  function rowState(pkgId: string) {
-    return (
-      packageStates[pkgId] ?? {
-        implementState: "idle" as ImplementState,
-        showLogButton: false,
-        logOpen: false,
-        logContent: "",
-      }
-    );
+  function rowState(pkgId: string): PkgState {
+    return packageStates[pkgId] ?? {
+      implementState: "idle",
+      showLogButton: false,
+      logOpen: false,
+      logContent: "",
+      queueStatus: null,
+    };
   }
 
   onMount(() => {
@@ -206,6 +197,7 @@
                       showLogButton={state.showLogButton}
                       logOpen={state.logOpen}
                       logContent={state.logContent}
+                      queueStatus={state.queueStatus}
                       onImplement={() => onImplement?.(pkg.id, pkg.name)}
                       onLogToggle={() => onLogToggle?.(pkg.id)}
                     />
@@ -243,6 +235,7 @@
                       showLogButton={state.showLogButton}
                       logOpen={state.logOpen}
                       logContent={state.logContent}
+                      queueStatus={state.queueStatus}
                       onImplement={() => onImplement?.(pkg.id, pkg.name)}
                       onLogToggle={() => onLogToggle?.(pkg.id)}
                     />
@@ -277,6 +270,7 @@
                     showLogButton={state.showLogButton}
                     logOpen={state.logOpen}
                     logContent={state.logContent}
+                    queueStatus={state.queueStatus}
                     onImplement={() => onImplement?.(pkg.id, pkg.name)}
                     onLogToggle={() => onLogToggle?.(pkg.id)}
                   />

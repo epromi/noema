@@ -363,6 +363,22 @@ export interface DevPackageEntry {
   name: string;
   phase: string;
   done: boolean;
+  /** Parsed from INDEX.md “Becsült idő” column (minutes). */
+  estimatedMinutes?: number | null;
+}
+
+export interface QueueStatus {
+  running: string | null;
+  queueSize: number;
+  queuePosition: number | null;
+}
+
+export interface PkgState {
+  implementState: ImplementState;
+  showLogButton: boolean;
+  logOpen: boolean;
+  logContent: string;
+  queueStatus: QueueStatus | null;
 }
 
 export interface DevPackagesData {

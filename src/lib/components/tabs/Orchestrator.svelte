@@ -15,6 +15,7 @@
     DashboardActionType,
     DevJobStatus,
     ImplementState,
+    PkgState,
     OttoRunEntry,
     ResearchData,
   } from "$lib/types";
@@ -42,15 +43,7 @@
     crons: CronData;
     research: ResearchData;
     actionQueue: ActionQueueData;
-    packageStates: Record<
-      string,
-      {
-        implementState: ImplementState;
-        showLogButton: boolean;
-        logOpen: boolean;
-        logContent: string;
-      }
-    >;
+    packageStates: Record<string, PkgState>;
     onImplement?: (pkgId: string, name: string) => void;
     onLogToggle?: (pkgId: string) => void;
   } = $props();
@@ -621,6 +614,7 @@
               showLogButton: false,
               logOpen: false,
               logContent: "",
+              queueStatus: null,
             }}
             <div
               class="proposal-row"

@@ -1,8 +1,9 @@
 <script lang="ts">
   import { browser } from "$app/environment";
   import { getContext, onDestroy, onMount } from "svelte";
-  import type { DashboardData } from "$lib/types";
+  import type { DashboardData, DevPackageEntry, PkgState, QueueStatus } from "$lib/types";
   import type { PageData } from "./$types";
+  import { DEFAULT_RELAY_URL, getDevJobStatus } from "$lib/core/noema-devjob";
   import Overview from "$lib/components/tabs/Overview.svelte";
   import Agents from "$lib/components/tabs/Agents.svelte";
   import Crons from "$lib/components/tabs/Crons.svelte";
@@ -16,10 +17,10 @@
   import DecisionTrace from "$lib/components/tabs/DecisionTrace.svelte";
   import H1 from "$lib/components/tabs/H1.svelte";
   import Viktor from "$lib/components/tabs/Viktor.svelte";
-  import type { ImplementState } from "$lib/types";
 
-  const RELAY_URL = "/api";
+  const RELAY_URL = DEFAULT_RELAY_URL;
   const LOG_POLL_MS = 3000;
+  const QUEUE_POLL_MS = 10_000;
 
   let { data: serverData }: { data: PageData } = $props();
 
@@ -46,19 +47,18 @@
       }
     };
 
+    void refreshQueueStatus();
+    const queueTimer = setInterval(() => {
+      void refreshQueueStatus();
+    }, QUEUE_POLL_MS);
+
     return () => {
       es.close();
+      clearInterval(queueTimer);
     };
   });
 
   const tabContext = getContext<{ current: string }>("noema-active-tab");
-
-  type PkgState = {
-    implementState: ImplementState;
-    showLogButton: boolean;
-    logOpen: boolean;
-    logContent: string;
-  };
 
   let packageStates = $state<Record<string, PkgState>>({});
   const pollers = new Map<string, ReturnType<typeof setInterval>>();
@@ -69,6 +69,7 @@
       showLogButton: false,
       logOpen: false,
       logContent: "",
+      queueStatus: null,
     };
   }
 
@@ -78,6 +79,49 @@
 
   function setState(pkgId: string, patch: Partial<PkgState>) {
     packageStates[pkgId] = { ...getState(pkgId), ...patch };
+  }
+
+  function pkgMatchesRunning(pkgId: string, running: string | null): boolean {
+    if (!running) return false;
+    return running === pkgId || running.startsWith(`${pkgId}-`);
+  }
+
+  async function refreshQueueStatus() {
+    try {
+      const status = await getDevJobStatus(RELAY_URL);
+      const runningId = status.running;
+      const queueSize = status.queue;
+
+      const trackedIds = new Set([
+        ...Object.keys(packageStates),
+        ...data.devPackages.packages.map((p: DevPackageEntry) => p.id),
+      ]);
+
+      for (const pkgId of trackedIds) {
+        const state = getState(pkgId);
+        let queueStatus: QueueStatus | null = null;
+        let implementState = state.implementState;
+
+        if (runningId && pkgMatchesRunning(pkgId, runningId)) {
+          queueStatus = {
+            running: runningId,
+            queueSize,
+            queuePosition: null,
+          };
+          implementState = "running";
+        } else if (state.implementState === "running") {
+          queueStatus = {
+            running: runningId,
+            queueSize,
+            queuePosition: queueSize > 0 ? queueSize : null,
+          };
+        }
+
+        setState(pkgId, { queueStatus, implementState });
+      }
+    } catch {
+      /* relay unavailable */
+    }
   }
 
   async function fetchLog(pkgId: string) {
@@ -110,10 +154,30 @@
   }
 
   async function handleImplement(pkgId: string, name: string) {
-    setState(pkgId, { implementState: "running" });
+    setState(pkgId, {
+      implementState: "running",
+      showLogButton: true,
+      logOpen: true,
+    });
+    startLogPoll(pkgId);
+
+    const pkg = data.devPackages.packages.find(
+      (p: DevPackageEntry) => p.id === pkgId,
+    );
+    const estimatedMs = (pkg?.estimatedMinutes ?? 90) * 60_000;
 
     try {
-      // ⚠️ window.fetch → bypass SvelteKit auto-invalidation on POST
+      await fetch(`/api/log/${encodeURIComponent(pkgId)}/queue`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ estimatedMs }),
+      });
+      void fetchLog(pkgId);
+    } catch {
+      /* non-critical */
+    }
+
+    try {
       const res = await window.fetch(`${RELAY_URL}/action`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -126,7 +190,12 @@
       const body = await res.json();
 
       if (body.ok) {
-        setState(pkgId, { implementState: "running", showLogButton: true });
+        setState(pkgId, {
+          implementState: "running",
+          showLogButton: true,
+          logOpen: true,
+        });
+        void refreshQueueStatus();
       } else {
         setState(pkgId, { implementState: "error" });
         setTimeout(() => setState(pkgId, { implementState: "idle" }), 2000);
