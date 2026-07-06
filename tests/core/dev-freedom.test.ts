@@ -3,12 +3,16 @@ import {
   parseDevFreedom,
   parseResearchEnabled,
   extractExpectedFiles,
+  extractSpecDeps,
+  extractStatusLine,
   generateResearchQueries,
   formatResearchMarkdown,
   buildGardeningPromptSection,
   fillCursorPrompt,
   buildSpecAnalysis,
   validatePhaseOutput,
+  summarizeSearchSnippet,
+  isNonEmptyFile,
   type ResearchQueryResult,
 } from "$lib/core/dev-freedom";
 
@@ -166,5 +170,129 @@ describe("dev-freedom", () => {
       fileContents: { [path]: '{"pkgId":"PKG-039"}' },
     });
     expect(result.ok).toBe(true);
+  });
+
+  it("extractSpecDeps collects suffixed PKG ids and skips bare PKG-NNN", () => {
+    const deps = extractSpecDeps(
+      "**Függőség**: PKG-014, PKG-018\nSee PKG-039-dev-freedom and PKG-042-panel",
+    );
+    expect(deps).toEqual(["PKG-039-dev-freedom", "PKG-042-panel"]);
+  });
+
+  it("extractStatusLine returns first Státusz metadata line", () => {
+    const line = extractStatusLine(
+      "# Title\n\n**Státusz**: 📋 F0 | **DevFreedom**: gardening\n",
+    );
+    expect(line).toContain("**Státusz**");
+    expect(line).toContain("gardening");
+  });
+
+  it("formatResearchMarkdown handles empty results", () => {
+    const md = formatResearchMarkdown([], 60);
+    expect(md).toContain("0 results");
+    expect(md).toContain("timeout or search unavailable");
+  });
+
+  it("fillCursorPrompt strips legacy gardening block in strict mode", () => {
+    const template = [
+      "## GARDENING — allowed ONLY in touched files",
+      "old inline block",
+      "## RESEARCH FINDINGS",
+      "(none)",
+    ].join("\n");
+    const out = fillCursorPrompt(template, {
+      pkgId: "PKG-039",
+      pkgName: "Dev Freedom",
+      pkgSize: "M",
+      pkgEffort: "1h",
+      expectedFiles: [],
+      devFreedom: "strict",
+      gardeningSection: "## 🎨 Gardening (DevFreedom: strict)",
+      researchSection: "(none)",
+    });
+    expect(out).not.toContain("old inline block");
+    expect(out).toContain("## RESEARCH FINDINGS");
+  });
+
+  it("summarizeSearchSnippet formats long and short snippets", () => {
+    const long = summarizeSearchSnippet(
+      "grafana panel",
+      "A ".repeat(80),
+    );
+    expect(long.query).toBe("grafana panel");
+    expect(long.summary.length).toBeGreaterThan(60);
+    expect(long.takeaway).toMatch(/^Consider:/);
+
+    const short = summarizeSearchSnippet("q", "");
+    expect(short.summary).toContain("No snippet available");
+    expect(short.takeaway).toContain("validate manually");
+  });
+
+  it("isNonEmptyFile rejects empty and whitespace-only content", () => {
+    expect(isNonEmptyFile("ok")).toBe(true);
+    expect(isNonEmptyFile("  \n")).toBe(false);
+    expect(isNonEmptyFile(undefined)).toBe(false);
+  });
+
+  it("validatePhaseOutput covers pipeline phases 0 and 2–7", () => {
+    const base = { logsDir: "/logs", pkgId: "PKG-039", fileContents: {} };
+
+    expect(
+      validatePhaseOutput(0, {
+        ...base,
+        fileContents: { reviewLog: "review ok" },
+      }).ok,
+    ).toBe(true);
+    expect(validatePhaseOutput(0, base).ok).toBe(false);
+
+    const strategyPath = "/logs/strategy.md";
+    expect(
+      validatePhaseOutput(2, {
+        ...base,
+        strategyPath,
+        fileContents: { [strategyPath]: "# Strategy" },
+      }).ok,
+    ).toBe(true);
+
+    const promptPath = "/logs/cursor-prompt.md";
+    expect(
+      validatePhaseOutput(3, {
+        ...base,
+        cursorPromptPath: promptPath,
+        fileContents: { [promptPath]: "prompt" },
+      }).ok,
+    ).toBe(true);
+
+    expect(
+      validatePhaseOutput(4, { ...base, gitDiffCount: 2 }).ok,
+    ).toBe(true);
+    expect(validatePhaseOutput(4, { ...base, gitDiffCount: 0 }).ok).toBe(
+      false,
+    );
+
+    const reviewPath = "/logs/deep-review.md";
+    expect(
+      validatePhaseOutput(5, {
+        ...base,
+        deepReviewPath: reviewPath,
+        fileContents: { [reviewPath]: "review" },
+      }).ok,
+    ).toBe(true);
+
+    expect(
+      validatePhaseOutput(6, { ...base, commitHash: "abc123" }).ok,
+    ).toBe(true);
+    expect(validatePhaseOutput(6, base).ok).toBe(false);
+
+    const ciPath = "/logs/ci-result.json";
+    expect(
+      validatePhaseOutput(7, {
+        ...base,
+        ciResultPath: ciPath,
+        fileContents: { [ciPath]: '{"ok":true}' },
+      }).ok,
+    ).toBe(true);
+
+    expect(validatePhaseOutput(99, base).ok).toBe(true);
   });
 });
