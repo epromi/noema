@@ -1,6 +1,6 @@
 # PKG-033: Dev Package Log — Rendes Megjelenítés + Frissítés 🔧
 
-**Státusz**: 📋 F0 | **Méret**: S | **Becslés**: 45m | **Függőség**: PKG-014, PKG-016, PKG-018, PKG-026
+**Státusz**: 📋 F0 | **Méret**: S | **Becslés**: 1h | **Függőség**: PKG-014, PKG-016, PKG-018, PKG-026
 
 ## Kérés
 
@@ -171,3 +171,87 @@ Az `ImplementButton` komponensben:
 - [ ] Várakozó/sorban álló PKG-nál szintén nincs ▶ Mehet gomb (ha az állapot `running`-ként van tárolva)
 - [ ] Idle PKG-nál ▶ Mehet gomb megjelenik (a megszokott módon)
 - [ ] A 📋 Log gomb a futó PKG-nál ugyanúgy működik mint az idle-nél (open/close toggle, auto-refresh)
+
+### 6. Sorba Állítás Státusz a Logban — Queue Visibility
+
+**Probléma**: Amikor a user rányom a ▶ Mehet gombra, a Cursor agent nem azonnal indul — a dev-loop sorba állítja. Ezalatt a log panel `⏳ Betöltés...`-t mutat, ami azt a benyomást kelti hogy elromlott. A user nem tudja hogy a PKG sorban áll-e vagy sem.
+
+**Megoldás**: A ▶ Mehet gomb megnyomásakor azonnal keletkezzen egy queue státusz, amit a log endpoint visszaad amíg nincs valódi log tartalom.
+
+#### 6a. Queue Státusz Fájl
+
+Amikor a `handleImplement` elküldi a kérést a relay-nek, **előtte** írjon egy queue státusz fájlt:
+
+```typescript
+// +page.svelte — handleImplement
+async function handleImplement(pkgId: string, name: string) {
+  setState(pkgId, { implementState: "running", showLogButton: true });
+
+  // Azonnal írjunk queue státuszt hogy a log tudjon mit mutatni
+  try {
+    await fetch(`/api/log/${pkgId}/queue`, { method: "POST" });
+  } catch { /* nem kritikus */ }
+
+  // ... meglévő relay hívás
+}
+```
+
+VAGY (egyszerűbb — külön API endpoint nélkül):
+
+A `getDevLoopLog` ellenőrizze hogy van-e queue entry a relay-ben:
+
+```typescript
+// dev-loop-log.ts — getDevLoopLog
+if (!logPath) {
+  // Ellenőrizzük hogy a PKG sorban áll-e
+  const queueStatus = await getQueueStatus(pkgId); // új függvény
+  if (queueStatus) {
+    return {
+      pkgId,
+      content: `⏳ Sorba állítva — ${queueStatus.message}\nBecsült kezdés: ${queueStatus.eta}`,
+      updatedAt: Date.now(),
+    };
+  }
+  return { pkgId, content: PLACEHOLDER, updatedAt: Date.now() };
+}
+```
+
+#### 6b. Legegyszerűbb Implementáció — Queue Marker Fájl
+
+A `handleImplement` írjon egy `queue-${pkgId}.json` fájlt a logs könyvtárba:
+
+```json
+{"pkgId":"PKG-031","queuedAt":"2026-07-06T18:05:00+02:00","estimatedMs":7200000}
+```
+
+A `getDevLoopLog` pedig:
+
+```typescript
+// Ha nincs log fájl, nézzük van-e queue marker
+const queuePath = join(logDir, `queue-${pkgId}.json`);
+try {
+  const queueRaw = await readFile(queuePath, "utf8");
+  const queue = JSON.parse(queueRaw);
+  const elapsed = Date.now() - new Date(queue.queuedAt).getTime();
+  const remaining = Math.max(0, queue.estimatedMs - elapsed);
+  const remainingMin = Math.ceil(remaining / 60000);
+  return {
+    pkgId,
+    content: `⏳ Sorba állítva…\n\nBecsült várakozás: ~${remainingMin} perc\n\nA Cursor agent akkor kezdi el amikor a dev-loop felszabadul.\nEz a log automatikusan frissül amint a Cursor elkezd írni.`,
+    updatedAt: Date.now(),
+  };
+} catch {
+  // nincs queue marker — a szokásos placeholder
+}
+```
+
+Amint a Cursor agent létrehozza az első log fájlt (`cursor-*`), a `findLogFile` megtalálja és a valódi tartalmat adja vissza — a queue marker automatikusan ignorálva lesz.
+
+**Queue marker takarítás**: A `cursor-*` vagy `dev-*` fájl létrejöttekor a queue marker törölhető (a `findLogFile` prioritása miatt amúgy sem használjuk ha van valódi log).
+
+**Elfogadási kritériumok**:
+- [ ] ▶ Mehet gomb megnyomása után a log azonnal mutatja: "⏳ Sorba állítva…" + becsült idő
+- [ ] A becsült idő a PKG `estimatedMinutes` mezőjéből jön (INDEX.md-ből)
+- [ ] Amint a Cursor agent elkezd írni, a valódi log tartalom automatikusan átveszi a helyét
+- [ ] A queue marker fájl nem marad örökre — ha a log fájl létezik, a queue ignorálva van
+- [ ] Az auto-refresh (3 mp) frissíti a becsült hátralévő időt
