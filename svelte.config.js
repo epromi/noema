@@ -5,7 +5,7 @@ const config = {
   kit: {
     adapter: adapter(),
     csrf: {
-      checkOrigin: false
+      trustedOrigins: ['alfred.local', '192.168.0.231', '100.91.60.103']
     }
   },
   vite: {

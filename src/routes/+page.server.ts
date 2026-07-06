@@ -1,5 +1,7 @@
 import { getAllData, getDevPackages } from "$lib/core";
 import { getProvider } from "$lib/providers";
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from "fs";
+import { resolve } from "path";
 import type {
   AgentData,
   BillsData,
@@ -262,10 +264,24 @@ function validatePageData(data: Partial<DashboardData>): DashboardData {
   };
 }
 
-export const load: PageServerLoad = async () => {
-  const providers = getProvider();
+// ⚡ File-based cache — fs.readFileSync microsecond, Gateway calls 25 seconds
+const CACHE_FILE = resolve(process.cwd(), "data", "dashboard-cache.json");
+const CACHE_TTL_MS = 5 * 60 * 1000;
 
-  // 🚨 SSR timeout: ha 25 másodpercen belül nincs válasz, üres default-okkal tölt
+export const load: PageServerLoad = async () => {
+  // 🔥 TRY CACHE FIRST — sync, microsecond, soha nem blokkol
+  try {
+    if (existsSync(CACHE_FILE)) {
+      const raw = readFileSync(CACHE_FILE, "utf-8");
+      const cached = JSON.parse(raw);
+      if (cached._ts && (Date.now() - cached._ts) < CACHE_TTL_MS) {
+        return cached._data;
+      }
+    }
+  } catch { /* cache miss, fetch fresh */ }
+
+  // ⚠️ CACHE MISS — fetch from Gateway (slow, 15-25s)
+  const providers = getProvider();
   const SSR_TIMEOUT_MS = 25000;
   const TIMEOUT_SENTINEL = Symbol("ssr-timeout");
 
@@ -286,7 +302,7 @@ export const load: PageServerLoad = async () => {
   const validated = validatePageData(typeof dashboard === "object" ? dashboard : {});
   const devPackagesSafe = (typeof devPackages === "object" ? devPackages : null) ?? emptyDevPackages();
 
-  return {
+  const result = {
     ...validated,
     devPackages: {
       ...devPackagesSafe,
@@ -294,4 +310,14 @@ export const load: PageServerLoad = async () => {
     },
     hostname: hostnameRaw.trim() || "N/A",
   };
+
+  // ⚡ Write cache for next request
+  if (typeof dashboard === "object") {
+    try {
+      mkdirSync(resolve(process.cwd(), "data"), { recursive: true });
+      writeFileSync(CACHE_FILE, JSON.stringify({ _ts: Date.now(), _data: result }));
+    } catch { /* best effort */ }
+  }
+
+  return result;
 };

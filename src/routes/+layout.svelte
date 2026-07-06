@@ -16,12 +16,12 @@
     { id: "h1", label: "🏴 HackerOne" },
     { id: "viktor", label: "🛡️ Viktor" },
     { id: "brainstorm", label: "🧠 Brainstorm" },
+    { id: "noema", label: "🧠 Noema" },
     { id: "bills", label: "📋 Bills" },
     { id: "research", label: "🔬 Research" },
     { id: "logs", label: "📋 Logs" },
     { id: "audit", label: "📜 Audit" },
     { id: "trace", label: "🌳 Trace" },
-    { id: "noema", label: "🧠 Noema" },
     { id: "cron-pipeline", label: "⏰ Pipeline", mobileOnly: true },
   ] as const;
 

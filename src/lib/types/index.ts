@@ -230,6 +230,7 @@ export interface ResearchProposal {
   id: string;
   finding: string;
   priority: string;
+  actions: DashboardActionType[];
   status?: string;
 }
 

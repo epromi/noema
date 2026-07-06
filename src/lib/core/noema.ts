@@ -3,6 +3,7 @@ import { join } from "node:path";
 import type { AllProviders } from "$lib/providers/types";
 import { workspaceRoot } from "$lib/providers/openclaw";
 import { getProvider } from "$lib/providers";
+import { parseActionSyntax } from "./action-parse.js";
 import type {
   ActionQueueData,
   ActionQueueItem,
@@ -135,18 +136,6 @@ const DEFAULT_ACTIONS: Record<ActionQueueColumn, DashboardActionType[]> = {
   andras: ["done", "escalate"],
 };
 
-const LABEL_TO_ACTION: Record<string, DashboardActionType> = {
-  done: "done",
-  escalate: "escalate",
-  investigate: "investigate",
-  restart: "restart",
-  trigger: "trigger",
-  activate: "activate",
-  paid: "paid",
-  implement: "implement",
-  mehet: "implement",
-};
-
 /** Parse memory/state/action-queue.md into kanban columns. */
 export async function getActionQueue(
   providers?: AllProviders,
@@ -261,27 +250,11 @@ function buildActionItem(
   const checked = checkMark === "x" || checkMark === "X";
   if (section !== "auto" && checked) return null;
   if (section === "auto" && !checked) return null;
-  const { cleanDesc, actions } = parseMultiActions(rawDesc, section);
-  return { id, desc: cleanDesc, meta, actions };
-}
-
-function parseMultiActions(
-  text: string,
-  column: ActionQueueColumn,
-): { cleanDesc: string; actions: DashboardActionType[] } {
-  const match = text.match(/→\s*\[([^\]]+)\]\s*$/);
-  if (match) {
-    const labels = (match[1] ?? "").split("|").map((s) => s.trim());
-    const actions = labels
-      .map((label) => LABEL_TO_ACTION[label.toLowerCase()])
-      .filter((a): a is DashboardActionType => a != null);
-    const cleanDesc = text.replace(match[0], "").trim();
-    return {
-      cleanDesc,
-      actions: actions.length > 0 ? actions : DEFAULT_ACTIONS[column],
-    };
-  }
-  return { cleanDesc: text, actions: DEFAULT_ACTIONS[column] };
+  const { cleanText, actions } = parseActionSyntax(
+    rawDesc,
+    DEFAULT_ACTIONS[section],
+  );
+  return { id, desc: cleanText, meta, actions };
 }
 
 const BRAINSTORM_SECTION_META: Record<

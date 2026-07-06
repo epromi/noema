@@ -2,6 +2,9 @@
   import { onDestroy, onMount } from "svelte";
   import { fade } from "svelte/transition";
   import ImplementButton from "$lib/components/shared/ImplementButton.svelte";
+  import ActionButtonGroup, {
+    type ActionBtnState,
+  } from "$lib/components/shared/ActionButtonGroup.svelte";
   import {
     DEFAULT_RELAY_URL,
     getDevJobStatus,
@@ -77,18 +80,6 @@
     system: "🤖",
   };
 
-  const ACTION_LABELS: Record<DashboardActionType, string> = {
-    implement: "▶ Mehet",
-    done: "✅ Done",
-    escalate: "🔥 Escalate",
-    restart: "🔄 Restart",
-    trigger: "⚡ Trigger",
-    investigate: "🔍 Investigate",
-    activate: "🚀 Activate",
-    paid: "💰 Paid",
-  };
-
-  type ActionBtnState = "idle" | "loading" | "ok" | "error" | "offline";
   type ProcessorState = "idle" | "running" | "queued" | "offline";
   type TimelineSection =
     | "night"
@@ -509,31 +500,13 @@
                 <div class="kb-meta">
                   <span>{item.meta}</span>
                   {#if item.actions.length > 0}
-                    <div class="action-group">
-                      {#each item.actions as action (action)}
-                        {@const state = getActionState(item.id, action)}
-                        <button
-                          type="button"
-                          class="action-btn"
-                          class:loading={state === "loading"}
-                          class:ok={state === "ok"}
-                          class:error={state === "error" || state === "offline"}
-                          disabled={state === "loading"}
-                          title={item.desc}
-                          onclick={() => sendAction(action, item.id, item.desc)}
-                        >
-                          {state === "loading"
-                            ? "⏳"
-                            : state === "ok"
-                              ? "✅"
-                              : state === "error"
-                                ? "❌"
-                                : state === "offline"
-                                  ? "🔌"
-                                  : ACTION_LABELS[action]}
-                        </button>
-                      {/each}
-                    </div>
+                    <ActionButtonGroup
+                      actions={item.actions}
+                      itemId={item.id}
+                      description={item.desc}
+                      getState={getActionState}
+                      onAction={sendAction}
+                    />
                   {/if}
                 </div>
               </div>
@@ -671,7 +644,7 @@
                 <span class="proposal-done">✅ Kész</span>
               {:else if proposal.status === "running"}
                 <span class="proposal-running">⏳ Fut...</span>
-              {:else}
+              {:else if proposal.actions.length === 1 && proposal.actions[0] === "implement"}
                 <ImplementButton
                   buttonState={state.implementState}
                   showLogButton={state.showLogButton}
@@ -679,6 +652,20 @@
                   onImplement={() =>
                     onImplement?.(proposal.id, proposal.finding)}
                   onLogToggle={() => onLogToggle?.(proposal.id)}
+                />
+              {:else}
+                <ActionButtonGroup
+                  actions={proposal.actions}
+                  itemId={proposal.id}
+                  description={proposal.finding}
+                  getState={getActionState}
+                  onAction={(action, id, description) => {
+                    if (action === "implement") {
+                      onImplement?.(id, description);
+                    } else {
+                      void sendAction(action, id, description);
+                    }
+                  }}
                 />
               {/if}
             </div>
@@ -824,41 +811,6 @@
     align-items: center;
     gap: 6px;
     justify-content: space-between;
-  }
-
-  .action-group {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-  }
-
-  .action-btn {
-    cursor: pointer;
-    background: var(--green);
-    color: #fff;
-    border: none;
-    border-radius: 4px;
-    padding: 1px 8px;
-    font-size: 0.78em;
-    font-weight: 700;
-    white-space: nowrap;
-    opacity: 0.85;
-  }
-
-  .action-btn:disabled {
-    cursor: default;
-  }
-
-  .action-btn.loading {
-    background: var(--yellow);
-  }
-
-  .action-btn.ok {
-    background: var(--accent);
-  }
-
-  .action-btn.error {
-    background: var(--red);
   }
 
   .cron-timeline-v-wrap {

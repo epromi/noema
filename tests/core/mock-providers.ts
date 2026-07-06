@@ -112,7 +112,7 @@ Summary line one.`;
         return "{}";
       },
       readResearch: async () =>
-        "### 📋 PROPOSE\n| 1 | Test finding | med | 🟡 |\n| 2 | Another | low | 🟢 |",
+        "### 📋 PROPOSE\n| 1 | Test finding → [Implement|Done] | med | 🟡 |\n| 2 | Another | low | 🟢 |",
     },
     tool: {
       h1Command: async (cmd) => {

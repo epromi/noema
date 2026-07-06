@@ -9,6 +9,7 @@ import type {
   OttoRunEntry,
   OttoRunStatus,
 } from "$lib/types";
+import { parseActionSyntax } from "./action-parse.js";
 import { countFiles, safeParseJson } from "./utils.js";
 
 export async function getResearch(
@@ -121,17 +122,24 @@ function parseProposals(content: string): ResearchProposal[] {
   const lines = propSection.split("\n").filter((l) => l.match(/^\| \d+ \|/));
 
   for (const line of lines) {
-    const parts = line
+    const trimmed = line.trim();
+    if (!trimmed.startsWith("|")) continue;
+    const cells = trimmed
+      .slice(1, trimmed.endsWith("|") ? -1 : undefined)
       .split("|")
-      .map((s) => s.trim())
-      .filter(Boolean);
-    if (parts.length >= 3) {
-      proposals.push({
-        id: `P-${parts[0]}`,
-        finding: parts[1] ?? "",
-        priority: parts[3] ?? "🟢",
-      });
-    }
+      .map((s) => s.trim());
+    if (cells.length < 3) continue;
+
+    const id = cells[0] ?? "";
+    const priority = cells[cells.length - 1] ?? "🟢";
+    const findingRaw = cells.slice(1, Math.max(1, cells.length - 2)).join("|");
+    const { cleanText, actions } = parseActionSyntax(findingRaw, ["implement"]);
+    proposals.push({
+      id: `P-${id}`,
+      finding: cleanText,
+      priority,
+      actions,
+    });
   }
 
   return proposals;

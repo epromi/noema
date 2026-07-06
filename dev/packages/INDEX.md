@@ -33,6 +33,7 @@
 | PKG-012 | OTel Export (opcionális) | 📋 F0 | F-22 P3 | S | 1h | PKG-002..005 |
 | PKG-026 | **Dev Job Floating Indicator** 🧩 | ✅ F5 | — | S | ✅ kész | PKG-021 |
 | PKG-027 | **Nightly Dash Research → Dev Pipeline** 🤖 | 📋 F0 | — | S | 30m | PKG-013 |
+| PKG-028 | **Tab Bar Overflow → More ▾** 📐 | 📋 F0 | — | M | 2h | PKG-001 |
 
 ## Függőségi Sorrend
 
