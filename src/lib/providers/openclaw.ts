@@ -488,6 +488,28 @@ export function createOpenClawProviders(
       });
       return stdout.trim();
     },
+    async gatewayHealth(): Promise<string> {
+      const prevReject = process.env.NODE_TLS_REJECT_UNAUTHORIZED;
+      process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+      try {
+        const res = await fetch("https://localhost:18789/health", {
+          signal: AbortSignal.timeout(5_000),
+        });
+        if (res.ok) {
+          const json = (await res.json()) as Record<string, unknown>;
+          return json?.status === "live" ? "online" : "offline";
+        }
+        return "offline";
+      } catch {
+        return "offline";
+      } finally {
+        if (prevReject !== undefined) {
+          process.env.NODE_TLS_REJECT_UNAUTHORIZED = prevReject;
+        } else {
+          delete process.env.NODE_TLS_REJECT_UNAUTHORIZED;
+        }
+      }
+    },
   };
 
   return { cron, session, agent, messaging, filesystem, tool };

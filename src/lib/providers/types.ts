@@ -115,6 +115,8 @@ export interface ToolProvider {
   h1Command(cmd: string): Promise<string>;
   gogCommand(cmd: string): Promise<string>;
   execCommand(cmd: string): Promise<string>;
+  /** Lightweight Gateway health check — returns "online" | "offline". Mock in tests. */
+  gatewayHealth(): Promise<string>;
 }
 
 export interface AllProviders {

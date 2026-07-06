@@ -148,7 +148,8 @@ Summary line one.`;
             end: "2026-07-06T11:00:00",
           },
         ]),
-      execCommand: async (cmd) => {
+      gatewayHealth: async () => "online",
+      execCommand: async (cmd: string) => {
         if (cmd.includes("uptime")) return "up 2 days";
         if (cmd.includes("df")) return "45% used (20G/50G)";
         if (cmd.includes("free")) return "8G used / 16G total";

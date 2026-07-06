@@ -11,26 +11,6 @@ import type {
 import { getCpuData } from "./cpu.js";
 import { safeParseJson } from "./utils.js";
 
-/** Lightweight Gateway health check via REST API — avoids spawning CLI process. */
-async function checkGatewayHealth(): Promise<string> {
-  const prevReject = process.env.NODE_TLS_REJECT_UNAUTHORIZED;
-  process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
-  try {
-    const res = await fetch("https://localhost:18789/health", {
-      signal: AbortSignal.timeout(5_000),
-    });
-    if (res.ok) {
-      const json = await res.json();
-      return json?.status === "live" ? "online" : "offline";
-    }
-    return "offline";
-  } catch {
-    return "offline";
-  } finally {
-    process.env.NODE_TLS_REJECT_UNAUTHORIZED = prevReject;
-  }
-}
-
 /** Top-level heartbeat-state.json keys that are not per-agent records. */
 const HEARTBEAT_META_KEYS = new Set(["lastChecks"]);
 
@@ -117,7 +97,7 @@ export async function getHealth(providers?: AllProviders): Promise<HealthData> {
             "free -h | awk 'NR==2{printf \"%s used / %s total\", $3, $2}' 2>/dev/null || echo 'unknown'",
           )
           .catch(() => "unknown"),
-        checkGatewayHealth(),
+        p.tool.gatewayHealth(),
 
         p.filesystem.readState("heartbeat-state.json").catch(() => "{}"),
         p.filesystem.readState("hook-state.json").catch(() => "{}"),
