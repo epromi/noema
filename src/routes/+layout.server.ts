@@ -13,11 +13,13 @@ export const load: LayoutServerLoad = async () => {
     if (existsSync(CACHE_FILE)) {
       const raw = readFileSync(CACHE_FILE, "utf-8");
       const cached = JSON.parse(raw);
-      if (cached._ts && (Date.now() - cached._ts) < CACHE_TTL_MS) {
+      if (cached._ts && Date.now() - cached._ts < CACHE_TTL_MS) {
         return { crons: cached._data.crons };
       }
     }
-  } catch { /* fall through to live fetch */ }
+  } catch {
+    /* fall through to live fetch */
+  }
 
   // Cache miss → live Gateway call
   const crons = await getCrons();

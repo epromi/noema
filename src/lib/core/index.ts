@@ -11,10 +11,7 @@ import { getNoema, getActionQueue, getBrainstorm } from "./noema.js";
 import { getResearch } from "./research.js";
 import { getLogs } from "./logs.js";
 import { getAuditTrail } from "./audit-trail.js";
-import {
-  getDecisionTraceData,
-  getDecisionTrace,
-} from "./decision-trace.js";
+import { getDecisionTraceData, getDecisionTrace } from "./decision-trace.js";
 import {
   getDevLoopLog,
   getRunningDevLoop,

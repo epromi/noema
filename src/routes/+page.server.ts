@@ -274,11 +274,13 @@ export const load: PageServerLoad = async () => {
     if (existsSync(CACHE_FILE)) {
       const raw = readFileSync(CACHE_FILE, "utf-8");
       const cached = JSON.parse(raw);
-      if (cached._ts && (Date.now() - cached._ts) < CACHE_TTL_MS) {
+      if (cached._ts && Date.now() - cached._ts < CACHE_TTL_MS) {
         return cached._data;
       }
     }
-  } catch { /* cache miss, fetch fresh */ }
+  } catch {
+    /* cache miss, fetch fresh */
+  }
 
   // ⚠️ CACHE MISS — fetch from Gateway (slow, 15-25s)
   const providers = getProvider();
@@ -288,19 +290,27 @@ export const load: PageServerLoad = async () => {
   const [dashboard, devPackages, hostnameRaw] = await Promise.all([
     Promise.race([
       getAllData(providers),
-      new Promise<typeof TIMEOUT_SENTINEL>((r) => setTimeout(() => r(TIMEOUT_SENTINEL), SSR_TIMEOUT_MS)),
+      new Promise<typeof TIMEOUT_SENTINEL>((r) =>
+        setTimeout(() => r(TIMEOUT_SENTINEL), SSR_TIMEOUT_MS),
+      ),
     ]),
     Promise.race([
       getDevPackages(providers),
-      new Promise<typeof TIMEOUT_SENTINEL>((r) => setTimeout(() => r(TIMEOUT_SENTINEL), SSR_TIMEOUT_MS)),
+      new Promise<typeof TIMEOUT_SENTINEL>((r) =>
+        setTimeout(() => r(TIMEOUT_SENTINEL), SSR_TIMEOUT_MS),
+      ),
     ]),
     providers.tool
       .execCommand('hostname 2>/dev/null || echo "N/A"')
       .catch(() => "N/A"),
   ]);
 
-  const validated = validatePageData(typeof dashboard === "object" ? dashboard : {});
-  const devPackagesSafe = (typeof devPackages === "object" ? devPackages : null) ?? emptyDevPackages();
+  const validated = validatePageData(
+    typeof dashboard === "object" ? dashboard : {},
+  );
+  const devPackagesSafe =
+    (typeof devPackages === "object" ? devPackages : null) ??
+    emptyDevPackages();
 
   const result = {
     ...validated,
@@ -315,8 +325,13 @@ export const load: PageServerLoad = async () => {
   if (typeof dashboard === "object") {
     try {
       mkdirSync(resolve(process.cwd(), "data"), { recursive: true });
-      writeFileSync(CACHE_FILE, JSON.stringify({ _ts: Date.now(), _data: result }));
-    } catch { /* best effort */ }
+      writeFileSync(
+        CACHE_FILE,
+        JSON.stringify({ _ts: Date.now(), _data: result }),
+      );
+    } catch {
+      /* best effort */
+    }
   }
 
   return result;

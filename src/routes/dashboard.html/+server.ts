@@ -1,4 +1,4 @@
-import { redirect } from '@sveltejs/kit';
+import { redirect } from "@sveltejs/kit";
 export function GET() {
-  throw redirect(301, '/');
+  throw redirect(301, "/");
 }

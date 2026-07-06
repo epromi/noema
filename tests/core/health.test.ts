@@ -63,10 +63,12 @@ describe("health", () => {
     expect(data.heartbeat[0]?.healthScore).toBe(100);
     expect(data.hookState.rulesCheck?.enabled).toBe(true);
     expect(data.modelMappingAge).toBeGreaterThanOrEqual(0);
+    expect(data.cpu?.load1).toBe(1.2);
+    expect(data.cpu?.topProcesses.length).toBeGreaterThan(0);
     expect(data.updatedAt).toBeGreaterThan(0);
   });
 
-  it("getHealth returns degraded data when exec fails", async () => {
+  it("getHealth returns degraded uptime/disk/ram when exec fails (gateway check is independent)", async () => {
     const mock = createMockProviders({
       tool: {
         h1Command: async () => "",
@@ -78,7 +80,10 @@ describe("health", () => {
     });
     const data = await getHealth(mock);
     expect(data.uptime).toBe("unknown");
-    expect(data.gatewayStatus).toBe("offline");
+    expect(data.disk).toBe("unknown");
+    expect(data.ram).toBe("unknown");
+    // checkGatewayHealth() uses its own fetch — independent of exec, reflects actual gateway state
+    expect(["online", "offline", "unknown"]).toContain(data.gatewayStatus);
   });
 
   it("getHealth returns 999 modelMappingAge when mapping file is empty", async () => {

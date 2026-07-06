@@ -281,9 +281,7 @@ export async function getAuditTrail(
         .filter((key): key is string => Boolean(key)),
     );
     const agents = uniqueSorted(
-      events
-        .map((e) => e.agentId)
-        .filter((id): id is string => Boolean(id)),
+      events.map((e) => e.agentId).filter((id): id is string => Boolean(id)),
     );
 
     return {

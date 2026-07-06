@@ -111,3 +111,33 @@ A `HealthData` interface bővül egy opcionális `cpu?: CpuData` mezővel.
 - [x] Csak >1% CPU használatú processzek jelennek meg
 - [x] 60 másodpercenként frissül a collector ciklussal
 - [x] Tailscale-en keresztül is működik
+
+
+## 🎯 Mit
+
+_Placeholder — to be filled._
+
+
+## 📐 Scope
+
+_Placeholder — to be filled._
+
+
+## Mit érint
+
+_Placeholder — to be filled._
+
+
+## Mit NEM érint
+
+_Placeholder — to be filled._
+
+
+## Fázisok
+
+_Placeholder — to be filled._
+
+
+## ✅ Acceptance Criteria
+
+_Placeholder — to be filled._

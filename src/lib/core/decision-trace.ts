@@ -77,7 +77,10 @@ function parseTimestamp(value: unknown, fallback: number): number {
   return fallback;
 }
 
-function stepSignature(toolName: string, args: Record<string, unknown>): string {
+function stepSignature(
+  toolName: string,
+  args: Record<string, unknown>,
+): string {
   const keys = Object.keys(args).sort();
   const normalized: Record<string, unknown> = {};
   for (const key of keys) {
@@ -146,7 +149,10 @@ export function parseHistoryMessages(
     if (ordered.length >= maxSteps) break;
 
     const role = message.role;
-    const ts = parseTimestamp(message.timestamp, ordered.at(-1)?.timestampMs ?? Date.now());
+    const ts = parseTimestamp(
+      message.timestamp,
+      ordered.at(-1)?.timestampMs ?? Date.now(),
+    );
 
     if (isTrajectoryRole(role)) {
       const data = asRecord(message.content);
@@ -192,7 +198,9 @@ export function parseHistoryMessages(
         const typed = block as Record<string, unknown>;
         if (typed.type !== "toolCall" && typed.type !== "tool_use") continue;
 
-        const toolCallId = String(typed.id ?? typed.toolCallId ?? `step-${seq}`);
+        const toolCallId = String(
+          typed.id ?? typed.toolCallId ?? `step-${seq}`,
+        );
         pending.set(toolCallId, {
           id: toolCallId,
           toolName: String(typed.name ?? message.toolName ?? "unknown"),
@@ -207,7 +215,9 @@ export function parseHistoryMessages(
     if (role === "toolResult" || role === "tool") {
       const payload = asRecord(content) as ToolResultPayload;
       const fromMessage: ToolResultPayload = {
-        toolCallId: payload.toolCallId ?? (message as Message & { toolCallId?: string }).toolCallId,
+        toolCallId:
+          payload.toolCallId ??
+          (message as Message & { toolCallId?: string }).toolCallId,
         toolName: payload.toolName ?? message.toolName,
         content: payload.content ?? content,
         isError: payload.isError,

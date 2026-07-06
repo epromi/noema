@@ -1,6 +1,6 @@
-# PKG-033: Dev Package Log — Rendes Megjelenítés + Frissítés 🔧
+# PKG-033: Dev Package Log + Queue — Teljes Körű Fix 🔧
 
-**Státusz**: 📋 F0 | **Méret**: S | **Becslés**: 1h | **Függőség**: PKG-014, PKG-016, PKG-018, PKG-026
+**Státusz**: 📋 F0 | **Méret**: M | **Becslés**: 1.5h | **Függőség**: PKG-014, PKG-016, PKG-018, PKG-026
 
 ## Kérés
 
@@ -255,3 +255,111 @@ Amint a Cursor agent létrehozza az első log fájlt (`cursor-*`), a `findLogFil
 - [ ] Amint a Cursor agent elkezd írni, a valódi log tartalom automatikusan átveszi a helyét
 - [ ] A queue marker fájl nem marad örökre — ha a log fájl létezik, a queue ignorálva van
 - [ ] Az auto-refresh (3 mp) frissíti a becsült hátralévő időt
+
+### 7. Lista Státusz Jelzés — Mi Fut és Mi Áll Sorban
+
+**Probléma**: A package listában nincs vizuális jelzés hogy melyik PKG fut éppen és melyik áll sorban. A user nem látja a queue állapotát.
+
+**Megoldás**: A `packageStates` egészüljön ki queue státusszal, és a `DevPackageRow` fázis oszlopa mutassa:
+
+```
+PKG-031  Package List Áttekinthetőség  🔄 Fut…      [📋 Log ▼]
+PKG-032  CPU Terhelés + Top Process-ek ⏳ Sorban (2.) [—]
+PKG-033  Dev Package Log Fix           📋 F0         [▶ Mehet]
+```
+
+#### 7a. Queue Státusz API
+
+Használjuk a relay meglévő `/running` és `/next-trigger` endpoint-jait:
+
+- `GET /running` → `{"running": "PKG-031"}` (éppen melyik fut, `null` ha egyik sem)
+- `GET /next-trigger` → `{"queue": 2, "next": "..."}` (hány elem van a queue-ban)
+
+A `+page.svelte` `load` függvénye (SSR) vagy a kliens oldali `onMount` hívja ezeket:
+
+```typescript
+// Új típus a queue állapothoz
+export interface QueueStatus {
+  running: string | null;     // éppen futó PKG ID (vagy null)
+  queueSize: number;          // hány elem vár a sorban
+  queuePosition: number | null; // ennek a PKG-nak a pozíciója (1 = következő)
+}
+
+// A packageStates bővítése
+interface PkgState {
+  implementState: ImplementState;
+  showLogButton: boolean;
+  logOpen: boolean;
+  logContent: string;
+  queueStatus: QueueStatus | null;  // 🆕
+}
+```
+
+#### 7b. Queue Státusz Bekérése
+
+A `startLogPoll` mellett egy új `fetchQueueStatus` függvény ami lekéri a relay-től:
+
+```typescript
+async function refreshQueueStatus() {
+  try {
+    const [runningRes, triggerRes] = await Promise.all([
+      fetch(`${RELAY_URL}/running`),
+      fetch(`${RELAY_URL}/next-trigger`),
+    ]);
+    const running = await runningRes.json();
+    const trigger = await triggerRes.json();
+    
+    // Frissítsük az összes PKG státuszát
+    const newStates: Record<string, Partial<PkgState>> = {};
+    for (const [pkgId, state] of Object.entries(packageStates)) {
+      if (running.running === pkgId) {
+        newStates[pkgId] = { 
+          queueStatus: { running: pkgId, queueSize: trigger.queue, queuePosition: null },
+          implementState: "running",
+        };
+      } else if (state.implementState === "running") {
+        // Lehet hogy a queue-ban van (még nem fut)
+        newStates[pkgId] = {
+          queueStatus: { running: running.running, queueSize: trigger.queue, queuePosition: null },
+        };
+      }
+    }
+    // Batch state update
+    for (const [id, patch] of Object.entries(newStates)) {
+      setState(id, patch);
+    }
+  } catch { /* relay nem elérhető */ }
+}
+
+// 10 másodpercenként frissítsük a queue státuszt
+const queueInterval = setInterval(refreshQueueStatus, 10_000);
+onDestroy(() => clearInterval(queueInterval));
+```
+
+#### 7c. Vizuális Jelzés a DevPackageRow-ban
+
+A `phase` oszlop dinamikus tartalma:
+
+```svelte
+<!-- DevPackageRow.svelte — phase oszlop -->
+{#if queueStatus?.running === pkgId}
+  <span class="pkg-phase phase-running">🔄 Fut…</span>
+{:else if implementState === "running" && !queueStatus?.running}
+  <span class="pkg-phase phase-queued">⏳ Sorban áll</span>
+{:else}
+  <span class="pkg-phase">{phase}</span>
+{/if}
+```
+
+**Státusz színek**:
+- 🔄 Fut… → zöld/kék, enyhe pulzáló animáció
+- ⏳ Sorban áll → narancs/sárga
+- 📋 F0 (alapértelmezett) → szürke
+
+**Elfogadási kritériumok**:
+- [ ] A lista mutatja hogy melyik PKG fut éppen ("🔄 Fut…")
+- [ ] A lista mutatja hogy mely PKG-k állnak sorban ("⏳ Sorban áll")
+- [ ] A queue státusz 10 másodpercenként frissül a relay-től
+- [ ] Amikor egy PKG futás véget ér, a státusz visszaáll
+- [ ] A relay `/running` és `/next-trigger` endpoint-jai működnek
+- [ ] Tailscale-en keresztül is működik (a relay elérése a böngészőből)

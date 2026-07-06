@@ -69,11 +69,11 @@ async function gatewayApi(
   const token = await resolveGatewayToken();
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
-  
+
   // Allow self-signed TLS cert on localhost (Gateway uses auto-generated certs)
   const prevReject = process.env.NODE_TLS_REJECT_UNAUTHORIZED;
   process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
-  
+
   try {
     const url = GATEWAY_URL.replace("http://", "https://");
     const res = await fetch(url, {
@@ -88,7 +88,9 @@ async function gatewayApi(
     const json: GatewayResponse = await res.json();
     const text = json?.result?.content?.[0]?.text ?? "";
     if (!text && !json.ok) {
-      throw new Error(json?.error?.message ?? `Gateway API failed (${res.status})`);
+      throw new Error(
+        json?.error?.message ?? `Gateway API failed (${res.status})`,
+      );
     }
     return text;
   } finally {
@@ -170,7 +172,9 @@ export function createOpenClawProviders(
     // ⚡ API — high frequency (every 60s collector + audit-trail)
     async listCrons(): Promise<CronJob[]> {
       const raw = await gatewayApi({ tool: "cron", action: "list" }, 10_000);
-      const parsed = parseJson<{ jobs?: CronJob[] } | CronJob[]>(raw, { jobs: [] });
+      const parsed = parseJson<{ jobs?: CronJob[] } | CronJob[]>(raw, {
+        jobs: [],
+      });
       if (Array.isArray(parsed)) return parsed;
       return parsed.jobs ?? [];
     },
@@ -197,22 +201,23 @@ export function createOpenClawProviders(
     async getCronRuns(jobId: string): Promise<CronRun[]> {
       try {
         const raw = await gatewayApi({ tool: "cron", action: "list" }, 10_000);
-        const parsed = parseJson<{ jobs?: (CronJob & { state?: Record<string, unknown> })[] }>(
-          raw,
-          { jobs: [] },
-        );
+        const parsed = parseJson<{
+          jobs?: (CronJob & { state?: Record<string, unknown> })[];
+        }>(raw, { jobs: [] });
         const jobs = Array.isArray(parsed) ? parsed : (parsed.jobs ?? []);
         const job = jobs.find((j) => j.id === jobId);
         if (!job?.state) return [];
         const s = job.state;
         // Reconstruct a run record from the job state
-        return [{
-          jobId,
-          status: (s.lastStatus ?? s.lastRunStatus) as string ?? "unknown",
-          startedAtMs: (s.lastRunAtMs as number) ?? 0,
-          durationMs: (s.lastDurationMs as number) ?? 0,
-          error: (s.lastError as string) ?? undefined,
-        }];
+        return [
+          {
+            jobId,
+            status: ((s.lastStatus ?? s.lastRunStatus) as string) ?? "unknown",
+            startedAtMs: (s.lastRunAtMs as number) ?? 0,
+            durationMs: (s.lastDurationMs as number) ?? 0,
+            error: (s.lastError as string) ?? undefined,
+          },
+        ];
       } catch {
         return [];
       }
@@ -231,7 +236,10 @@ export function createOpenClawProviders(
         if (filter.agentId) params.agentId = filter.agentId;
         if (filter.activeMinutes) params.activeMinutes = filter.activeMinutes;
         const raw = await gatewayApi(params, 15_000);
-        const parsed = parseJson<{ sessions?: Session[]; count?: number }>(raw, { sessions: [] });
+        const parsed = parseJson<{ sessions?: Session[]; count?: number }>(
+          raw,
+          { sessions: [] },
+        );
         return parsed.sessions ?? [];
       } catch {
         return [];
@@ -244,7 +252,13 @@ export function createOpenClawProviders(
       try {
         const raw = await runCmd(
           "openclaw",
-          ["sessions", "export-trajectory", "--session-key", sessionKey, "--json"],
+          [
+            "sessions",
+            "export-trajectory",
+            "--session-key",
+            sessionKey,
+            "--json",
+          ],
           { timeoutMs: 60_000 },
         );
         const parsed = parseJson<{
@@ -269,7 +283,8 @@ export function createOpenClawProviders(
               data?: Record<string, unknown>;
             }>(line, {});
 
-            if (event.type !== "tool.call" && event.type !== "tool.result") continue;
+            if (event.type !== "tool.call" && event.type !== "tool.result")
+              continue;
 
             messages.push({
               role: event.type,
@@ -302,7 +317,10 @@ export function createOpenClawProviders(
         ["agent", "--agent", agentId, "--message", task, "--json"],
         { timeoutMs: 120_000 },
       );
-      const parsed = parseJson<{ sessionKey?: string; status?: string }>(raw, {});
+      const parsed = parseJson<{ sessionKey?: string; status?: string }>(
+        raw,
+        {},
+      );
       return {
         sessionKey: parsed.sessionKey ?? `agent:${agentId}:spawn`,
         agentId,
@@ -316,7 +334,10 @@ export function createOpenClawProviders(
     // ⚡ API — high frequency (collector ×2: agents, audit-trail)
     async listSubagents(): Promise<Subagent[]> {
       try {
-        const raw = await gatewayApi({ tool: "subagents", action: "list" }, 10_000);
+        const raw = await gatewayApi(
+          { tool: "subagents", action: "list" },
+          10_000,
+        );
         const parsed = parseJson<{
           active?: Subagent[];
           tasks?: Subagent[];
@@ -353,10 +374,23 @@ export function createOpenClawProviders(
   // ── Messaging Provider ─────────────────────────────────────────────────
   const messaging: MessagingProvider = {
     // ⚡ CLI — on-demand only (user-initiated messages)
-    async sendMessage(channel: string, target: string, text: string): Promise<void> {
+    async sendMessage(
+      channel: string,
+      target: string,
+      text: string,
+    ): Promise<void> {
       await runCmd(
         "openclaw",
-        ["message", "send", "--channel", channel, "--target", target, "--message", text],
+        [
+          "message",
+          "send",
+          "--channel",
+          channel,
+          "--target",
+          target,
+          "--message",
+          text,
+        ],
         { timeoutMs },
       );
     },
@@ -388,14 +422,19 @@ export function createOpenClawProviders(
       return readFile(join(workspace, "memory", "state", relativePath), "utf8");
     },
     async readResearch(relativePath: string): Promise<string> {
-      return readFile(join(workspace, "memory", "research", relativePath), "utf8");
+      return readFile(
+        join(workspace, "memory", "research", relativePath),
+        "utf8",
+      );
     },
   };
 
   // ── Tool Provider ──────────────────────────────────────────────────────
   const tool: ToolProvider = {
     async h1Command(cmd: string): Promise<string> {
-      return runCmd(h1Script, cmd.split(/\s+/).filter(Boolean), { timeoutMs: 60_000 });
+      return runCmd(h1Script, cmd.split(/\s+/).filter(Boolean), {
+        timeoutMs: 60_000,
+      });
     },
     async gogCommand(cmd: string): Promise<string> {
       const parts = cmd.trim().split(/\s+/);
