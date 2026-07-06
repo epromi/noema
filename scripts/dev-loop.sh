@@ -161,18 +161,30 @@ if [ ! -f "$TEMPLATE" ]; then
   fail "Prompt template not found: $TEMPLATE"
 fi
 
-# Generate prompt: replace placeholder, append spec metadata
-sed "s/PKG_PLACEHOLDER/$PKG_ID/g" "$TEMPLATE" > "$PROMPT_FILE"
-{
-  echo ""
-  echo "## PACKAGE: $PKG_ID — $PKG_NAME"
-  echo "Size: $PKG_SIZE | Effort: $PKG_EFFORT | Phases: $PKG_PHASES"
-  echo ""
-  echo "## EXPECTED FILES (must exist after implementation)"
-  echo "$EXPECTED_FILES" | while read f; do
-    [ -n "$f" ] && echo "- $f"
-  done || true
-} >> "$PROMPT_FILE"
+# Generate prompt: replace all inline placeholders (env vars → safe, no escaping issues)
+PKG_NAME="$PKG_NAME" PKG_SIZE="$PKG_SIZE" PKG_EFFORT="$PKG_EFFORT" PKG_ID="$PKG_ID" \
+EXPECTED_FILES="$EXPECTED_FILES" RESEARCH_FILE="$PROJECT_DIR/dev/packages/$PKG_ID/research-topics.md" \
+TEMPLATE="$TEMPLATE" PROMPT_FILE="$PROMPT_FILE" \
+node -e '
+const fs = require("fs");
+let t = fs.readFileSync(process.env.TEMPLATE, "utf8");
+// Simple placeholders
+t = t.replace(/PKG_PLACEHOLDER/g, process.env.PKG_ID);
+t = t.replace(/PKG_NAME_PLACEHOLDER/g, process.env.PKG_NAME);
+t = t.replace(/PKG_SIZE_PLACEHOLDER/g, process.env.PKG_SIZE);
+t = t.replace(/PKG_EFFORT_PLACEHOLDER/g, process.env.PKG_EFFORT);
+// File list (multi-line, formatted)
+const files = process.env.EXPECTED_FILES.trim().split("\n").filter(Boolean).map(f => "- " + f.trim()).join("\n") || "- (none listed in spec — check Scope section)";
+t = t.replace(/PKG_FILES_PLACEHOLDER/g, files);
+// Research: load from file if exists, else strip the whole section
+const rf = process.env.RESEARCH_FILE;
+if (rf && fs.existsSync(rf)) {
+  t = t.replace(/RESEARCH_PLACEHOLDER/g, fs.readFileSync(rf, "utf8").trim());
+} else {
+  t = t.replace(/^## RESEARCH FINDINGS\n\nRESEARCH_PLACEHOLDER\n?\n?/gm, "");
+}
+fs.writeFileSync(process.env.PROMPT_FILE, t);
+'
 
 PROMPT_LINES=$(wc -l < "$PROMPT_FILE")
 echo "Prompt:   $PROMPT_FILE ($PROMPT_LINES lines)"

@@ -1,0 +1,57 @@
+You are implementing a package for the Noema monitoring dashboard.
+
+**⚠️ TARGET CHECK (read FIRST):**
+- If the spec's "Scope → Mit érint" section lists `archive/v4.html` → implement in `archive/v4.html` + `generate.cjs` (legacy dashboard). DO NOT touch `src/lib/` or `src/routes/`.
+- If it lists `src/lib/core/` or `src/lib/components/` → implement in SvelteKit (project structure below).
+- If it lists BOTH → implement in both.
+
+## CRITICAL RULES (read FIRST)
+
+**MANDATORY: Before writing ANY code, READ `projects/noema/CONTRIBUTING.md` completely.**
+This file contains ALL development rules you must follow.
+
+Key constraints (from CONTRIBUTING.md + architecture-v2.md):
+1. `src/lib/core/` = plain TypeScript/JavaScript — ZERO Svelte imports, ZERO browser APIs
+2. `src/lib/components/` = Svelte UI only — receives data via props from parent
+3. Max 5 files per phase — if a package has 10 files, do NOT implement all at once
+4. Every `src/lib/core/*.ts` module MUST have a corresponding `tests/core/*.test.ts` with meaningful assertions (not just `expect(true).toBe(true)`)
+4a. All core modules must have ≥70% test coverage — verify with `pnpm test --coverage` before finishing
+5. `src/lib/core/` modulok SOHA nem hívnak OpenClaw API-t közvetlenül — minden `src/lib/providers/` adapteren keresztül
+6. Run `pnpm check` after each phase — do NOT proceed if it fails
+7. Output ONLY the implementation — no explanations unless something fails
+
+## PROJECT STRUCTURE
+
+```
+projects/noema/
+├── src/
+│   ├── lib/
+│   │   ├── core/      ← framework-agnostic data layer (NO Svelte imports)
+│   │   │   ├── types/ ← shared TypeScript types
+│   │   │   ├── crons.ts
+│   │   │   ├── agents.ts
+│   │   │   ├── health.ts
+│   │   │   └── ...
+│   │   ├── components/← Svelte UI components (ONLY rendering)
+│   │   │   ├── tabs/  ← dashboard tab components
+│   │   │   └── shared/← reusable UI pieces
+│   │   └── providers/ ← adapter layer (OpenClaw API)
+│   └── routes/
+│       └── +page.svelte  ← main dashboard page
+├── tests/
+│   └── core/          ← unit tests for src/lib/core/
+```
+
+## PACKAGE SPEC
+
+Read the full spec from: dev/packages/PKG_PLACEHOLDER/spec.md
+
+## INSTRUCTIONS
+
+1. Read the spec FIRST — understand the full scope before writing any code
+2. Implement F1 (core) phase FIRST, run `pnpm check`, verify it passes
+3. THEN implement F2 (UI) phase, run `pnpm check` again
+4. THEN F3-F5
+5. After ALL phases: run `pnpm check` to verify everything compiles
+6. If any phase fails: STOP, explain the error, DO NOT continue
+7. Do NOT modify files outside the scope of this package
