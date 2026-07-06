@@ -11,7 +11,7 @@ import { getNoema, getActionQueue, getBrainstorm } from "./noema.js";
 import { getResearch } from "./research.js";
 import { getLogs } from "./logs.js";
 import { getAuditTrail } from "./audit-trail.js";
-import { getDecisionTraceData, getDecisionTrace } from "./decision-trace.js";
+import { getDecisionTrace } from "./decision-trace.js";
 import {
   getDevLoopLog,
   getRunningDevLoop,
@@ -47,7 +47,6 @@ export async function getAllData(
     actionQueue,
     logs,
     auditTrail,
-    decisionTrace,
     buildIntegrity,
   ] = await Promise.all([
     getCrons(p),
@@ -62,9 +61,16 @@ export async function getAllData(
     getActionQueue(p),
     getLogs(p),
     getAuditTrail(p),
-    getDecisionTraceData(p),
     getBuildIntegrity(),
   ]);
+
+  // ⚡ Lazábban — csak on-demand (user rákattint a Decision Trace tab-ra)
+  const decisionTrace = {
+    sessions: [] as DecisionTraceSessionOption[],
+    traces: {} as Record<string, unknown>,
+    defaultSessionKey: "",
+    updatedAt: Date.now(),
+  };
 
   return {
     meta: { loadedAt: Date.now() },

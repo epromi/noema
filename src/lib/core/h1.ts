@@ -22,11 +22,21 @@ const OPEN_REPORT_STATES = new Set([
 
 let programsCache: { programs: H1Program[]; fetchedAt: number } | null = null;
 let programsFetchPromise: Promise<H1Program[]> | null = null;
+let reportsCache: { reports: H1Report[]; raw: unknown; fetchedAt: number } | null = null;
+let reportsFetchPromise: Promise<H1Report[]> | null = null;
+let balanceCache: { balance: { amount: number; display: string }; fetchedAt: number } | null = null;
+let balanceFetchPromise: Promise<{ amount: number; display: string }> | null = null;
+let h1DataPromise: Promise<H1Data> | null = null;
 
 /** Reset in-memory H1 API cache (for tests). */
 export function clearH1Cache(): void {
   programsCache = null;
   programsFetchPromise = null;
+  reportsCache = null;
+  reportsFetchPromise = null;
+  balanceCache = null;
+  balanceFetchPromise = null;
+  h1DataPromise = null;
 }
 
 /** Extract the first JSON value from mixed h1.sh stdout (human text + JSON). */
@@ -446,13 +456,27 @@ export function parseH1ViktorStatus(
 export async function getH1Balance(
   providers?: AllProviders,
 ): Promise<{ amount: number; display: string }> {
-  const p = providers ?? getProvider();
-  try {
-    const raw = await p.tool.h1Command("balance");
-    return parseH1Balance(extractH1Json(raw));
-  } catch {
-    return { amount: 0, display: "unknown" };
+  if (balanceCache && Date.now() - balanceCache.fetchedAt < CACHE_TTL_MS) {
+    return balanceCache.balance;
   }
+
+  if (balanceFetchPromise) return balanceFetchPromise;
+
+  balanceFetchPromise = (async () => {
+    const p = providers ?? getProvider();
+    try {
+      const raw = await p.tool.h1Command("balance");
+      const balance = parseH1Balance(extractH1Json(raw));
+      balanceCache = { balance, fetchedAt: Date.now() };
+      return balance;
+    } catch {
+      return balanceCache?.balance ?? { amount: 0, display: "unknown" };
+    } finally {
+      balanceFetchPromise = null;
+    }
+  })();
+
+  return balanceFetchPromise;
 }
 
 export async function getH1Programs(
@@ -485,12 +509,44 @@ export async function getH1Programs(
 export async function getH1Reports(
   providers?: AllProviders,
 ): Promise<H1Report[]> {
+  if (reportsCache && Date.now() - reportsCache.fetchedAt < CACHE_TTL_MS) {
+    return reportsCache.reports;
+  }
+
+  if (reportsFetchPromise) return reportsFetchPromise;
+
+  reportsFetchPromise = (async () => {
+    const p = providers ?? getProvider();
+    try {
+      const raw = await p.tool.h1Command("my-reports");
+      const parsed = extractH1Json(raw);
+      const reports = parseH1Reports(parsed);
+      reportsCache = { reports, raw: parsed, fetchedAt: Date.now() };
+      return reports;
+    } catch {
+      return reportsCache?.reports ?? [];
+    } finally {
+      reportsFetchPromise = null;
+    }
+  })();
+
+  return reportsFetchPromise;
+}
+
+/** Raw JSON for getH1Data() — uses the same mutex as getH1Reports(). */
+async function getH1ReportsRaw(providers?: AllProviders): Promise<unknown> {
+  if (reportsCache && Date.now() - reportsCache.fetchedAt < CACHE_TTL_MS) {
+    return reportsCache.raw;
+  }
+  if (reportsFetchPromise) {
+    return reportsFetchPromise.then(() => getH1ReportsRaw(providers));
+  }
   const p = providers ?? getProvider();
   try {
     const raw = await p.tool.h1Command("my-reports");
-    return parseH1Reports(extractH1Json(raw));
+    return extractH1Json(raw);
   } catch {
-    return [];
+    return null;
   }
 }
 
@@ -515,6 +571,10 @@ export async function getH1ViktorStatus(
 }
 
 export async function getH1Data(providers?: AllProviders): Promise<H1Data> {
+  // Deduplicate concurrent calls (load() + collector() at startup)
+  if (h1DataPromise) return h1DataPromise;
+
+  h1DataPromise = (async () => {
   const p = providers ?? getProvider();
 
   try {
@@ -522,10 +582,7 @@ export async function getH1Data(providers?: AllProviders): Promise<H1Data> {
       await Promise.all([
         p.filesystem.readMemory("at-a-glance.md").catch(() => ""),
         getH1Balance(p),
-        p.tool
-          .h1Command("my-reports")
-          .then((raw) => extractH1Json(raw))
-          .catch(() => null),
+        getH1ReportsRaw(p),
         getH1Programs(p),
         getH1ViktorStatus(p),
       ]);
@@ -595,4 +652,7 @@ export async function getH1Data(providers?: AllProviders): Promise<H1Data> {
       error: String(err),
     };
   }
+  })().finally(() => { h1DataPromise = null; });
+
+  return h1DataPromise;
 }
