@@ -1,0 +1,102 @@
+## TASK
+
+Package: PKG_PLACEHOLDER — PKG_NAME_PLACEHOLDER
+Size: PKG_SIZE_PLACEHOLDER | Effort: PKG_EFFORT_PLACEHOLDER
+
+Read the spec:  `dev/packages/PKG_PLACEHOLDER/spec.md`
+Read the rules: `projects/noema/CONTRIBUTING.md`
+
+Files to create or modify (from spec Scope):
+PKG_FILES_PLACEHOLDER
+
+## ARCHITECTURE — break any of these and the implementation is rejected
+
+1. `src/lib/core/` = plain TS only. NO Svelte imports. NO browser APIs (`window`, `document`).
+2. `src/lib/components/` = Svelte UI only. Receives data via props from parent page/component.
+3. Data flow is ONE-WAY: provider → core → component. Components NEVER call core directly. Core NEVER imports components.
+4. Every changed or new `src/lib/core/*.ts` module MUST have tests in `tests/core/*.test.ts` with ≥70% coverage.
+5. Max 5 files created or modified per phase. If the spec requires more, split across phases.
+
+## REFERENCE — follow these patterns
+
+- **Every new module:** open `src/lib/core/health.ts` + `tests/core/health.test.ts`
+  Copy: provider injection, Promise.all, typed returns, try/catch boundary, mock setup, edge case tests
+- **Every new UI component:** open `src/lib/components/shared/CpuWidget.svelte`
+  Copy: `export let` props, reactive `$:` values, color thresholds, semantic HTML
+- For anything else: `grep` the codebase for similar code — the pattern is there.
+
+## PLAN — 30 seconds, then implement
+
+Answer before coding:
+1. What functions or components will you add?
+2. What is the data flow? (provider → which core fn → which component?)
+3. What is the SIMPLEST version that satisfies the spec?
+
+If research findings are listed below, incorporate them into the plan.
+
+## IMPLEMENTATION — one phase at a time, no skipping
+
+**Every phase gate (ALL must pass to proceed):**
+  a. Write code (≤5 files)
+  b. `pnpm check` → zero errors
+  c. `pnpm test`  → zero failures (fix old tests if your change breaks them)
+  d. `pnpm build` → clean build, no warnings
+  e. Verify: `ls build/server/index.js` exists (build output must be complete)
+
+**Phase F1: Core Logic**
+- Files in `src/lib/core/` + `tests/core/`
+- Write the test FIRST — watch it fail — then implement until it passes
+- Run the phase gate
+
+**Phase F2: UI Components**
+- Files in `src/lib/components/`
+- Wire to F1's data via props from the parent (+page.svelte or tab component)
+- Run the phase gate
+
+**Phases F3–F5** — if the spec lists more phases:
+- Follow the spec's F3/F4/F5 headings
+- Each phase runs the same gate (code → check → test → build → verify)
+
+## GARDENING — allowed ONLY in files you create or modify
+
+**Allowed:** fix `any` → concrete types, add missing try/catch, add `alt`/`aria-label`/`role`, remove dead imports, fix TODO/FIXME comments, deduplicate repeated code within the same file.
+
+**Forbidden:** change API contracts (props, params, responses), change CSS design tokens (`--accent`, `--bg`, `--border`, `--text`), remove or rename existing features, add npm dependencies, change routing, touch files outside package scope, modify code marked `// STABLE: do not modify`.
+
+If you see a larger improvement opportunity, log it: `💡 SUGGESTION: <brief description>`
+
+## RESEARCH FINDINGS
+
+RESEARCH_PLACEHOLDER
+
+## DONE — all must be true before you stop
+
+- [ ] `pnpm check` — zero errors, zero warnings
+- [ ] `pnpm test`  — all tests pass, zero failures (fix old tests if your changes conflict)
+- [ ] `pnpm build` — clean output, zero errors
+- [ ] `ls build/server/index.js` — build output exists (no missing chunks)
+- [ ] Every spec requirement (F1 through last phase) is implemented
+- [ ] Every changed core module has ≥70% test coverage (`pnpm test --coverage`)
+- [ ] No files outside the package scope were modified
+- [ ] Final gate: `pnpm check && pnpm test && pnpm build && ls build/server/index.js`
+
+## COMMIT — single commit when all DONE checks pass
+
+```
+🧠 feat: SHORT_SUMMARY (PKG-PLACEHOLDER)
+
+- Bullet list of what changed
+
+✅ check | test | build | coverage
+```
+Commit only: `src/`, `tests/`, `dev/packages/`. Never commit generated files.
+
+## TROUBLESHOOTING
+
+| Symptom | Most likely fix |
+|---------|----------------|
+| `pnpm check` fails | Read TS error → fix file → re-run |
+| `pnpm test` fails | Your change broke behavior → fix impl OR fix test |
+| `pnpm build` fails | Missing export → check `src/lib/core/index.ts` re-exports |
+| `pnpm test --coverage` <70% | Add tests for uncovered branches → re-run |
+| Spec ambiguous or contradictory | `⛔ BLOCKED: <reason>` and STOP — do not guess |

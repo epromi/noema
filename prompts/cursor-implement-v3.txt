@@ -1,0 +1,114 @@
+## TASK
+
+Package: PKG_PLACEHOLDER — PKG_NAME_PLACEHOLDER
+Size: PKG_SIZE_PLACEHOLDER | Effort: PKG_EFFORT_PLACEHOLDER
+
+Read the spec: `dev/packages/PKG_PLACEHOLDER/spec.md`
+Read the rules: `projects/noema/CONTRIBUTING.md`
+
+### Files to create or modify (from spec's Scope):
+PKG_FILES_PLACEHOLDER
+
+## ARCHITECTURE (break these = reject)
+
+1. `src/lib/core/` = plain TS, NO Svelte, NO browser APIs.
+2. `src/lib/components/` = Svelte UI only, receives data via props.
+3. Core → Provider adapter. NEVER call OpenClaw API directly from core.
+4. Every changed core module needs `tests/core/*.test.ts` with ≥70% coverage.
+5. Max 5 files per phase. Data flow: provider → core → component.
+
+Target check — based on spec's "Scope → Mit érint":
+- `archive/v4.html` → legacy (generate.cjs). DO NOT touch src/lib/.
+- `src/lib/` → SvelteKit. DO NOT touch archive/.
+- BOTH → implement both.
+
+## REFERENCE (open the closest match, follow its patterns)
+
+Pick the reference that matches what you're building:
+
+| What you're building | Open this file | Key patterns to copy |
+|---------------------|---------------|---------------------|
+| Core data module (fetching, parsing, aggregating) | `src/lib/core/health.ts` | Provider injection, Promise.all, error handling, typed return |
+| Core data module (file reading, static data) | `src/lib/core/dev-packages.ts` | readFile pattern, parse/transform, cache |
+| UI component (widget, card, metric) | `src/lib/components/shared/CpuWidget.svelte` | Props interface, reactive display, color coding |
+| UI component (list, table, data display) | `src/lib/components/shared/DevPackageRow.svelte` | Item props, conditional classes, action buttons |
+| SSR route / API endpoint | `src/routes/api/action/+server.ts` | Request parsing, provider calls, JSON response |
+| Test file | `tests/core/health.test.ts` | createMockProviders(), describe/it/expect, edge cases |
+
+Copy: type exports, provider injection pattern, error handling style, test mock setup.
+
+## PLAN (1 minute, then implement)
+
+Answer before coding:
+1. What functions/components will you add?
+2. How does data flow? (provider → which core function → which component?)
+3. What's the simplest version that satisfies the spec?
+
+Research findings (if below) → incorporate into the plan.
+
+## IMPLEMENTATION
+
+Work sequentially, one phase at a time. Never skip phases.
+
+**Every phase gate:**
+1. Write code (≤5 files)
+2. `pnpm check` → MUST pass
+3. `pnpm test`  → MUST pass. If YOUR change breaks an old test, fix the test.
+4. `pnpm build` → MUST produce a clean build
+5. All three green → move to next phase
+
+**Phase F1: Core Logic**
+- Files in `src/lib/core/` + `tests/core/`
+- Write tests alongside the code — NOT as an afterthought
+- Verify: `pnpm check && pnpm test && pnpm build` all green
+
+**Phase F2: UI**
+- Files in `src/lib/components/`
+- Wire to F1's data via props — components never call core directly
+
+**Phases F3-F5** (if spec has them)
+- Follow spec's F3/F4/F5 headings
+- Each phase runs the same gate: code → check → test → build
+
+## GARDENING (touched files only)
+
+You MAY in files you touch: fix `any` types, add try/catch, add aria/alt/role, remove dead imports, fix TODO/FIXME, deduplicate code.
+
+You MUST NOT: change API contracts, change CSS tokens (`--accent`, `--bg`, etc.), remove/rename features, add npm deps, change routing, touch other files, modify `// STABLE` code.
+
+Larger opportunities → `💡 SUGGESTION: …` in log.
+
+## RESEARCH FINDINGS
+
+RESEARCH_PLACEHOLDER
+
+## DONE CHECKLIST (ALL must be true)
+
+- [ ] `pnpm check` — zero errors
+- [ ] `pnpm test`  — zero failures (fix old tests if your change conflicts)
+- [ ] `pnpm build` — clean, zero errors
+- [ ] Every spec requirement (F1-F5) is implemented
+- [ ] Changed core modules: ≥70% test coverage
+- [ ] No files outside package scope were touched
+- [ ] Run `pnpm check && pnpm test && pnpm build` — all pass
+
+## COMMIT
+
+When all checks pass, one commit:
+```
+🧠 feat: SUMMARY (PKG-PLACEHOLDER)
+
+- What changed (bullet points)
+
+✅ check | test | build | coverage
+```
+Only src/, tests/, dev/packages/ — no generated files (dashboard.html, .svelte-kit/).
+
+## TROUBLESHOOTING
+
+| Symptom | Fix |
+|---------|-----|
+| `pnpm check` fails | Read error → fix affected file → re-run |
+| `pnpm test` fails | Your change broke something → fix impl OR fix test |
+| `pnpm build` fails | Missing export/import → check `src/lib/core/index.ts` |
+| Spec ambiguous or impossible | ⛔ STOP: `⛔ BLOCKED: <reason>` — do NOT guess |

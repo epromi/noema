@@ -55,6 +55,42 @@ function findManifestFiles(chunksDir) {
 
 const errors = [];
 
+// ── Source freshness: fail if source files are newer than build ──
+const SRC_DIR = path.join(__dirname, "..", "src");
+if (fs.existsSync(SRC_DIR) && fs.existsSync(ENTRY)) {
+  const buildMtime = fs.statSync(ENTRY).mtimeMs;
+  const staleFiles = [];
+
+  /** @param {string} dir */
+  function scanSourceDir(dir) {
+    const entries = fs.readdirSync(dir, { withFileTypes: true });
+    for (const entry of entries) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        scanSourceDir(full);
+      } else if (
+        /\.(ts|js|svelte|css)$/.test(entry.name) &&
+        !entry.name.endsWith(".d.ts") &&
+        !full.includes("node_modules")
+      ) {
+        if (fs.statSync(full).mtimeMs > buildMtime) {
+          staleFiles.push(path.relative(SRC_DIR, full));
+        }
+      }
+    }
+  }
+
+  scanSourceDir(SRC_DIR);
+
+  if (staleFiles.length > 0) {
+    errors.push(
+      `❌ Source files newer than build (build stale, re-run pnpm build):\n    ` +
+        staleFiles.slice(0, 10).join("\n    ") +
+        (staleFiles.length > 10 ? `\n    ...and ${staleFiles.length - 10} more` : ""),
+    );
+  }
+}
+
 if (!fs.existsSync(ENTRY)) {
   errors.push("❌ build/index.js not found");
 }

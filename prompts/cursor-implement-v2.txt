@@ -1,0 +1,98 @@
+## TASK
+
+Package: PKG_PLACEHOLDER — PKG_NAME_PLACEHOLDER
+Size: PKG_SIZE_PLACEHOLDER | Effort: PKG_EFFORT_PLACEHOLDER
+
+Read the spec: `dev/packages/PKG_PLACEHOLDER/spec.md`
+Read the rules: `projects/noema/CONTRIBUTING.md`
+
+## ARCHITECTURE (break these = reject)
+
+1. `src/lib/core/` = plain TS, NO Svelte, NO browser APIs.
+2. `src/lib/components/` = Svelte UI only, receives data via props.
+3. Core → Provider adapter. NEVER call OpenClaw API directly from core.
+4. Every changed core module needs `tests/core/*.test.ts` with ≥70% coverage.
+5. Max 5 files per phase. Data flow: provider → core → component.
+
+Target check — based on spec's "Scope → Mit érint":
+- `archive/v4.html` → legacy (generate.cjs). DO NOT touch src/lib/.
+- `src/lib/` → SvelteKit. DO NOT touch archive/.
+- BOTH → implement both.
+
+## REFERENCE
+
+Before implementing, study ONE existing module that's closest to what you're building:
+- Core modules: look at `src/lib/core/health.ts` or `src/lib/core/crons.ts`
+- Components: look at `src/lib/components/shared/CpuWidget.svelte`
+- Follow their patterns: type exports, provider injection, error handling style.
+
+## PLAN (3-5 sentences, then implement)
+
+Answer before coding:
+1. What functions/components will you add?
+2. How does data flow? (provider → which core function → which component?)
+3. What's the simplest version that satisfies the spec?
+
+Research findings (if any) are below — incorporate them.
+
+## IMPLEMENTATION
+
+Work sequentially, one phase at a time. Never skip phases.
+
+**Every phase:**
+1. Write code (max 5 files)
+2. `pnpm check` → MUST pass
+3. `pnpm test`  → MUST pass. If YOUR changes break an OLD test, fix the test.
+4. `pnpm build` → MUST produce a clean build
+
+**Phase F1: Core**
+- Files in `src/lib/core/` and `tests/core/`
+- Write tests FIRST (TDD) or alongside — NOT after
+
+**Phase F2: UI**
+- Files in `src/lib/components/`
+- Wire to F1's data via props — never call core directly
+
+**Phases F3-F5** (if spec has them)
+- Follow spec's F3/F4/F5 headings. Each phase = the same code → check → test → build loop.
+
+## GARDENING (touched files only)
+
+You MAY in files you touch: fix `any` types, add try/catch, add aria/alt/role, remove dead imports, fix TODO/FIXME, deduplicate code.
+
+You MUST NOT: change API contracts, change CSS tokens (`--accent`, `--bg`, etc.), remove/rename features, add npm deps, change routing, touch other files, modify `// STABLE` code.
+
+Larger opportunities: `💡 SUGGESTION: …`
+
+## RESEARCH FINDINGS
+
+RESEARCH_PLACEHOLDER
+
+## DONE CHECKLIST (ALL must be true)
+
+- [ ] `pnpm check` — zero errors
+- [ ] `pnpm test`  — zero failures (fix old tests if they conflict with your changes)
+- [ ] `pnpm build` — zero errors
+- [ ] Every spec requirement (F1-F5) is implemented
+- [ ] Changed core modules: ≥70% test coverage
+- [ ] No files outside package scope touched
+- [ ] `pnpm check && pnpm test && pnpm build` — all pass in one command
+
+## COMMIT
+
+When all checks pass:
+```
+🧠 feat: SUMMARY (PKG-PLACEHOLDER)
+
+- What changed (bullet points)
+
+✅ Done: check | test | build | coverage
+```
+Only src/, tests/, dev/packages/ — no generated files (dashboard.html, .svelte-kit/).
+
+## TROUBLESHOOTING
+
+- `pnpm check` fails → read error, fix file, re-run
+- `pnpm test` fails  → your change broke something; fix impl or fix test
+- `pnpm build` fails → missing export/bad import; check src/lib/core/index.ts exports
+- Spec is ambiguous or impossible → ⛔ BLOCKED: <reason> — do NOT guess

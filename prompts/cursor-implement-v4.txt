@@ -1,0 +1,129 @@
+## TASK
+
+Package: PKG_PLACEHOLDER — PKG_NAME_PLACEHOLDER
+Size: PKG_SIZE_PLACEHOLDER | Effort: PKG_EFFORT_PLACEHOLDER
+
+Read the spec:  `dev/packages/PKG_PLACEHOLDER/spec.md`
+Read the rules: `projects/noema/CONTRIBUTING.md`
+
+Files to create or modify (from spec Scope):
+PKG_FILES_PLACEHOLDER
+
+
+
+## ARCHITECTURE — break any of these and the implementation is rejected
+
+1. `src/lib/core/` = plain TS only. NO Svelte imports. NO browser APIs (`window`, `document`).
+2. `src/lib/components/` = Svelte UI only. Receives data via props from parent page/component.
+3. Data flow is ONE-WAY: provider → core → component. Components NEVER call core directly. Core NEVER imports components.
+4. Every changed or new `src/lib/core/*.ts` module MUST have tests in `tests/core/*.test.ts` with ≥70% coverage.
+5. Max 5 files created or modified per phase. If the spec requires more, split across phases.
+6. All development is SvelteKit only. legacy `archive/v4.html` + `generate.cjs` are frozen — never modify them.
+
+## REFERENCE — open the closest match, copy its patterns
+
+Pick the reference file that matches what you're building:
+
+- **Core module (API data: fetching, health, metrics)**
+  Open: `src/lib/core/health.ts`
+  Copy: provider injection via function param, Promise.all for parallel calls, typed return object, try/catch at boundary
+
+- **Core module (file data: parsing, static analysis)**
+  Open: `src/lib/core/dev-packages.ts`
+  Copy: readFile from fs/promises, parse/transform pipeline, metadata cache pattern
+
+- **UI widget (metric card, status indicator, KPI)**
+  Open: `src/lib/components/shared/CpuWidget.svelte`
+  Copy: `export let` props, reactive `$:` derived values, color-coded thresholds, semantic HTML
+
+- **UI list / table (data rows, collection display)**
+  Open: `src/lib/components/shared/DevPackageRow.svelte`
+  Copy: item prop interface, conditional CSS classes, action button pattern, `{#each}` loops
+
+- **SSR route / API endpoint**
+  Open: `src/routes/api/action/+server.ts`
+  Copy: RequestEvent destructure, provider call, JSON response with status code, error handling
+
+- **Test file**
+  Open: `tests/core/health.test.ts`
+  Copy: `createMockProviders()` setup, `describe`/`it`/`expect` structure, edge case coverage pattern
+
+
+## PLAN — 30 seconds: think, then implement
+
+Answer these silently before coding (output to log):
+1. What functions or components will you add?
+2. What is the data flow? (provider → which core fn → which component?)
+3. What is the SIMPLEST version that satisfies the spec?
+
+If research findings are listed below, incorporate them into the plan.
+
+## IMPLEMENTATION — one phase at a time, no skipping
+
+**Every phase gate (ALL must pass to proceed):**
+  a. Write code (≤5 files)
+  b. `pnpm check` → zero errors
+  c. `pnpm test`  → zero failures (fix old tests if your change breaks them)
+  d. `pnpm build` → clean build, no warnings
+  e. Verify: `ls build/server/index.js` exists (build output must be complete)
+
+**Phase F1: Core Logic**
+- Files in `src/lib/core/` + `tests/core/`
+- Write the test FIRST — watch it fail — then implement until it passes
+- Run the phase gate
+
+**Phase F2: UI Components**
+- Files in `src/lib/components/`
+- Wire to F1's data via props from the parent (+page.svelte or tab component)
+- Run the phase gate
+
+**Phases F3–F5** — if the spec lists more phases:
+- Follow the spec's F3/F4/F5 headings
+- Each phase runs the same gate (code → check → test → build → verify)
+
+## GARDENING — allowed ONLY in files you create or modify
+
+**Allowed:** fix `any` → concrete types, add missing try/catch, add `alt`/`aria-label`/`role`, remove dead imports, fix TODO/FIXME comments, deduplicate repeated code within the same file.
+
+**Forbidden:** change API contracts (props, params, responses), change CSS design tokens (`--accent`, `--bg`, `--border`, `--text`), remove or rename existing features, add npm dependencies, change routing, touch files outside package scope, modify code marked `// STABLE: do not modify`.
+
+If you see a larger improvement opportunity, log it: `💡 SUGGESTION: <brief description>`
+
+## RESEARCH FINDINGS
+
+RESEARCH_PLACEHOLDER
+
+## DONE — all of these must be true before you stop
+
+- [ ] `pnpm check` — zero errors, zero warnings
+- [ ] `pnpm test`  — all tests pass, zero failures (fix old tests if your changes conflict)
+- [ ] `pnpm build` — clean output, zero errors
+- [ ] `ls build/server/index.js` — build output file exists (no missing chunks)
+- [ ] Every spec requirement from F1 through the last phase is implemented
+- [ ] Every changed core module has ≥70% test coverage (`pnpm test --coverage`)
+- [ ] No files outside the package scope were modified
+- [ ] Final gate: `pnpm check && pnpm test && pnpm build && ls build/server/index.js`
+
+If the final gate fails, fix and re-run. Do NOT stop until all commands pass.
+
+## COMMIT
+
+When all DONE checks pass, create a single commit:
+```
+🧠 feat: SHORT_SUMMARY (PKG-PLACEHOLDER)
+
+- Bullet list of what changed
+
+✅ check | test | build | coverage
+```
+Commit only: `src/`, `tests/`, `dev/packages/`. Never commit generated files (`dashboard.html`, `.svelte-kit/`, `build/`, `node_modules/`).
+
+## TROUBLESHOOTING
+
+| Symptom | Most likely fix |
+|---------|----------------|
+| `pnpm check` fails | Read the TypeScript error → fix the affected file → re-run |
+| `pnpm test` fails | Your change broke existing behavior → fix the implementation OR update the test |
+| `pnpm build` fails | Usually a missing export → check `src/lib/core/index.ts` re-exports all new modules |
+| `pnpm test --coverage` <70% | Add tests for uncovered branches → re-run |
+| Spec is ambiguous or contradictory | Output `⛔ BLOCKED: <what's unclear>` and STOP — do not guess |
