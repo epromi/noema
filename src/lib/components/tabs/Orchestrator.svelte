@@ -5,10 +5,7 @@
   import ActionButtonGroup, {
     type ActionBtnState,
   } from "$lib/components/shared/ActionButtonGroup.svelte";
-  import {
-    DEFAULT_RELAY_URL,
-    getDevJobStatus,
-  } from "$lib/core/noema-devjob";
+  import { DEFAULT_RELAY_URL, getDevJobStatus } from "$lib/core/noema-devjob";
   import type {
     ActionQueueData,
     ActionQueueItem,
@@ -82,12 +79,7 @@
 
   type ProcessorState = "idle" | "running" | "queued" | "offline";
   type TimelineSection =
-    | "night"
-    | "morning"
-    | "spanning"
-    | "day"
-    | "evening"
-    | "auto";
+    "night" | "morning" | "spanning" | "day" | "evening" | "auto";
 
   interface EnrichedCron extends CronEntry {
     displayMin: number;
@@ -259,8 +251,9 @@
       }
 
       if (cron.section !== lastSection) {
-        const count = enrichedCrons.filter((c) => c.section === cron.section)
-          .length;
+        const count = enrichedCrons.filter(
+          (c) => c.section === cron.section,
+        ).length;
         rows.push({
           kind: "section",
           label: SECTION_LABELS[cron.section],
@@ -321,9 +314,7 @@
 
   function cronCountdownLabel(cron: EnrichedCron, atMs: number): string {
     if (isSpanningSched(cron.schedule)) {
-      return cron.nextMs
-        ? formatCountdown(cron.nextMs, atMs)
-        : "hourly";
+      return cron.nextMs ? formatCountdown(cron.nextMs, atMs) : "hourly";
     }
     if (cron.schedule === "auto") return "auto";
     return cron.nextMs ? formatCountdown(cron.nextMs, atMs) : "—";
@@ -559,9 +550,7 @@
             {:else if row.kind === "now"}
               <div class="ct-now" id="ct-now-marker">
                 <span class="ct-time">{row.timeLabel}</span>
-                <span class="ct-now-line"
-                  >▐▐▐▐ NOW {row.clock} ▐▐▐▐</span
-                >
+                <span class="ct-now-line">▐▐▐▐ NOW {row.clock} ▐▐▐▐</span>
               </div>
             {:else}
               <div

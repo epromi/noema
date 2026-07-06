@@ -8,7 +8,8 @@ export const SSR_TIMEOUT_MS = 5000;
 
 const DYNAMIC_IMPORT =
   /import\s*\(\s*['"]\.\/([^'"]+\.js(?:-[A-Za-z0-9_-]+)?\.js)['"]\s*\)/g;
-const STATIC_IMPORT = /from\s+['"]\.\/([^'"]+\.js(?:-[A-Za-z0-9_-]+)?\.js)['"]/g;
+const STATIC_IMPORT =
+  /from\s+['"]\.\/([^'"]+\.js(?:-[A-Za-z0-9_-]+)?\.js)['"]/g;
 const INDEX_CHUNK_IMPORT =
   /from\s+['"]\.\/server\/chunks\/([^'"]+\.js(?:-[A-Za-z0-9_-]+)?\.js)['"]/g;
 
@@ -123,7 +124,9 @@ export function verifyBuildArtifacts(
       for (const asset of extractClientAssetReferences(content)) {
         const assetPath = join(clientDir, asset);
         if (!existsSync(assetPath)) {
-          errors.push(`❌ Client asset missing: ${asset} (referenced in manifest)`);
+          errors.push(
+            `❌ Client asset missing: ${asset} (referenced in manifest)`,
+          );
         }
       }
     }
@@ -133,9 +136,13 @@ export function verifyBuildArtifacts(
     const entryDir = join(clientDir, "_app", "immutable", "entry");
     const hasEntryJs =
       existsSync(entryDir) &&
-      readdirSync(entryDir).some((name) => name.endsWith(".js") && !name.endsWith(".js.map"));
+      readdirSync(entryDir).some(
+        (name) => name.endsWith(".js") && !name.endsWith(".js.map"),
+      );
     if (!hasEntryJs) {
-      errors.push("❌ No client entry JS in build/client/_app/immutable/entry/");
+      errors.push(
+        "❌ No client entry JS in build/client/_app/immutable/entry/",
+      );
     }
   }
 
@@ -149,7 +156,10 @@ export interface SsrEvaluation {
 }
 
 /** Validate an SSR HTTP response body. */
-export function evaluateSsrResponse(status: number, html: string): SsrEvaluation {
+export function evaluateSsrResponse(
+  status: number,
+  html: string,
+): SsrEvaluation {
   if (status < 200 || status >= 300) {
     return { ok: false, error: `SSR returned ${status}` };
   }

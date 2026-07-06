@@ -1,7 +1,11 @@
 <script lang="ts">
   import LogPanel from "./LogPanel.svelte";
   import ImplementButton from "./ImplementButton.svelte";
-  import { isBlockedPackage, phaseIcon, truncateName } from "$lib/core/dev-packages";
+  import {
+    isBlockedPackage,
+    phaseIcon,
+    truncateName,
+  } from "$lib/core/dev-packages";
   import type { ImplementState } from "$lib/types";
 
   let {
@@ -35,12 +39,7 @@
   const icon = $derived(phaseIcon(phase));
 </script>
 
-<div
-  class="pkg-row"
-  class:done
-  class:compact
-  class:blocked
->
+<div class="pkg-row" class:done class:compact class:blocked>
   <div class="pkg-main">
     <span class="pkg-id">{pkgId}</span>
     {#if compact}

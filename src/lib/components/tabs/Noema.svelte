@@ -44,21 +44,19 @@
   const stats = $derived(computePackageStats(packages));
   const searching = $derived(searchQuery.trim().length > 0);
 
-  const showSpec = $derived(
-    searching ? grouped.spec.length > 0 : true,
-  );
-  const showActive = $derived(
-    searching ? grouped.active.length > 0 : true,
-  );
-  const showDone = $derived(
-    searching ? grouped.done.length > 0 : true,
-  );
+  const showSpec = $derived(searching ? grouped.spec.length > 0 : true);
+  const showActive = $derived(searching ? grouped.active.length > 0 : true);
+  const showDone = $derived(searching ? grouped.done.length > 0 : true);
 
-  const specOpen = $derived(searching ? grouped.spec.length > 0 : !collapsedSpec);
+  const specOpen = $derived(
+    searching ? grouped.spec.length > 0 : !collapsedSpec,
+  );
   const activeOpen = $derived(
     searching ? grouped.active.length > 0 : !collapsedActive,
   );
-  const doneOpen = $derived(searching ? grouped.done.length > 0 : !collapsedDone);
+  const doneOpen = $derived(
+    searching ? grouped.done.length > 0 : !collapsedDone,
+  );
 
   const specPct = $derived(
     stats.total > 0 ? (stats.spec / stats.total) * 100 : 0,

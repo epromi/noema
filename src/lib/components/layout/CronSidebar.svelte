@@ -86,7 +86,11 @@
     let nextId: string | null = null;
     let soonest = Infinity;
     for (const cron of enrichedCrons) {
-      if (cron.nextMs != null && cron.nextMs >= nowMs && cron.nextMs < soonest) {
+      if (
+        cron.nextMs != null &&
+        cron.nextMs >= nowMs &&
+        cron.nextMs < soonest
+      ) {
         soonest = cron.nextMs;
         nextId = cron.id;
       }

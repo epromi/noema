@@ -25,9 +25,7 @@
 
   let sseData = $state<DashboardData | null>(null);
 
-  const data = $derived(
-    sseData ? { ...serverData, ...sseData } : serverData,
-  );
+  const data = $derived(sseData ? { ...serverData, ...sseData } : serverData);
 
   $effect(() => {
     serverData;

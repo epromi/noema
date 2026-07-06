@@ -28,8 +28,10 @@
 
   type TabId = (typeof TABS)[number]["id"];
 
-  let { data, children }: { data: LayoutData; children?: import("svelte").Snippet } =
-    $props();
+  let {
+    data,
+    children,
+  }: { data: LayoutData; children?: import("svelte").Snippet } = $props();
 
   let activeTab = $state<TabId>("overview");
   let isMobile = $state(false);
