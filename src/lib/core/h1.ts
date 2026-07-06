@@ -21,10 +21,12 @@ const OPEN_REPORT_STATES = new Set([
 ]);
 
 let programsCache: { programs: H1Program[]; fetchedAt: number } | null = null;
+let programsFetchPromise: Promise<H1Program[]> | null = null;
 
 /** Reset in-memory H1 API cache (for tests). */
 export function clearH1Cache(): void {
   programsCache = null;
+  programsFetchPromise = null;
 }
 
 /** Extract the first JSON value from mixed h1.sh stdout (human text + JSON). */
@@ -460,15 +462,24 @@ export async function getH1Programs(
     return programsCache.programs;
   }
 
-  const p = providers ?? getProvider();
-  try {
-    const raw = await p.tool.h1Command("programs");
-    const programs = parseH1Programs(extractH1Json(raw));
-    programsCache = { programs, fetchedAt: Date.now() };
-    return programs;
-  } catch {
-    return programsCache?.programs ?? [];
-  }
+  // Mutex: deduplicate concurrent calls to h1.sh programs
+  if (programsFetchPromise) return programsFetchPromise;
+
+  programsFetchPromise = (async () => {
+    const p = providers ?? getProvider();
+    try {
+      const raw = await p.tool.h1Command("programs");
+      const programs = parseH1Programs(extractH1Json(raw));
+      programsCache = { programs, fetchedAt: Date.now() };
+      return programs;
+    } catch {
+      return programsCache?.programs ?? [];
+    } finally {
+      programsFetchPromise = null;
+    }
+  })();
+
+  return programsFetchPromise;
 }
 
 export async function getH1Reports(
