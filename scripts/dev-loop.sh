@@ -72,6 +72,25 @@ PIPELINE_START=$(date +%s)
 source "$PROJECT_DIR/scripts/dev-log.sh"
 dev_log_init "$PKG_ID"
 
+DEV_FREEDOM_HELPER="$SCRIPT_DIR/dev-freedom-helper.mjs"
+DEV_FREEDOM_NODE=(node --experimental-strip-types "$DEV_FREEDOM_HELPER")
+PIPELINE_DIR="$PROJECT_DIR/logs/pipeline-${PKG_ID}"
+mkdir -p "$PIPELINE_DIR"
+
+SPEC_ANALYSIS_JSON="$PIPELINE_DIR/spec-analysis.json"
+STRATEGY_MD="$PIPELINE_DIR/strategy.md"
+CURSOR_PROMPT_MD="$PIPELINE_DIR/cursor-prompt.md"
+DEEP_REVIEW_MD="$PIPELINE_DIR/deep-review.md"
+CI_RESULT_JSON="$PIPELINE_DIR/ci-result.json"
+RESEARCH_MD_FILE="$PIPELINE_DIR/research.md"
+PHASE0_REVIEW_LOG="$PROJECT_DIR/logs/review-${PKG_ID}-phase0.log"
+
+validate_phase_output() {
+  local phase="$1"
+  local ctx_file="/tmp/noema-phase-ctx-${PKG_ID}-${phase}.json"
+  "${DEV_FREEDOM_NODE[@]}" validate "$phase" "$ctx_file" || fail "Phase $phase output validation failed"
+}
+
 # ═══════════════════════════════════════════════════════════════════════════
 banner "PHASE 0/6: Spec Review Agent"
 log_dev "📋 Phase 0/6: Spec Review — kezdve (max 5 review+fix loop)"
@@ -89,9 +108,11 @@ if [ -f "$REVIEW_AGENT" ]; then
   if [ "$REVIEW_EXIT" -eq 0 ]; then
     ok "Phase 0: Spec Review — ✅ ALL CLEAR"
     log_dev "✅ Phase 0: Spec Review — passed"
+    echo "Phase 0: Spec Review — ALL CLEAR ($(date -Iseconds))" > "$PHASE0_REVIEW_LOG"
   else
     warn "Phase 0: Spec Review — ❌ issues remain after max rounds"
     log_dev "⚠️  Phase 0: Spec Review — escalated (manual review needed)"
+    echo "Phase 0: Spec Review — ESCALATED ($(date -Iseconds))" > "$PHASE0_REVIEW_LOG"
     echo ""
     echo "📢 ESCALATE to András: $PKG_ID spec needs manual review."
     echo "   Spec file: $SPEC_FILE"
@@ -101,7 +122,12 @@ if [ -f "$REVIEW_AGENT" ]; then
 else
   warn "Spec Review Agent not found: $REVIEW_AGENT"
   log_dev "⚠️  Phase 0: Spec Review — skipped (script missing)"
+  echo "Phase 0: Spec Review — skipped (script missing) ($(date -Iseconds))" > "$PHASE0_REVIEW_LOG"
 fi
+
+# Phase 0 output validation
+python3 -c "import json; json.dump({'logsDir':'$PROJECT_DIR/logs','pkgId':'$PKG_ID','paths':{'reviewLog':'$PHASE0_REVIEW_LOG'}}, open('/tmp/noema-phase-ctx-${PKG_ID}-0.json','w'))"
+validate_phase_output 0
 
 echo ""
 
@@ -137,6 +163,38 @@ echo "Expected files ($(echo "$EXPECTED_FILES" | grep -c . 2>/dev/null || echo 0
 echo "$EXPECTED_FILES" | while read f; do [ -n "$f" ] && echo "  - $f"; done || true
 
 EXPECTED_COUNT=$(echo "$EXPECTED_FILES" | grep -c . 2>/dev/null || echo 0)
+
+# DevFreedom metadata + optional research (PKG-039)
+RESEARCH_TOPICS="$PROJECT_DIR/dev/packages/$PKG_ID/research-topics.md"
+RESEARCH_ENABLED=$("${DEV_FREEDOM_NODE[@]}" metadata "$SPEC_FILE" "$PKG_ID" 2>/dev/null | python3 -c "import json,sys; print('1' if json.load(sys.stdin).get('researchEnabled') else '0')" 2>/dev/null || echo "0")
+DEV_FREEDOM_LEVEL=$("${DEV_FREEDOM_NODE[@]}" metadata "$SPEC_FILE" "$PKG_ID" 2>/dev/null | python3 -c "import json,sys; print(json.load(sys.stdin).get('devFreedom','gardening'))" 2>/dev/null || echo "gardening")
+echo "DevFreedom: $DEV_FREEDOM_LEVEL | Research: $([ "$RESEARCH_ENABLED" = "1" ] && echo yes || echo no)"
+
+if [ "$RESEARCH_ENABLED" = "1" ]; then
+  log_dev "🔍 Phase 1: Research — kezdve (max 60s)"
+  echo "Running pre-implementation research (60s limit)..."
+  set +e
+  "${DEV_FREEDOM_NODE[@]}" research "$SPEC_FILE" "$RESEARCH_TOPICS" > "$RESEARCH_MD_FILE" 2>&1
+  set -e
+  if [ -s "$RESEARCH_MD_FILE" ]; then
+    cat "$RESEARCH_MD_FILE" >> "$DEV_LOG"
+    ok "Research complete — see $RESEARCH_MD_FILE"
+  else
+    echo "## 🔍 Research (0s, 0 results)" > "$RESEARCH_MD_FILE"
+    echo "" >> "$RESEARCH_MD_FILE"
+    echo "(no results — timeout or search unavailable)" >> "$RESEARCH_MD_FILE"
+    warn "Research produced no results (continuing)"
+  fi
+else
+  : > "$RESEARCH_MD_FILE"
+fi
+
+"${DEV_FREEDOM_NODE[@]}" spec-analysis "$SPEC_FILE" "$PKG_ID" "$SPEC_ANALYSIS_JSON" "$RESEARCH_MD_FILE"
+ok "spec-analysis.json → $SPEC_ANALYSIS_JSON"
+
+python3 -c "import json; json.dump({'logsDir':'$PIPELINE_DIR','pkgId':'$PKG_ID','specAnalysisPath':'$SPEC_ANALYSIS_JSON','paths':{'$SPEC_ANALYSIS_JSON':'$SPEC_ANALYSIS_JSON'}}, open('/tmp/noema-phase-ctx-${PKG_ID}-1.json','w'))"
+validate_phase_output 1
+
 log_dev "✅ Phase 1: Spec Analysis — kész ($EXPECTED_COUNT expected files)"
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -146,7 +204,15 @@ log_dev "📋 Phase 2/6: Strategy — CURSOR AGENT ($PKG_SIZE size)"
 
 echo "Strategy: CURSOR AGENT (all sizes — $PKG_SIZE)"
 echo "Mandatory context: CONTRIBUTING.md + spec.md"
+echo "DevFreedom: $DEV_FREEDOM_LEVEL"
 echo ""
+
+"${DEV_FREEDOM_NODE[@]}" strategy "$SPEC_FILE" "$PKG_ID" "$PKG_SIZE" "$STRATEGY_MD"
+ok "strategy.md → $STRATEGY_MD"
+
+python3 -c "import json; json.dump({'logsDir':'$PIPELINE_DIR','pkgId':'$PKG_ID','strategyPath':'$STRATEGY_MD','paths':{'$STRATEGY_MD':'$STRATEGY_MD'}}, open('/tmp/noema-phase-ctx-${PKG_ID}-2.json','w'))"
+validate_phase_output 2
+
 log_dev "✅ Phase 2: Strategy — kész (Cursor agent)"
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -161,35 +227,20 @@ if [ ! -f "$TEMPLATE" ]; then
   fail "Prompt template not found: $TEMPLATE"
 fi
 
-# Generate prompt: replace all inline placeholders (env vars → safe, no escaping issues)
-PKG_NAME="$PKG_NAME" PKG_SIZE="$PKG_SIZE" PKG_EFFORT="$PKG_EFFORT" PKG_ID="$PKG_ID" \
-EXPECTED_FILES="$EXPECTED_FILES" RESEARCH_FILE="$PROJECT_DIR/dev/packages/$PKG_ID/research-topics.md" \
-TEMPLATE="$TEMPLATE" PROMPT_FILE="$PROMPT_FILE" \
-node -e '
-const fs = require("fs");
-let t = fs.readFileSync(process.env.TEMPLATE, "utf8");
-// Simple placeholders
-t = t.replace(/PKG_PLACEHOLDER/g, process.env.PKG_ID);
-t = t.replace(/PKG_NAME_PLACEHOLDER/g, process.env.PKG_NAME);
-t = t.replace(/PKG_SIZE_PLACEHOLDER/g, process.env.PKG_SIZE);
-t = t.replace(/PKG_EFFORT_PLACEHOLDER/g, process.env.PKG_EFFORT);
-// File list (multi-line, formatted)
-const files = process.env.EXPECTED_FILES.trim().split("\n").filter(Boolean).map(f => "- " + f.trim()).join("\n") || "- (none listed in spec — check Scope section)";
-t = t.replace(/PKG_FILES_PLACEHOLDER/g, files);
-// Research: load from file if exists, else strip the whole section
-const rf = process.env.RESEARCH_FILE;
-if (rf && fs.existsSync(rf)) {
-  t = t.replace(/RESEARCH_PLACEHOLDER/g, fs.readFileSync(rf, "utf8").trim());
-} else {
-  t = t.replace(/^## RESEARCH FINDINGS\n\nRESEARCH_PLACEHOLDER\n?\n?/gm, "");
-}
-fs.writeFileSync(process.env.PROMPT_FILE, t);
-'
+# Generate prompt via dev-freedom helper (gardening + research sections)
+"${DEV_FREEDOM_NODE[@]}" prompt "$TEMPLATE" "$SPEC_FILE" "$PKG_ID" "$PKG_SIZE" "$PKG_EFFORT" "$CURSOR_PROMPT_MD" "$RESEARCH_MD_FILE"
+PROMPT_FILE="/tmp/noema-cursor-prompt-${PKG_ID}.txt"
+cp "$CURSOR_PROMPT_MD" "$PROMPT_FILE"
 
 PROMPT_LINES=$(wc -l < "$PROMPT_FILE")
 echo "Prompt:   $PROMPT_FILE ($PROMPT_LINES lines)"
+echo "Saved:    $CURSOR_PROMPT_MD"
 echo "Template: $TEMPLATE"
 echo ""
+
+python3 -c "import json; json.dump({'logsDir':'$PIPELINE_DIR','pkgId':'$PKG_ID','cursorPromptPath':'$CURSOR_PROMPT_MD','paths':{'$CURSOR_PROMPT_MD':'$CURSOR_PROMPT_MD'}}, open('/tmp/noema-phase-ctx-${PKG_ID}-3.json','w'))"
+validate_phase_output 3
+
 log_dev "📋 Phase 3/6: Cursor Prompt — generálva ($PROMPT_LINES lines)"
 log_dev "✅ Phase 3: Cursor Prompt — kész"
 
@@ -239,6 +290,11 @@ CREATED_FILES=$(echo "$EXPECTED_FILES" | grep -c . 2>/dev/null || echo 0)
 CREATED_FILES=$((CREATED_FILES - MISSING))
 HAS_PKG="$([ -f "$PROJECT_DIR/package.json" ] && echo 1 || echo 0)"
 log_dev "✅ Phase 4: Cursor Agent — kész ($CREATED_FILES files, $CURSOR_LINES lines)"
+
+GIT_DIFF_COUNT=$(git diff --name-only 2>/dev/null | wc -l | tr -d ' ')
+python3 -c "import json; json.dump({'logsDir':'$PIPELINE_DIR','pkgId':'$PKG_ID','gitDiffCount':int('${GIT_DIFF_COUNT:-0}')}, open('/tmp/noema-phase-ctx-${PKG_ID}-4.json','w'))"
+validate_phase_output 4
+
 echo ""
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -565,6 +621,11 @@ else
   ok "Review passed cleanly ($REVIEW_PASS checks OK)"
 fi
 
+# Phase 5 output: deep-review.md
+cp "$REVIEW_LOG" "$DEEP_REVIEW_MD" 2>/dev/null || echo "# Deep Review: $PKG_ID" > "$DEEP_REVIEW_MD"
+python3 -c "import json; json.dump({'logsDir':'$PIPELINE_DIR','pkgId':'$PKG_ID','deepReviewPath':'$DEEP_REVIEW_MD','paths':{'$DEEP_REVIEW_MD':'$DEEP_REVIEW_MD'}}, open('/tmp/noema-phase-ctx-${PKG_ID}-5.json','w'))"
+validate_phase_output 5
+
 echo ""
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -595,6 +656,11 @@ git push 2>&1 || warn "git push failed"
 
 log_dev "✅ Phase 6: Commit + Push — kész (${COMMIT_HASH:-skip})"
 ok "Implementation pushed — $PKG_ID"
+
+python3 -c "import json; json.dump({'logsDir':'$PIPELINE_DIR','pkgId':'$PKG_ID','commitHash':'${COMMIT_HASH:-}'}, open('/tmp/noema-phase-ctx-${PKG_ID}-6.json','w'))"
+if [ -n "${COMMIT_HASH:-}" ] && [ "$COMMIT_HASH" != "?" ]; then
+  validate_phase_output 6
+fi
 
 # ═══════════════════════════════════════════════════════════════════════
 banner "PHASE 6b: Status Update (INDEX.md + Dashboard)"
@@ -762,6 +828,21 @@ if [ "$CI_PASS" -eq 0 ]; then
   echo "📢 ESCALATE to András: $PKG_ID CI verification failed"
   echo "   Run: gh run list --repo epromi/noema --limit 1"
 fi
+
+# Phase 7 output: ci-result.json
+python3 -c "
+import json
+from datetime import datetime, timezone
+out = {
+  'pkgId': '$PKG_ID',
+  'passed': ${CI_PASS:-0} == 1,
+  'conclusion': 'success' if ${CI_PASS:-0} == 1 else 'failure',
+  'updatedAt': datetime.now(timezone.utc).isoformat(),
+}
+open('$CI_RESULT_JSON','w').write(json.dumps(out, indent=2) + '\n')
+"
+python3 -c "import json; json.dump({'logsDir':'$PIPELINE_DIR','pkgId':'$PKG_ID','ciResultPath':'$CI_RESULT_JSON','paths':{'$CI_RESULT_JSON':'$CI_RESULT_JSON'}}, open('/tmp/noema-phase-ctx-${PKG_ID}-7.json','w'))"
+validate_phase_output 7
 
 echo ""
 

@@ -1,6 +1,6 @@
 # PKG-039: Developer Freedom — Cursor Gardening + Research 🌿🔍
 
-**Státusz**: 📋 F0 | **Méret**: S | **Becslés**: 1h | **Függőség**: PKG-014, PKG-018
+**Státusz**: 📋 F0 | **Méret**: S | **Becslés**: 1h | **DevFreedom**: gardening | **Függőség**: PKG-014, PKG-018
 
 ## Kérés
 
@@ -16,13 +16,13 @@ Két dolog:
 - **⛔ Guardrails**: konkrét, egyértelmű lista
 
 ### Mit egyszerűsítettünk
-- **Nincs subagent** research-re → `web_fetch` DDG Lite, 60 mp limit
+- **Nincs subagent** research-re → `web_search` + `web_fetch`, 60 mp limit
 - **Nincs három DevFreedom szint** → gardening (default) vagy strict
 - **Nincs kötelező research-topics.md** → ha van, használja; ha nincs, auto-generál
 - **Nincs új phase gate rendszer** → output fájl validáció a meglévő phase-ek végén
 
 ### Mit korrigáltunk
-- **Research időlimit**: 30 mp → **60 mp** (elég 3-4 DDG Lite fetch-re)
+- **Research időlimit**: 30 mp → **60 mp** (elég 3-4 web_search/fetch-re)
 - **Becslés**: 2.5h → **1h** (subagent nélkül sokkal egyszerűbb)
 
 ## Specifikáció
@@ -68,7 +68,7 @@ A Phase 1 (Spec Analysis) végén, ha a PKG metadata-ban `Research: yes`:
 Phase 1: Spec Analysis
          ├─ Fájlok azonosítása
          ├─ Függőségi térkép
-         └─ [HA Research=yes] web_fetch DDG Lite (60 mp limit)
+         └─ [HA Research=yes] web_search + web_fetch (60 mp limit)
               │
               ├─ Ha van research-topics.md → abból query-k
               ├─ Ha nincs → auto-gen a spec címéből + első bekezdésből
@@ -77,9 +77,9 @@ Phase 1: Spec Analysis
 
 **Miért sequential?** A Strategy-nak tudnia kell a research eredményt MIELŐTT tervez.
 
-**Eszköz**: `web_fetch` DDG Lite-ra (`https://lite.duckduckgo.com/lite/?q=...`), nem subagent.
+**Eszközök**: `web_search` (elsődleges) ÉS `web_fetch` (DDG Lite vagy bármilyen URL), szabadon választható. NEM subagent.
 
-**Időlimit**: 60 mp, max 4 fetch. Ha timeout → a Phase 1 folytatódik, a research output üres.
+**Időlimit**: 60 mp. A Cursor dönti el hogy hány keresést/fetch-et csinál — annyit amennyi belefér 60 mp-be. Ha timeout → a Phase 1 folytatódik, a research output üres.
 
 **Keresési query generálás**:
 1. Ha van `research-topics.md` → abból a query-k
@@ -152,8 +152,42 @@ If you see a larger improvement opportunity, add a comment:
 - [ ] Cursor prompt tartalmazza a Gardening szekciót a ⛔ listával
 - [ ] Cursor prompt tartalmazza a Research Findings szekciót (ha volt research)
 - [ ] `💡 SUGGESTION` kommentek a log-ban → Alfred review-zható
-- [ ] `Research: yes` esetén Phase 1 végén web_fetch, max 60 mp
+- [ ] `Research: yes` esetén Phase 1 végén web_search/web_fetch, max 60 mp
 - [ ] `research-topics.md` opcionális — ha van, használja; ha nincs, auto-generál
 - [ ] Research timeout esetén a pipeline folytatódik (empty research output)
 - [ ] Phase output validáció: hiányzó fájl → FAIL a phase nevével
 - [ ] `// STABLE` marker-eket a gardening ignorálja
+
+
+## 🎯 Mit
+
+_Placeholder — to be filled._
+
+
+## 📐 Scope
+
+- `src/lib/core/dev-freedom.ts` — metadata parsing, research query gen, prompt sections, phase validation
+- `tests/core/dev-freedom.test.ts` — unit tests (≥70% coverage)
+- `scripts/dev-freedom-helper.mjs` — pipeline CLI (research fetch, prompt gen, validation)
+- `scripts/dev-loop.sh` — integrate gardening, research, output validation
+- `prompts/cursor-implement.txt` — Gardening + Research Findings placeholders (F4)
+
+
+## Mit érint
+
+_Placeholder — to be filled._
+
+
+## Mit NEM érint
+
+_Placeholder — to be filled._
+
+
+## Fázisok
+
+_Placeholder — to be filled._
+
+
+## ✅ Acceptance Criteria
+
+_Placeholder — to be filled._

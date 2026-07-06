@@ -60,13 +60,9 @@ If research findings exist below, incorporate them into the plan. If the RESEARC
 
 ## GARDENING — allowed ONLY in files you create or modify
 
-**Allowed:** fix `any` → concrete types, add try/catch at module boundaries only, add `alt`/`aria-label`/`role`, remove dead imports, fix TODO/FIXME comments YOU introduced, deduplicate code within the same file only when the logic is IDENTICAL in intent (not just structurally similar).
+GARDENING_PLACEHOLDER
 
-**Forbidden:** change API contracts (props, params, responses), change CSS design tokens (`--accent`, `--bg`, `--border`, `--text`), remove or rename existing features, add npm dependencies, change routing, touch files outside package scope, modify code marked `// STABLE: do not modify`.
-
-If you see a larger improvement opportunity, log it: `💡 SUGGESTION: <brief description>` to `dev/packages/PKG_PLACEHOLDER/suggestions.md`.
-
-## RESEARCH FINDINGS
+## 🔍 Research Findings (if available)
 
 RESEARCH_PLACEHOLDER
 
