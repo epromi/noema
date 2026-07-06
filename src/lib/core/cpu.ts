@@ -6,10 +6,9 @@ import { getProvider } from "$lib/providers";
 export type LoadLevel = "ok" | "warn" | "error";
 
 /** Parse /proc/loadavg first line: "load1 load5 load15 running/total lastPid" */
-export function parseLoadavg(raw: string): Omit<
-  CpuData,
-  "coreCount" | "topProcesses"
-> | null {
+export function parseLoadavg(
+  raw: string,
+): Omit<CpuData, "coreCount" | "topProcesses"> | null {
   const line = raw.trim().split("\n")[0] ?? "";
   const parts = line.split(/\s+/);
   if (parts.length < 4) return null;
@@ -22,7 +21,9 @@ export function parseLoadavg(raw: string): Omit<
   const totalProcs = Number(procParts[1]);
 
   if (
-    [load1, load5, load15, runningProcs, totalProcs].some((n) => Number.isNaN(n))
+    [load1, load5, load15, runningProcs, totalProcs].some((n) =>
+      Number.isNaN(n),
+    )
   ) {
     return null;
   }
@@ -37,10 +38,7 @@ export function truncateProcessName(name: string, maxLen = 20): string {
 }
 
 /** Classify load average against logical core count. */
-export function classifyLoadLevel(
-  load: number,
-  coreCount: number,
-): LoadLevel {
+export function classifyLoadLevel(load: number, coreCount: number): LoadLevel {
   if (coreCount <= 0) return "ok";
   if (load > coreCount) return "error";
   if (load > coreCount * 0.7) return "warn";
