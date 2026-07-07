@@ -95,6 +95,7 @@ describe("agents", () => {
     const data = await getAgents(createMockProviders());
     expect(data.total).toBe(8);
     expect(data.agents[0]?.id).toBe("otto");
+    expect(data.agents[0]?.memory).toContain("otto status");
     expect(data.agents.find((a) => a.id === "alfred")?.activeSessions).toBe(1);
     expect(data.agents.find((a) => a.id === "alfred")?.sessionStatus).toBe(
       "active",

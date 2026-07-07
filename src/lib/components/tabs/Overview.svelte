@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { getContext } from "svelte";
   import CpuWidget from "$lib/components/shared/CpuWidget.svelte";
   import type {
     AgentData,
@@ -21,6 +22,21 @@
     h1: H1Data;
     hostname: string;
   } = $props();
+
+  const agentContext = getContext<{
+    selectAgent: (id: string) => void;
+  }>("noema-selected-agent");
+
+  function handleAgentSelect(id: string) {
+    agentContext?.selectAgent(id);
+  }
+
+  function handleAgentKeydown(event: KeyboardEvent, id: string) {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      handleAgentSelect(id);
+    }
+  }
 
   function na(value: string | number | undefined | null): string {
     if (value == null || value === "" || value === "unknown") return "N/A";
@@ -123,7 +139,13 @@
   {:else}
     <div class="agent-grid">
       {#each agents.agents as agent (agent.id)}
-        <div class="agent-card">
+        <div
+          class="agent-card clickable"
+          role="button"
+          tabindex="0"
+          onclick={() => handleAgentSelect(agent.id)}
+          onkeydown={(e) => handleAgentKeydown(e, agent.id)}
+        >
           <div class="agent-header">
             <span class="agent-emoji">{agent.emoji}</span>
             <span class="agent-name">{agent.name}</span>
@@ -261,6 +283,20 @@
     border: 1px solid var(--border);
     border-radius: 8px;
     padding: 10px 12px;
+  }
+
+  .agent-card.clickable {
+    cursor: pointer;
+    transition:
+      border-color 0.2s,
+      background 0.2s;
+  }
+
+  .agent-card.clickable:hover,
+  .agent-card.clickable:focus-visible {
+    border-color: var(--accent);
+    background: rgba(255, 255, 255, 0.03);
+    outline: none;
   }
 
   .agent-header {

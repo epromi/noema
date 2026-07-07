@@ -37,6 +37,13 @@ export type AgentCardStatus = "green" | "yellow" | "red";
 /** Live session phase for an agent (distinct from card health color). */
 export type AgentStatus = "active" | "idle" | "stuck";
 
+/** Short log line shown on the agent detail panel. */
+export interface AgentLogSnippet {
+  message: string;
+  timestamp?: string;
+  level?: LogLevel;
+}
+
 export interface AgentEntry {
   id: string;
   name: string;
@@ -55,6 +62,12 @@ export interface AgentEntry {
   spawnCount: number;
   lastActive: string;
   uptime: string;
+  /** Raw status.md content when available. */
+  memory?: string;
+  /** Last N log lines mentioning this agent. */
+  recentLogs?: AgentLogSnippet[];
+  /** Optional HTML snippet (e.g. Viktor metrics). */
+  extra?: string;
 }
 
 export interface AgentData {

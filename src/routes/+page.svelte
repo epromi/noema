@@ -1,7 +1,7 @@
 <script lang="ts">
   import { browser } from "$app/environment";
   import { getContext, onDestroy, onMount } from "svelte";
-  import type { DashboardData, DevPackageEntry, PkgState, QueueStatus } from "$lib/types";
+  import type { DashboardData, DevPackageEntry, PkgState, QueueStatus, AgentEntry } from "$lib/types";
   import type { PageData } from "./$types";
   import { DEFAULT_RELAY_URL, getDevJobStatus } from "$lib/core/noema-devjob";
   import Overview from "$lib/components/tabs/Overview.svelte";
@@ -17,6 +17,7 @@
   import DecisionTrace from "$lib/components/tabs/DecisionTrace.svelte";
   import H1 from "$lib/components/tabs/H1.svelte";
   import Viktor from "$lib/components/tabs/Viktor.svelte";
+  import AgentDetailPanel from "$lib/components/shared/AgentDetailPanel.svelte";
 
   const RELAY_URL = DEFAULT_RELAY_URL;
   const LOG_POLL_MS = 3000;
@@ -59,6 +60,11 @@
   });
 
   const tabContext = getContext<{ current: string }>("noema-active-tab");
+  const agentContext = getContext<{
+    agentId: string | null;
+    selectAgent: (id: string) => void;
+    closeAgent: () => void;
+  }>("noema-selected-agent");
 
   let packageStates = $state<Record<string, PkgState>>({});
   const pollers = new Map<string, ReturnType<typeof setInterval>>();
@@ -225,9 +231,16 @@
   });
 
   const activeTab = $derived(tabContext?.current ?? "overview");
+  const selectedAgent = $derived(
+    agentContext?.agentId
+      ? (data.agents.agents.find((a: AgentEntry) => a.id === agentContext.agentId) ?? null)
+      : null,
+  );
+  const agentPanelOpen = $derived(agentContext?.agentId != null);
 </script>
 
-<main class="dashboard-main">
+<div class="page-with-panel">
+  <main class="dashboard-main">
   <h2 class="sr-only">Noema 🧠</h2>
 
   {#if activeTab === "overview"}
@@ -282,9 +295,20 @@
       </p>
     </div>
   {/if}
-</main>
+  </main>
+
+  <AgentDetailPanel
+    agent={selectedAgent}
+    open={agentPanelOpen}
+    onClose={() => agentContext?.closeAgent()}
+  />
+</div>
 
 <style>
+  .page-with-panel {
+    position: relative;
+  }
+
   .sr-only {
     position: absolute;
     width: 1px;

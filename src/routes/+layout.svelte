@@ -9,24 +9,29 @@
   import type { BuildIntegrityData, CronData, DashboardData } from "$lib/types";
   import type { LayoutData } from "./$types";
 
-  const TABS = [
+  const PRIMARY_TABS = [
     { id: "overview", label: "🏠 Overview" },
     { id: "agents", label: "🤖 Agents" },
     { id: "crons", label: "⏰ Crons" },
     { id: "orchestrator", label: "⚡ Orchestrator" },
-    { id: "h1", label: "🏴 HackerOne" },
+    { id: "noema", label: "🧠 Noema" },
+    { id: "cron-pipeline", label: "⏰ Pipeline", mobileOnly: true },
+  ] as const;
+
+  const SECONDARY_TABS = [
+    { id: "h1", label: "🏴 H1" },
     { id: "viktor", label: "🛡️ Viktor" },
     { id: "brainstorm", label: "🧠 Brainstorm" },
-    { id: "noema", label: "🧠 Noema" },
     { id: "bills", label: "📋 Bills" },
     { id: "research", label: "🔬 Research" },
     { id: "logs", label: "📋 Logs" },
     { id: "audit", label: "📜 Audit" },
     { id: "trace", label: "🌳 Trace" },
-    { id: "cron-pipeline", label: "⏰ Pipeline", mobileOnly: true },
   ] as const;
 
-  type TabId = (typeof TABS)[number]["id"];
+  type TabId =
+    | (typeof PRIMARY_TABS)[number]["id"]
+    | (typeof SECONDARY_TABS)[number]["id"];
 
   let {
     data,
@@ -34,6 +39,7 @@
   }: { data: LayoutData; children?: import("svelte").Snippet } = $props();
 
   let activeTab = $state<TabId>("overview");
+  let selectedAgentId = $state<string | null>(null);
   let isMobile = $state(false);
   let sseCrons = $state<CronData | null>(null);
   let buildIntegrity = $state<BuildIntegrityData | null>(null);
@@ -56,6 +62,18 @@
   setContext("noema-active-tab", {
     get current() {
       return activeTab;
+    },
+  });
+
+  setContext("noema-selected-agent", {
+    get agentId() {
+      return selectedAgentId;
+    },
+    selectAgent(id: string) {
+      selectedAgentId = id;
+    },
+    closeAgent() {
+      selectedAgentId = null;
     },
   });
 
@@ -103,13 +121,27 @@
       />
     {/if}
 
-    <nav class="tab-bar" aria-label="Dashboard tabs">
-      {#each TABS as tab (tab.id)}
+    <nav class="tab-bar tab-bar-primary" aria-label="Fő navigáció">
+      {#each PRIMARY_TABS as tab (tab.id)}
         <button
           type="button"
           class="tab-btn"
           class:active={activeTab === tab.id}
           class:tab-btn-mobile-crons={"mobileOnly" in tab && tab.mobileOnly}
+          onclick={() => (activeTab = tab.id)}
+        >
+          {tab.label}
+        </button>
+      {/each}
+    </nav>
+
+    <nav class="tab-bar tab-bar-secondary" aria-label="Eszközök">
+      <span class="tab-label">Tools:</span>
+      {#each SECONDARY_TABS as tab (tab.id)}
+        <button
+          type="button"
+          class="tab-btn tab-btn-secondary"
+          class:active={activeTab === tab.id}
           onclick={() => (activeTab = tab.id)}
         >
           {tab.label}
@@ -159,10 +191,32 @@
   .tab-bar {
     display: flex;
     gap: 2px;
-    margin-bottom: 16px;
+    margin-bottom: 8px;
     border-bottom: 2px solid var(--border);
     overflow-x: auto;
     scrollbar-width: none;
+    align-items: center;
+  }
+
+  .tab-bar-secondary {
+    margin-bottom: 16px;
+    border-bottom-width: 1px;
+    background: rgba(255, 255, 255, 0.02);
+    padding: 4px 0 0;
+  }
+
+  .tab-label {
+    color: var(--muted);
+    font-size: 0.78em;
+    padding: 0 10px 6px 4px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .tab-label::after {
+    content: "|";
+    margin-left: 10px;
+    opacity: 0.35;
   }
 
   .tab-bar::-webkit-scrollbar {
@@ -191,6 +245,18 @@
   .tab-btn.active {
     color: var(--accent);
     border-bottom-color: var(--accent);
+  }
+
+  .tab-btn-secondary {
+    font-size: 0.85em;
+    padding: 6px 10px;
+    border-bottom-width: 1px;
+    margin-bottom: -1px;
+  }
+
+  .tab-bar-secondary .tab-btn.active {
+    border-bottom-color: var(--muted);
+    color: var(--text);
   }
 
   .tab-btn-mobile-crons {

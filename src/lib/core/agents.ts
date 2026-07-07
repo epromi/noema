@@ -203,9 +203,12 @@ export async function getAgents(providers?: AllProviders): Promise<AgentData> {
 
     for (const def of AGENT_DEFS) {
       let days = 999;
+      let memory: string | undefined;
       try {
         const statusFile = await p.filesystem.readAgentStatus(def.id);
         days = await fileAgeDays(statusFile.path);
+        const trimmed = statusFile.content?.trim();
+        if (trimmed) memory = trimmed;
       } catch {
         /* fallback to stale via status.md when API/files unavailable */
       }
@@ -231,6 +234,7 @@ export async function getAgents(providers?: AllProviders): Promise<AgentData> {
         spawnCount: spawnCounts.get(def.id) ?? 0,
         lastActive: formatRelativeMs(summary.lastActiveMs, nowMs),
         uptime: formatUptime(summary.uptimeMs),
+        memory,
       });
     }
 

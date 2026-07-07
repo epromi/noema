@@ -183,3 +183,33 @@ A `+page.svelte` olvassa a context-et és render-eli az `AgentDetailPanel`-t az 
 - [ ] A panel becsukható (✕ gomb)
 - [ ] Mobilon a panel teljes szélességben nyílik (ne a jobb oldalon)
 - [ ] Tailscale-en keresztül is működik
+
+
+## 🎯 Mit
+
+_Placeholder — to be filled._
+
+
+## 📐 Scope
+
+_Placeholder — to be filled._
+
+
+## Mit érint
+
+_Placeholder — to be filled._
+
+
+## Mit NEM érint
+
+_Placeholder — to be filled._
+
+
+## Fázisok
+
+_Placeholder — to be filled._
+
+
+## ✅ Acceptance Criteria
+
+_Placeholder — to be filled._

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { getContext } from "svelte";
   import type { AgentData, AgentEntry, H1ViktorStatus } from "$lib/types";
 
   let {
@@ -8,6 +9,21 @@
     agents: AgentData;
     viktor: H1ViktorStatus;
   } = $props();
+
+  const agentContext = getContext<{
+    selectAgent: (id: string) => void;
+  }>("noema-selected-agent");
+
+  function handleAgentSelect(id: string) {
+    agentContext?.selectAgent(id);
+  }
+
+  function handleRowKeydown(event: KeyboardEvent, id: string) {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      handleAgentSelect(id);
+    }
+  }
 
   const statusOrder: Record<AgentEntry["status"], number> = {
     red: 0,
@@ -69,7 +85,14 @@
         </thead>
         <tbody>
           {#each sortedAgents as agent (agent.id)}
-            <tr class={staleBorderClass(agent.lastRun)}>
+            <tr
+              class={staleBorderClass(agent.lastRun)}
+              class:clickable={true}
+              role="button"
+              tabindex="0"
+              onclick={() => handleAgentSelect(agent.id)}
+              onkeydown={(e) => handleRowKeydown(e, agent.id)}
+            >
               <td class="col-emoji">{agent.emoji}</td>
               <td class="col-name">{agent.name}</td>
               <td class="col-status">
@@ -153,6 +176,16 @@
   .data-table tbody tr.stale-red {
     border-left: 3px solid var(--red);
     background: var(--r-bg);
+  }
+
+  .data-table tbody tr.clickable {
+    cursor: pointer;
+  }
+
+  .data-table tbody tr.clickable:hover,
+  .data-table tbody tr.clickable:focus-visible {
+    background: rgba(255, 255, 255, 0.04);
+    outline: none;
   }
 
   .col-emoji {

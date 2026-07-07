@@ -27,6 +27,7 @@ import {
   truncateName,
 } from "./dev-packages.js";
 import { getBuildIntegrity } from "./build-integrity.js";
+import { enrichAgentsData } from "./agent-detail.js";
 
 export type { GroupedPackages, PackageStats } from "./dev-packages.js";
 
@@ -75,7 +76,7 @@ export async function getAllData(
   return {
     meta: { loadedAt: Date.now() },
     crons,
-    agents,
+    agents: enrichAgentsData(agents, logs.entries),
     health,
     buildIntegrity,
     h1,
@@ -118,3 +119,4 @@ export {
   truncateName,
   getBuildIntegrity,
 };
+export { enrichAgentsData, filterLogsForAgent } from "./agent-detail.js";

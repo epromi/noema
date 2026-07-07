@@ -1,7 +1,17 @@
 <script lang="ts">
+  import { getContext } from "svelte";
   import type { CronData, CronEntry } from "$lib/types";
 
   let { crons }: { crons: CronData } = $props();
+
+  const agentContext = getContext<{
+    selectAgent: (id: string) => void;
+  }>("noema-selected-agent");
+
+  function handleAgentSelect(agentId: string, event: MouseEvent) {
+    event.stopPropagation();
+    agentContext?.selectAgent(agentId);
+  }
 
   const CRON_DESCRIPTIONS: Record<string, string> = {
     "Autoresearch Orchestrator":
@@ -105,7 +115,15 @@
           {#each sortedCrons as cron (cron.id)}
             <tr class:disabled={!cron.enabled}>
               <td class="col-name">{cron.name}</td>
-              <td>{cron.agentId}</td>
+              <td class="col-agent">
+                <button
+                  type="button"
+                  class="agent-link"
+                  onclick={(e) => handleAgentSelect(cron.agentId, e)}
+                >
+                  {cron.agentId}
+                </button>
+              </td>
               <td class="mono">{cron.schedule}</td>
               <td class="col-desc">{cronDescription(cron)}</td>
               <td class="mono">{formatLastRun(cron.lastRunAtMs)}</td>
@@ -178,6 +196,25 @@
   .col-name {
     font-weight: 500;
     white-space: nowrap;
+  }
+
+  .col-agent {
+    white-space: nowrap;
+  }
+
+  .agent-link {
+    background: none;
+    border: none;
+    padding: 0;
+    color: var(--accent);
+    cursor: pointer;
+    font: inherit;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .agent-link:hover {
+    color: var(--text);
   }
 
   .col-desc {
