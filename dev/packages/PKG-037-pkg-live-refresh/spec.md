@@ -126,3 +126,33 @@ Ha még nincs SSE kliens a Noema/Dev tab-hoz:
 - [ ] Fallback: ha a watcher nem indul, a 60 mp-es collector ciklus működik tovább
 - [ ] Csak a noema adatok frissülnek — a többi dashboard adat nem változik feleslegesen
 - [ ] Tailscale-en keresztül is működik (SSE a böngésző és a szerver között)
+
+
+## 🎯 Mit
+
+_Placeholder — to be filled._
+
+
+## 📐 Scope
+
+_Placeholder — to be filled._
+
+
+## Mit érint
+
+_Placeholder — to be filled._
+
+
+## Mit NEM érint
+
+_Placeholder — to be filled._
+
+
+## Fázisok
+
+_Placeholder — to be filled._
+
+
+## ✅ Acceptance Criteria
+
+_Placeholder — to be filled._
