@@ -142,26 +142,26 @@ describe("getHistory — direct session file reading", () => {
     expect(msgs).toHaveLength(2);
 
     // tool_call
-    expect(msgs[0].role).toBe("tool.call");
-    expect(msgs[0].toolName).toBe("read");
-    expect((msgs[0].content as Record<string, unknown>).name).toBe("read");
-    expect((msgs[0].content as Record<string, unknown>).toolCallId).toBe(
+    expect(msgs[0]!.role).toBe("tool.call");
+    expect(msgs[0]!.toolName).toBe("read");
+    expect((msgs[0]!.content as Record<string, unknown>).name).toBe("read");
+    expect((msgs[0]!.content as Record<string, unknown>).toolCallId).toBe(
       "toolu_abc",
     );
     expect(
-      (msgs[0].content as Record<string, unknown>).arguments,
+      (msgs[0]!.content as Record<string, unknown>).arguments,
     ).toEqual({ path: "memory/rules.md" });
-    expect(msgs[0].timestamp).toBe(1000);
+    expect(msgs[0]!.timestamp).toBe(1000);
 
     // tool_result
-    expect(msgs[1].role).toBe("tool.result");
+    expect(msgs[1]!.role).toBe("tool.result");
     expect(
-      (msgs[1].content as Record<string, unknown>).toolCallId,
+      (msgs[1]!.content as Record<string, unknown>).toolCallId,
     ).toBe("toolu_abc");
     expect(
-      (msgs[1].content as Record<string, unknown>).isError,
+      (msgs[1]!.content as Record<string, unknown>).isError,
     ).toBe(false);
-    expect(msgs[1].timestamp).toBe(1200);
+    expect(msgs[1]!.timestamp).toBe(1200);
   });
 
   it("parses user messages", async () => {
@@ -183,9 +183,9 @@ describe("getHistory — direct session file reading", () => {
     );
 
     expect(msgs).toHaveLength(1);
-    expect(msgs[0].role).toBe("user");
-    expect(msgs[0].content).toBe("Hello, check the dashboard");
-    expect(msgs[0].timestamp).toBe(500);
+    expect(msgs[0]!.role).toBe("user");
+    expect(msgs[0]!.content).toBe("Hello, check the dashboard");
+    expect(msgs[0]!.timestamp).toBe(500);
   });
 
   it("parses assistant messages", async () => {
@@ -210,9 +210,9 @@ describe("getHistory — direct session file reading", () => {
     );
 
     expect(msgs).toHaveLength(1);
-    expect(msgs[0].role).toBe("assistant");
-    expect(Array.isArray(msgs[0].content)).toBe(true);
-    expect(msgs[0].timestamp).toBe(800);
+    expect(msgs[0]!.role).toBe("assistant");
+    expect(Array.isArray(msgs[0]!.content)).toBe(true);
+    expect(msgs[0]!.timestamp).toBe(800);
   });
 
   it("skips thinking, error, and subagent_spawn events", async () => {
@@ -256,7 +256,7 @@ describe("getHistory — direct session file reading", () => {
 
     // Only the user message should be included
     expect(msgs).toHaveLength(1);
-    expect(msgs[0].role).toBe("user");
+    expect(msgs[0]!.role).toBe("user");
   });
 
   it("returns empty for non-existent session file", async () => {
@@ -297,7 +297,7 @@ describe("getHistory — direct session file reading", () => {
     );
     // Malformed lines are skipped by parseJson fallback; only valid ones count
     expect(msgs).toHaveLength(1);
-    expect(msgs[0].role).toBe("user");
+    expect(msgs[0]!.role).toBe("user");
   });
 
   it("preserves tool_result is_error flag", async () => {
@@ -346,7 +346,7 @@ describe("getHistory — direct session file reading", () => {
     );
 
     expect(msgs).toHaveLength(2);
-    expect(msgs[1].role).toBe("tool.result");
-    expect((msgs[1].content as Record<string, unknown>).isError).toBe(true);
+    expect(msgs[1]!.role).toBe("tool.result");
+    expect((msgs[1]!.content as Record<string, unknown>).isError).toBe(true);
   });
 });

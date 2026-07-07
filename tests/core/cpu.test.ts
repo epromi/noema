@@ -77,6 +77,7 @@ describe("cpu", () => {
           }
           return "";
         },
+        gatewayHealth: async () => "online",
       },
     });
 
@@ -95,6 +96,7 @@ describe("cpu", () => {
         h1Command: async () => "",
         gogCommand: async () => "",
         execCommand: async () => "",
+        gatewayHealth: async () => "online",
       },
     });
     expect(await getCpuData(mock)).toBeUndefined();

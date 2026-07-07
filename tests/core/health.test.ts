@@ -76,6 +76,7 @@ describe("health", () => {
         execCommand: async () => {
           throw new Error("exec failed");
         },
+        gatewayHealth: async () => "online",
       },
     });
     const data = await getHealth(mock);

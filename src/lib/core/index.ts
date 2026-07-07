@@ -1,5 +1,5 @@
 import type { AllProviders } from "$lib/providers/types";
-import type { DashboardData, DecisionTraceSessionOption } from "$lib/types";
+import type { DashboardData, DecisionTrace, DecisionTraceSessionOption } from "$lib/types";
 import { getProvider } from "$lib/providers";
 import { getAgents } from "./agents.js";
 import { getBills } from "./bills.js";
@@ -67,7 +67,7 @@ export async function getAllData(
   // ⚡ Lazábban — csak on-demand (user rákattint a Decision Trace tab-ra)
   const decisionTrace = {
     sessions: [] as DecisionTraceSessionOption[],
-    traces: {} as Record<string, unknown>,
+    traces: {} as Record<string, DecisionTrace>,
     defaultSessionKey: "",
     updatedAt: Date.now(),
   };

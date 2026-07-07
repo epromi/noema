@@ -18,6 +18,7 @@ describe("calendar", () => {
           throw new Error("gog unavailable");
         },
         execCommand: async () => "",
+        gatewayHealth: async () => "online",
       },
     });
     const data = await getCalendar(mock);

@@ -128,6 +128,7 @@ function createH1Mock(
       },
       gogCommand: async () => "",
       execCommand: async () => "ok",
+      gatewayHealth: async () => "online",
       ...overrides.tool,
     },
     filesystem: {
@@ -357,6 +358,7 @@ describe("h1 providers", () => {
         },
         gogCommand: async () => "",
         execCommand: async () => "",
+        gatewayHealth: async () => "online",
       },
     });
     const data = await getH1Data(mock);
