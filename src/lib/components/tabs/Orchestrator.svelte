@@ -27,7 +27,7 @@
     formatTimeLabel,
     isSpanningSched,
     parseDisplayMinutes,
-  } from "../../../../lib/cron-schedule.cjs";
+  } from "$lib/core/cron-utils";
 
   const RELAY_URL = DEFAULT_RELAY_URL;
   const POLL_MS = 5000;

@@ -9,7 +9,7 @@
     formatTimeLabel,
     isSpanningSched,
     parseDisplayMinutes,
-  } from "../../../../lib/cron-schedule.cjs";
+  } from "$lib/core/cron-utils";
 
   const SIDEBAR_WINDOW_MS = 24 * 60 * 60 * 1000;
   const REFRESH_MS = 30_000;
