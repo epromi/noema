@@ -105,24 +105,42 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Check if source code changed
+        id: changes
+        run: |\n          SKIP_DATA_ONLY='^(dashboard\.html|README\.md|CHANGELOG\.md|\.gitignore)$'
+          if git diff --name-only HEAD~1 HEAD | grep -qvE "$SKIP_DATA_ONLY"; then
+            echo "needs_build=true" >> $GITHUB_OUTPUT
+          else
+            echo "needs_build=false" >> $GITHUB_OUTPUT
+            echo "⏭️  Only data/docs files changed — skipping SvelteKit pipeline"
+          fi
 
       - uses: pnpm/action-setup@v4
+        if: steps.changes.outputs.needs_build == 'true'
         with:
           version: 11
 
       - uses: actions/setup-node@v4
+        if: steps.changes.outputs.needs_build == 'true'
         with:
           node-version: 22
           cache: pnpm
 
       - name: Install dependencies
+        if: steps.changes.outputs.needs_build == 'true'
         run: pnpm install --frozen-lockfile
 
       - name: Typecheck
+        if: steps.changes.outputs.needs_build == 'true'
         run: pnpm check
 
       - name: Build
+        if: steps.changes.outputs.needs_build == 'true'
         run: pnpm build
 
       - name: Test
+        if: steps.changes.outputs.needs_build == 'true'
         run: pnpm test

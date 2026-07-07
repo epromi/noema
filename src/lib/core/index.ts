@@ -1,5 +1,5 @@
 import type { AllProviders } from "$lib/providers/types";
-import type { DashboardData } from "$lib/types";
+import type { DashboardData, DecisionTraceSessionOption } from "$lib/types";
 import { getProvider } from "$lib/providers";
 import { getAgents } from "./agents.js";
 import { getBills } from "./bills.js";
@@ -11,7 +11,7 @@ import { getNoema, getActionQueue, getBrainstorm } from "./noema.js";
 import { getResearch } from "./research.js";
 import { getLogs } from "./logs.js";
 import { getAuditTrail } from "./audit-trail.js";
-import { getDecisionTrace } from "./decision-trace.js";
+import { getDecisionTrace, getDecisionTraceData } from "./decision-trace.js";
 import {
   getDevLoopLog,
   getRunningDevLoop,
