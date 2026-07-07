@@ -164,7 +164,7 @@
     const pkg = data.devPackages.packages.find(
       (p: DevPackageEntry) => p.id === pkgId,
     );
-    const estimatedMs = (pkg?.estimatedMinutes ?? 90) * 60_000;
+    const estimatedMs = (pkg?.estimatedMinutes ?? 10) * 60_000;
 
     try {
       await fetch(`/api/log/${encodeURIComponent(pkgId)}/queue`, {

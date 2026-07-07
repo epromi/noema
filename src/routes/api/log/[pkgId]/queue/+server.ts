@@ -8,7 +8,7 @@ export const POST: RequestHandler = async ({ params, request }) => {
     return json({ ok: false, error: "Missing pkgId" }, { status: 400 });
   }
 
-  let estimatedMs = 90 * 60_000;
+  let estimatedMs = 10 * 60_000;
   try {
     const body = (await request.json()) as { estimatedMs?: number };
     if (typeof body.estimatedMs === "number" && body.estimatedMs > 0) {
