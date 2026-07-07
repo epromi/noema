@@ -5,14 +5,34 @@
 
 const DAY_NAMES = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
 
+function captureInt(match: RegExpMatchArray, index: number): number {
+  return parseInt(match[index]!, 10);
+}
+
 function parseLastRun(lastStr: string | null | undefined): Date | null {
   if (!lastStr || lastStr === '—') return null;
   const m = lastStr.match(/(\d{4})-(\d{2})-(\d{2})[T\s](\d{2}):(\d{2})/);
-  if (m) return new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], 0);
+  if (m) {
+    return new Date(
+      captureInt(m, 1),
+      captureInt(m, 2) - 1,
+      captureInt(m, 3),
+      captureInt(m, 4),
+      captureInt(m, 5),
+      0,
+    );
+  }
   const m2 = lastStr.match(/(\d{2})-(\d{2})\s+(\d{2}):(\d{2})/);
   if (m2) {
     const year = new Date().getFullYear();
-    return new Date(year, +m2[1] - 1, +m2[2], +m2[3], +m2[4], 0);
+    return new Date(
+      year,
+      captureInt(m2, 1) - 1,
+      captureInt(m2, 2),
+      captureInt(m2, 3),
+      captureInt(m2, 4),
+      0,
+    );
   }
   const d = new Date(lastStr);
   return isNaN(d.getTime()) ? null : d;
@@ -29,11 +49,11 @@ export function isSpanningSched(sched: string): boolean {
 export function parseDisplayMinutes(sched: string): number | null {
   if (!sched || sched === '—' || sched === 'auto') return null;
   const hm = sched.match(/(\d{1,2}):(\d{2})/);
-  if (hm) return parseInt(hm[1], 10) * 60 + parseInt(hm[2], 10);
+  if (hm) return captureInt(hm, 1) * 60 + captureInt(hm, 2);
   const range = sched.match(/^(\d{1,2})-/);
-  if (range) return parseInt(range[1], 10) * 60;
+  if (range) return captureInt(range, 1) * 60;
   const comma = sched.match(/^(\d{1,2}),/);
-  if (comma) return parseInt(comma[1], 10) * 60;
+  if (comma) return captureInt(comma, 1) * 60;
   return null;
 }
 
@@ -48,7 +68,7 @@ export function computeNextRun(sched: string, lastRunStr: string | null, now: Da
       const m = part.trim().match(/(\d{1,2}):(\d{2})/);
       if (!m) continue;
       const d = new Date(today);
-      d.setHours(+m[1], +m[2], 0, 0);
+      d.setHours(captureInt(m, 1), captureInt(m, 2), 0, 0);
       if (d.getTime() <= nowMs) d.setDate(d.getDate() + 1);
       candidates.push(d.getTime());
     }
@@ -56,9 +76,9 @@ export function computeNextRun(sched: string, lastRunStr: string | null, now: Da
   }
   const dayMatch = sched.match(/(\d{1,2}):(\d{2})\s+(Mon|Tue|Wed|Thu|Fri|Sat|Sun)/i);
   if (dayMatch) {
-    const targetDay = DAY_NAMES.indexOf(dayMatch[3].toLowerCase().slice(0, 3));
+    const targetDay = DAY_NAMES.indexOf(dayMatch[3]!.toLowerCase().slice(0, 3));
     const d = new Date(now);
-    d.setHours(+dayMatch[1], +dayMatch[2], 0, 0);
+    d.setHours(captureInt(dayMatch, 1), captureInt(dayMatch, 2), 0, 0);
     let daysAhead = (targetDay - d.getDay() + 7) % 7;
     if (daysAhead === 0 && d.getTime() <= nowMs) daysAhead = 7;
     d.setDate(d.getDate() + daysAhead);
@@ -66,7 +86,9 @@ export function computeNextRun(sched: string, lastRunStr: string | null, now: Da
   }
   const intervalMatch = sched.match(/(\d{1,2}):(\d{2})\s+\/(\d+)d/);
   if (intervalMatch) {
-    const h = +intervalMatch[1], min = +intervalMatch[2], intervalDays = +intervalMatch[3];
+    const h = captureInt(intervalMatch, 1);
+    const min = captureInt(intervalMatch, 2);
+    const intervalDays = captureInt(intervalMatch, 3);
     let base = new Date(today);
     base.setHours(h, min, 0, 0);
     const last = parseLastRun(lastRunStr);
@@ -76,12 +98,12 @@ export function computeNextRun(sched: string, lastRunStr: string | null, now: Da
   }
   const everyMatch = sched.match(/every\s+(\d+)\s*h/i);
   if (everyMatch) {
-    const intervalMs = +everyMatch[1] * 3600000;
+    const intervalMs = captureInt(everyMatch, 1) * 3600000;
     const last = parseLastRun(lastRunStr);
     if (last) { let next = last.getTime() + intervalMs; while (next <= nowMs) next += intervalMs; return next; }
     const d = new Date(now);
     d.setMinutes(0, 0, 0);
-    const step = +everyMatch[1];
+    const step = captureInt(everyMatch, 1);
     const aligned = d.getHours() - (d.getHours() % step) + step;
     d.setHours(aligned, 0, 0, 0);
     if (d.getTime() <= nowMs) d.setTime(d.getTime() + intervalMs);
@@ -89,7 +111,9 @@ export function computeNextRun(sched: string, lastRunStr: string | null, now: Da
   }
   const rangeHourly = sched.match(/^(\d{1,2})-(\d{1,2})\s+hourly/i);
   if (rangeHourly) {
-    const start = +rangeHourly[1], end = +rangeHourly[2], h = now.getHours();
+    const start = captureInt(rangeHourly, 1);
+    const end = captureInt(rangeHourly, 2);
+    const h = now.getHours();
     if (h >= start && h < end) {
       const d = new Date(now);
       d.setMinutes(0, 0, 0);
@@ -106,7 +130,12 @@ export function computeNextRun(sched: string, lastRunStr: string | null, now: Da
     return Math.min(...sched.split(',').map(hr => { const d = new Date(today); d.setHours(+hr.trim(), 0, 0, 0); if (d.getTime() <= nowMs) d.setDate(d.getDate() + 1); return d.getTime(); }));
   }
   const hm = sched.match(/(\d{1,2}):(\d{2})/);
-  if (hm) { const d = new Date(today); d.setHours(+hm[1], +hm[2], 0, 0); if (d.getTime() <= nowMs) d.setDate(d.getDate() + 1); return d.getTime(); }
+  if (hm) {
+    const d = new Date(today);
+    d.setHours(captureInt(hm, 1), captureInt(hm, 2), 0, 0);
+    if (d.getTime() <= nowMs) d.setDate(d.getDate() + 1);
+    return d.getTime();
+  }
   return null;
 }
 

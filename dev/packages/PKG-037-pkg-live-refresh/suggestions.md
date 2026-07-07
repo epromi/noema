@@ -1,0 +1,1 @@
+💡 SUGGESTION: When INDEX.md changes, call a targeted `collectDevPackagesOnce()` that merges only `devPackages` into cache instead of full `getAllData()` — reduces load on unrelated data sources while still broadcasting the full cached dashboard via SSE.
