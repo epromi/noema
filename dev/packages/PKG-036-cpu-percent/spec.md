@@ -54,8 +54,38 @@ A `cpuPercent` automatikusan az osztály szerinti színt kapja, mivel ugyanabban
 
 ## Elfogadási Kritériumok
 
-- [ ] A rendszer sorban a CPU így jelenik meg: `CPU: 31% (1.23 0.87 0.67)`
-- [ ] A százalék színe követi a load level-t (zöld/sárga/piros)
-- [ ] A "Procs: N" változatlan marad
-- [ ] A `CpuWidget` list módja (Top CPU) változatlan
-- [ ] Tailscale-en keresztül is működik
+- [x] A rendszer sorban a CPU így jelenik meg: `CPU: 31% (1.23 0.87 0.67)`
+- [x] A százalék színe követi a load level-t (zöld/sárga/piros)
+- [x] A "Procs: N" változatlan marad
+- [x] A `CpuWidget` list módja (Top CPU) változatlan
+- [x] Tailscale-en keresztül is működik
+
+
+## 🎯 Mit
+
+_Placeholder — to be filled._
+
+
+## 📐 Scope
+
+_Placeholder — to be filled._
+
+
+## Mit érint
+
+_Placeholder — to be filled._
+
+
+## Mit NEM érint
+
+_Placeholder — to be filled._
+
+
+## Fázisok
+
+_Placeholder — to be filled._
+
+
+## ✅ Acceptance Criteria
+
+_Placeholder — to be filled._

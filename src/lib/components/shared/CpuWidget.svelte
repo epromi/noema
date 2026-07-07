@@ -33,11 +33,15 @@
   const maxCpu = $derived(
     cpu?.topProcesses.reduce((max, p) => Math.max(max, p.cpuPercent), 0) ?? 0,
   );
+
+  const cpuPercent = $derived(
+    cpu ? Math.round((cpu.load1 / cpu.coreCount) * 100) : 0,
+  );
 </script>
 
 {#if cpu && (part === "bar" || part === "both")}
   <span class="sys-item cpu-load {loadClass(cpu)}">
-    CPU: {formatLoad(cpu)}
+    CPU: {cpuPercent}% ({formatLoad(cpu)})
   </span>
   <span class="sys-item">Procs: {cpu.totalProcs}</span>
 {/if}

@@ -75,8 +75,9 @@ describe("cron-utils", () => {
 
     it("moves to tomorrow if time has already passed", () => {
       const next = computeNextRun("06:00", null, now);
+      expect(next).not.toBeNull();
       expect(next).toBeGreaterThan(nowMs);
-      const d = new Date(next);
+      const d = new Date(next as number);
       // Should be tomorrow
       const diffDays = Math.floor((d.getTime() - nowMs) / 86_400_000);
       expect(diffDays).toBeGreaterThanOrEqual(0);
@@ -110,9 +111,10 @@ describe("cron-utils", () => {
     it("handles every-N-hours with last run", () => {
       const lastRun = new Date("2026-07-07T11:00:00Z").toISOString();
       const next = computeNextRun("every 3h", lastRun, now);
+      expect(next).not.toBeNull();
       expect(next).toBeGreaterThan(nowMs);
       // Should be lastRun + 3h = 14:00, which is >= now, so next after that = 17:00
-      const d = new Date(next);
+      const d = new Date(next as number);
       // The algorithm adds until > nowMs, so next after 11+3=14 should be 17:00 if now is 14:00
       // But let's just check it's in the future
       expect(next).toBeGreaterThan(nowMs);
