@@ -37,6 +37,8 @@ logs/
 coverage/
 build
 
+# OpenClaw agent runtime — NEVER commit (secrets, tokens, sessions)
+.openclaw/
+
 # Generated runtime data
 data/
-.openclaw/trajectory-exports/
