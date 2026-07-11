@@ -301,7 +301,10 @@ export function createOpenClawProviders(
                   name: block.name,
                   arguments: (block.input ?? {}) as Record<string, unknown>,
                 },
-                timestamp: typeof ts === "number" && Number.isFinite(ts) ? ts : undefined,
+                timestamp:
+                  typeof ts === "number" && Number.isFinite(ts)
+                    ? ts
+                    : undefined,
                 toolName:
                   typeof block.name === "string" ? block.name : undefined,
               });
@@ -318,19 +321,28 @@ export function createOpenClawProviders(
                   content: block.content,
                   isError: block.is_error,
                 },
-                timestamp: typeof ts === "number" && Number.isFinite(ts) ? ts : undefined,
+                timestamp:
+                  typeof ts === "number" && Number.isFinite(ts)
+                    ? ts
+                    : undefined,
               });
             } else if (event.type === "user") {
               messages.push({
                 role: "user",
                 content: msg.content,
-                timestamp: typeof ts === "number" && Number.isFinite(ts) ? ts : undefined,
+                timestamp:
+                  typeof ts === "number" && Number.isFinite(ts)
+                    ? ts
+                    : undefined,
               });
             } else if (event.type === "assistant") {
               messages.push({
                 role: "assistant",
                 content: msg.content,
-                timestamp: typeof ts === "number" && Number.isFinite(ts) ? ts : undefined,
+                timestamp:
+                  typeof ts === "number" && Number.isFinite(ts)
+                    ? ts
+                    : undefined,
               });
             }
             // Skip: thinking, error, subagent_spawn — not tool calls

@@ -100,9 +100,7 @@ export function verifyBuildArtifacts(
     if (staleFiles.length > 0) {
       const preview = staleFiles.slice(0, 10).join(", ");
       const more =
-        staleFiles.length > 10
-          ? ` +${staleFiles.length - 10} more`
-          : "";
+        staleFiles.length > 10 ? ` +${staleFiles.length - 10} more` : "";
       errors.push(
         `❌ Source files newer than build — build stale: ${preview}${more}. Re-run pnpm build.`,
       );

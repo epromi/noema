@@ -1,5 +1,9 @@
 import type { AllProviders } from "$lib/providers/types";
-import type { DashboardData, DecisionTrace, DecisionTraceSessionOption } from "$lib/types";
+import type {
+  DashboardData,
+  DecisionTrace,
+  DecisionTraceSessionOption,
+} from "$lib/types";
 import { getProvider } from "$lib/providers";
 import { getAgents } from "./agents.js";
 import { getBills } from "./bills.js";

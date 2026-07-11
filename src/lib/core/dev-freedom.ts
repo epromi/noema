@@ -62,10 +62,7 @@ export function extractStatusLine(specText: string): string {
   return match?.[0] ?? "";
 }
 
-function parseMetadataField(
-  source: string,
-  field: string,
-): string | undefined {
+function parseMetadataField(source: string, field: string): string | undefined {
   const patterns = [
     new RegExp(`\\*\\*${field}\\*\\*:\\s*([^|\\n]+)`, "i"),
     new RegExp(`${field}:\\s*([^|\\n]+)`, "i"),
@@ -150,17 +147,19 @@ export function generateResearchQueries(
 
   const subject = extractSpecSubject(specText);
   const tech = inferTechnology(specText);
-  return [
-    `${subject} dashboard design pattern`,
-    `${tech} best practice 2026`,
-  ];
+  return [`${subject} dashboard design pattern`, `${tech} best practice 2026`];
 }
 
 function parseResearchTopics(topicsContent?: string): string[] {
   if (!topicsContent?.trim()) return [];
   return topicsContent
     .split("\n")
-    .map((line) => line.replace(/^[-*]\s*/, "").replace(/^\d+\.\s*/, "").trim())
+    .map((line) =>
+      line
+        .replace(/^[-*]\s*/, "")
+        .replace(/^\d+\.\s*/, "")
+        .trim(),
+    )
     .filter((line) => line.length > 3 && !line.startsWith("#"));
 }
 

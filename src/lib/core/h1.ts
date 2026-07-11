@@ -22,10 +22,18 @@ const OPEN_REPORT_STATES = new Set([
 
 let programsCache: { programs: H1Program[]; fetchedAt: number } | null = null;
 let programsFetchPromise: Promise<H1Program[]> | null = null;
-let reportsCache: { reports: H1Report[]; raw: unknown; fetchedAt: number } | null = null;
+let reportsCache: {
+  reports: H1Report[];
+  raw: unknown;
+  fetchedAt: number;
+} | null = null;
 let reportsFetchPromise: Promise<H1Report[]> | null = null;
-let balanceCache: { balance: { amount: number; display: string }; fetchedAt: number } | null = null;
-let balanceFetchPromise: Promise<{ amount: number; display: string }> | null = null;
+let balanceCache: {
+  balance: { amount: number; display: string };
+  fetchedAt: number;
+} | null = null;
+let balanceFetchPromise: Promise<{ amount: number; display: string }> | null =
+  null;
 let h1DataPromise: Promise<H1Data> | null = null;
 
 /** Reset in-memory H1 API cache (for tests). */
@@ -575,84 +583,86 @@ export async function getH1Data(providers?: AllProviders): Promise<H1Data> {
   if (h1DataPromise) return h1DataPromise;
 
   h1DataPromise = (async () => {
-  const p = providers ?? getProvider();
+    const p = providers ?? getProvider();
 
-  try {
-    const [atAGlance, balanceResult, reportsRaw, programs, viktor] =
-      await Promise.all([
-        p.filesystem.readMemory("at-a-glance.md").catch(() => ""),
-        getH1Balance(p),
-        getH1ReportsRaw(p),
-        getH1Programs(p),
-        getH1ViktorStatus(p),
-      ]);
-
-    const reports = parseH1Reports(reportsRaw);
-    const signalData = getH1Signal(reportsRaw, atAGlance);
-    const stats = getH1Stats(reports, signalData, signalData.open);
-
-    let programsSummary = formatProgramsSummary(programs, "");
-    let enrichedPrograms = programs;
     try {
-      const scout = await p.filesystem.readAgentStatus("scout");
-      programsSummary = formatProgramsSummary(programs, scout.content);
-      enrichedPrograms = enrichProgramsWithScout(programs, scout.content);
-    } catch {
-      enrichedPrograms = enrichProgramsWithScout(programs, "");
-    }
+      const [atAGlance, balanceResult, reportsRaw, programs, viktor] =
+        await Promise.all([
+          p.filesystem.readMemory("at-a-glance.md").catch(() => ""),
+          getH1Balance(p),
+          getH1ReportsRaw(p),
+          getH1Programs(p),
+          getH1ViktorStatus(p),
+        ]);
 
-    return {
-      stats,
-      balance: balanceResult.display,
-      balanceAmount: balanceResult.amount,
-      programs: programsSummary,
-      programList: enrichedPrograms,
-      reports,
-      signal: {
-        signal: signalData.signal,
-        reputation: signalData.reputation,
-        trial: signalData.trial,
-      },
-      viktor,
-      updatedAt: Date.now(),
-    };
-  } catch (err) {
-    return {
-      stats: {
-        open: "?",
-        signal: "?",
-        reputation: "?",
-        trial: "0",
-        totalReports: 0,
-        resolved: 0,
-        duplicates: 0,
-        pending: 0,
-        notApplicable: 0,
-      },
-      balance: "unknown",
-      balanceAmount: 0,
-      programs: "unknown",
-      programList: [],
-      reports: [],
-      signal: { signal: "?", reputation: "?", trial: "0" },
-      viktor: {
-        totalCompleted: 0,
-        recall: 0,
-        h1Submitted: 0,
-        h1Accepted: 0,
-        activeLabel: "",
-        circuit: "Normal",
-        pending: 0,
-        failed: 0,
-        recallTrend: [],
-        blindSpots: [],
-        pendingRepos: [],
-      },
-      updatedAt: Date.now(),
-      error: String(err),
-    };
-  }
-  })().finally(() => { h1DataPromise = null; });
+      const reports = parseH1Reports(reportsRaw);
+      const signalData = getH1Signal(reportsRaw, atAGlance);
+      const stats = getH1Stats(reports, signalData, signalData.open);
+
+      let programsSummary = formatProgramsSummary(programs, "");
+      let enrichedPrograms = programs;
+      try {
+        const scout = await p.filesystem.readAgentStatus("scout");
+        programsSummary = formatProgramsSummary(programs, scout.content);
+        enrichedPrograms = enrichProgramsWithScout(programs, scout.content);
+      } catch {
+        enrichedPrograms = enrichProgramsWithScout(programs, "");
+      }
+
+      return {
+        stats,
+        balance: balanceResult.display,
+        balanceAmount: balanceResult.amount,
+        programs: programsSummary,
+        programList: enrichedPrograms,
+        reports,
+        signal: {
+          signal: signalData.signal,
+          reputation: signalData.reputation,
+          trial: signalData.trial,
+        },
+        viktor,
+        updatedAt: Date.now(),
+      };
+    } catch (err) {
+      return {
+        stats: {
+          open: "?",
+          signal: "?",
+          reputation: "?",
+          trial: "0",
+          totalReports: 0,
+          resolved: 0,
+          duplicates: 0,
+          pending: 0,
+          notApplicable: 0,
+        },
+        balance: "unknown",
+        balanceAmount: 0,
+        programs: "unknown",
+        programList: [],
+        reports: [],
+        signal: { signal: "?", reputation: "?", trial: "0" },
+        viktor: {
+          totalCompleted: 0,
+          recall: 0,
+          h1Submitted: 0,
+          h1Accepted: 0,
+          activeLabel: "",
+          circuit: "Normal",
+          pending: 0,
+          failed: 0,
+          recallTrend: [],
+          blindSpots: [],
+          pendingRepos: [],
+        },
+        updatedAt: Date.now(),
+        error: String(err),
+      };
+    }
+  })().finally(() => {
+    h1DataPromise = null;
+  });
 
   return h1DataPromise;
 }

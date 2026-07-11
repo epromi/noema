@@ -88,7 +88,11 @@ export interface CronProvider {
 export interface SessionProvider {
   listSessions(filter?: SessionFilter): Promise<Session[]>;
   /** Read session messages directly from disk — zero CLI spawns. Pass sessionId+agentId for direct file read. */
-  getHistory(sessionKey: string, sessionId?: string, agentId?: string): Promise<Message[]>;
+  getHistory(
+    sessionKey: string,
+    sessionId?: string,
+    agentId?: string,
+  ): Promise<Message[]>;
   spawnAgent(agentId: string, task: string): Promise<SpawnResult>;
 }
 

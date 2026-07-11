@@ -3,14 +3,14 @@
  * Used by SvelteKit SSR components (CJS imports don't work in Vite dev mode).
  */
 
-const DAY_NAMES = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+const DAY_NAMES = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
 
 function captureInt(match: RegExpMatchArray, index: number): number {
   return parseInt(match[index]!, 10);
 }
 
 function parseLastRun(lastStr: string | null | undefined): Date | null {
-  if (!lastStr || lastStr === '—') return null;
+  if (!lastStr || lastStr === "—") return null;
   const m = lastStr.match(/(\d{4})-(\d{2})-(\d{2})[T\s](\d{2}):(\d{2})/);
   if (m) {
     return new Date(
@@ -39,7 +39,7 @@ function parseLastRun(lastStr: string | null | undefined): Date | null {
 }
 
 export function isSpanningSched(sched: string): boolean {
-  if (!sched || sched === '—' || sched === 'auto') return false;
+  if (!sched || sched === "—" || sched === "auto") return false;
   if (/^\d{1,2}-\d{1,2}/.test(sched)) return true;
   if ((sched.match(/,/g) || []).length >= 2) return true;
   if (/every\s+\d+\s*h/i.test(sched)) return true;
@@ -47,7 +47,7 @@ export function isSpanningSched(sched: string): boolean {
 }
 
 export function parseDisplayMinutes(sched: string): number | null {
-  if (!sched || sched === '—' || sched === 'auto') return null;
+  if (!sched || sched === "—" || sched === "auto") return null;
   const hm = sched.match(/(\d{1,2}):(\d{2})/);
   if (hm) return captureInt(hm, 1) * 60 + captureInt(hm, 2);
   const range = sched.match(/^(\d{1,2})-/);
@@ -57,14 +57,18 @@ export function parseDisplayMinutes(sched: string): number | null {
   return null;
 }
 
-export function computeNextRun(sched: string, lastRunStr: string | null, now: Date = new Date()): number | null {
-  if (!sched || sched === '—' || sched === 'auto') return null;
+export function computeNextRun(
+  sched: string,
+  lastRunStr: string | null,
+  now: Date = new Date(),
+): number | null {
+  if (!sched || sched === "—" || sched === "auto") return null;
   const nowMs = now.getTime();
   const today = new Date(now);
   today.setHours(0, 0, 0, 0);
-  if (sched.includes('+')) {
+  if (sched.includes("+")) {
     const candidates: number[] = [];
-    for (const part of sched.split('+')) {
+    for (const part of sched.split("+")) {
       const m = part.trim().match(/(\d{1,2}):(\d{2})/);
       if (!m) continue;
       const d = new Date(today);
@@ -74,7 +78,9 @@ export function computeNextRun(sched: string, lastRunStr: string | null, now: Da
     }
     return candidates.length ? Math.min(...candidates) : null;
   }
-  const dayMatch = sched.match(/(\d{1,2}):(\d{2})\s+(Mon|Tue|Wed|Thu|Fri|Sat|Sun)/i);
+  const dayMatch = sched.match(
+    /(\d{1,2}):(\d{2})\s+(Mon|Tue|Wed|Thu|Fri|Sat|Sun)/i,
+  );
   if (dayMatch) {
     const targetDay = DAY_NAMES.indexOf(dayMatch[3]!.toLowerCase().slice(0, 3));
     const d = new Date(now);
@@ -100,7 +106,11 @@ export function computeNextRun(sched: string, lastRunStr: string | null, now: Da
   if (everyMatch) {
     const intervalMs = captureInt(everyMatch, 1) * 3600000;
     const last = parseLastRun(lastRunStr);
-    if (last) { let next = last.getTime() + intervalMs; while (next <= nowMs) next += intervalMs; return next; }
+    if (last) {
+      let next = last.getTime() + intervalMs;
+      while (next <= nowMs) next += intervalMs;
+      return next;
+    }
     const d = new Date(now);
     d.setMinutes(0, 0, 0);
     const step = captureInt(everyMatch, 1);
@@ -118,7 +128,12 @@ export function computeNextRun(sched: string, lastRunStr: string | null, now: Da
       const d = new Date(now);
       d.setMinutes(0, 0, 0);
       d.setHours(h + 1);
-      if (d.getHours() > end) { const t = new Date(today); t.setDate(t.getDate() + 1); t.setHours(start, 0, 0, 0); return t.getTime(); }
+      if (d.getHours() > end) {
+        const t = new Date(today);
+        t.setDate(t.getDate() + 1);
+        t.setHours(start, 0, 0, 0);
+        return t.getTime();
+      }
       return d.getTime();
     }
     const t = new Date(today);
@@ -127,7 +142,14 @@ export function computeNextRun(sched: string, lastRunStr: string | null, now: Da
     return t.getTime();
   }
   if (/^\d{1,2}(,\d{1,2})+$/.test(sched.trim())) {
-    return Math.min(...sched.split(',').map(hr => { const d = new Date(today); d.setHours(+hr.trim(), 0, 0, 0); if (d.getTime() <= nowMs) d.setDate(d.getDate() + 1); return d.getTime(); }));
+    return Math.min(
+      ...sched.split(",").map((hr) => {
+        const d = new Date(today);
+        d.setHours(+hr.trim(), 0, 0, 0);
+        if (d.getTime() <= nowMs) d.setDate(d.getDate() + 1);
+        return d.getTime();
+      }),
+    );
   }
   const hm = sched.match(/(\d{1,2}):(\d{2})/);
   if (hm) {
@@ -139,30 +161,35 @@ export function computeNextRun(sched: string, lastRunStr: string | null, now: Da
   return null;
 }
 
-export function formatCountdown(nextMs: number | null, nowMs: number = Date.now()): string {
-  if (!nextMs) return '—';
+export function formatCountdown(
+  nextMs: number | null,
+  nowMs: number = Date.now(),
+): string {
+  if (!nextMs) return "—";
   const diff = nextMs - nowMs;
-  if (diff < 0) return 'overdue';
+  if (diff < 0) return "overdue";
   const mins = Math.floor(diff / 60000);
   if (mins < 60) return `in ${mins}m`;
-  const hrs = Math.floor(mins / 60), rem = mins % 60;
+  const hrs = Math.floor(mins / 60),
+    rem = mins % 60;
   if (hrs < 24) return rem ? `in ${hrs}h ${rem}m` : `in ${hrs}h`;
-  const days = Math.floor(hrs / 24), remHrs = hrs % 24;
+  const days = Math.floor(hrs / 24),
+    remHrs = hrs % 24;
   return remHrs ? `in ${days}d ${remHrs}h` : `in ${days}d`;
 }
 
 export function formatTimeLabel(mins: number): string {
-  return `${String(Math.floor(mins / 60)).padStart(2, '0')}:${String(Math.floor(mins % 60)).padStart(2, '0')}`;
+  return `${String(Math.floor(mins / 60)).padStart(2, "0")}:${String(Math.floor(mins % 60)).padStart(2, "0")}`;
 }
 
 export function formatClock(now: Date = new Date()): string {
-  return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+  return `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}:${String(now.getSeconds()).padStart(2, "0")}`;
 }
 
 export function cronPeriod(mins: number): string {
-  if (mins >= 9999) return 'auto';
-  if (mins < 360) return 'night';
-  if (mins < 480) return 'morning';
-  if (mins < 1080) return 'day';
-  return 'evening';
+  if (mins >= 9999) return "auto";
+  if (mins < 360) return "night";
+  if (mins < 480) return "morning";
+  if (mins < 1080) return "day";
+  return "evening";
 }
