@@ -132,8 +132,8 @@ type ActionQueueColumn = "auto" | "alfred" | "andras";
 
 const DEFAULT_ACTIONS: Record<ActionQueueColumn, DashboardActionType[]> = {
   auto: [],
-  alfred: ["done", "escalate", "investigate"],
-  andras: ["done", "escalate"],
+  alfred: ["resolve", "investigate"],
+  andras: ["resolve", "delegate"],
 };
 
 /** Parse memory/state/action-queue.md into kanban columns. */
@@ -250,11 +250,11 @@ function buildActionItem(
   const checked = checkMark === "x" || checkMark === "X";
   if (section !== "auto" && checked) return null;
   if (section === "auto" && !checked) return null;
-  const { cleanText, actions } = parseActionSyntax(
+  const { cleanText, actions, options } = parseActionSyntax(
     rawDesc,
     DEFAULT_ACTIONS[section],
   );
-  return { id, desc: cleanText, meta, actions };
+  return { id, desc: cleanText, meta, actions, options };
 }
 
 const BRAINSTORM_SECTION_META: Record<

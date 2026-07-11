@@ -30,15 +30,43 @@ describe("noema", () => {
     expect(data.updatedAt).toBeGreaterThan(0);
   });
 
-  it("getActionQueue parses kanban columns with multi-actions", async () => {
+  it("getActionQueue parses kanban columns with column defaults and options", async () => {
     const data = await getActionQueue(createMockProviders());
     expect(data.alfred.length).toBe(1);
     expect(data.alfred[0]?.id).toBe("test_item");
-    expect(data.alfred[0]?.actions).toEqual(["done", "escalate"]);
+    expect(data.alfred[0]?.actions).toEqual(["resolve", "investigate"]);
+    expect(data.alfred[0]?.options).toEqual([]);
     expect(data.andras.length).toBe(1);
-    expect(data.andras[0]?.actions).toContain("done");
+    expect(data.andras[0]?.actions).toEqual(["resolve", "delegate"]);
+    expect(data.andras[0]?.options).toEqual([]);
     expect(data.auto.length).toBe(1);
     expect(data.auto[0]?.actions).toEqual([]);
+    expect(data.auto[0]?.options).toEqual([]);
+  });
+
+  it("getActionQueue parses A/B/C option syntax in András column", async () => {
+    const mock = createMockProviders({
+      filesystem: {
+        ...createMockProviders().filesystem,
+        readState: async (path) => {
+          if (path === "action-queue.md") {
+            return `# Action Queue
+## 🧑 András (1 item)
+- [ ] [07-08] [P1] decide_noema_crons — Noema QA timeout → [A: Csak build+test|B: Timeout 900s|C: V4 Pro modell]`;
+          }
+          return createMockProviders().filesystem.readState(path);
+        },
+      },
+    });
+    const data = await getActionQueue(mock);
+    expect(data.andras.length).toBe(1);
+    expect(data.andras[0]?.desc).toBe("Noema QA timeout");
+    expect(data.andras[0]?.actions).toEqual([]);
+    expect(data.andras[0]?.options).toEqual([
+      { key: "option_a", label: "A: Csak build+test" },
+      { key: "option_b", label: "B: Timeout 900s" },
+      { key: "option_c", label: "C: V4 Pro modell" },
+    ]);
   });
 
   it("getBrainstorm parses action-tracker sections and pending count", async () => {

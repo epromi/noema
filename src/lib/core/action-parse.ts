@@ -1,4 +1,4 @@
-import type { DashboardActionType } from "$lib/types";
+import type { ActionOption, DashboardActionType } from "$lib/types";
 
 /** Maps markdown action labels to dashboard relay action types. */
 export const LABEL_TO_ACTION: Record<string, DashboardActionType> = {
@@ -11,29 +11,66 @@ export const LABEL_TO_ACTION: Record<string, DashboardActionType> = {
   paid: "paid",
   implement: "implement",
   mehet: "implement",
+  resolve: "resolve",
+  delegate: "delegate",
 };
 
+/** Result of parsing action-queue line description. */
+export interface ParsedActionLine {
+  cleanText: string;
+  actions: DashboardActionType[];
+  options: ActionOption[];
+}
+
 /**
- * Parse trailing `→ [A|B|C]` syntax from action-queue or PROPOSE lines.
- * Falls back to `fallback` when syntax is missing or labels are unknown.
+ * Parse trailing `→ [A: label|B: label|C: label]` syntax.
+ * When options are found, they OVERRIDE the fallback actions.
+ * Falls back to `fallback` when syntax is missing or malformed.
  */
 export function parseActionSyntax(
   text: string,
   fallback: DashboardActionType[],
-): { cleanText: string; actions: DashboardActionType[] } {
+): ParsedActionLine {
   const match = text.match(/→\s*\[([^\]]+)\]\s*$/);
   if (!match) {
-    return { cleanText: text.trim(), actions: fallback };
+    return { cleanText: text.trim(), actions: fallback, options: [] };
   }
 
-  const labels = (match[1] ?? "").split("|").map((s) => s.trim());
-  const actions = labels
-    .map((label) => LABEL_TO_ACTION[label.toLowerCase()])
-    .filter((a): a is DashboardActionType => a != null);
-  const cleanText = text.replace(match[0], "").trim();
+  const rawOptions = (match[1] ?? "").split("|").map((s) => s.trim());
+  const cleanStripped = text.replace(match[0], "").trim();
 
-  return {
-    cleanText,
-    actions: actions.length > 0 ? actions : fallback,
-  };
+  const options: ActionOption[] = [];
+  for (let i = 0; i < rawOptions.length; i++) {
+    const opt = rawOptions[i];
+    if (!opt) continue;
+    const colonIdx = opt.indexOf(":");
+    if (colonIdx === -1) {
+      console.warn(
+        `[action-parse] Malformed option (no colon): "${opt}" in "${text}"`,
+      );
+      return { cleanText: cleanStripped, actions: fallback, options: [] };
+    }
+    const letter = opt.substring(0, colonIdx).trim().toUpperCase();
+    const label = opt.substring(colonIdx + 1).trim();
+    if (!/^[A-Z]$/.test(letter)) {
+      console.warn(
+        `[action-parse] Malformed option letter: "${letter}" in "${text}"`,
+      );
+      return { cleanText: cleanStripped, actions: fallback, options: [] };
+    }
+    if (options.length >= 5) {
+      console.warn(
+        `[action-parse] Too many options (max 5): ${rawOptions.length} in "${text}"`,
+      );
+      return { cleanText: cleanStripped, actions: fallback, options: [] };
+    }
+    const key = `option_${letter.toLowerCase()}` as DashboardActionType;
+    options.push({ key, label: `${letter}: ${label}` });
+  }
+
+  if (options.length === 0) {
+    return { cleanText: cleanStripped, actions: fallback, options: [] };
+  }
+
+  return { cleanText: cleanStripped, actions: [], options };
 }

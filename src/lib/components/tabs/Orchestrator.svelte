@@ -483,9 +483,10 @@
                 <div class="kb-desc">{item.desc}</div>
                 <div class="kb-meta">
                   <span>{item.meta}</span>
-                  {#if item.actions.length > 0}
+                  {#if item.actions.length > 0 || item.options.length > 0}
                     <ActionButtonGroup
                       actions={item.actions}
+                      options={item.options}
                       itemId={item.id}
                       description={item.desc}
                       getState={getActionState}

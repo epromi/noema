@@ -64,7 +64,7 @@ describe("research", () => {
     expect(data.proposals.length).toBeGreaterThan(0);
     expect(data.proposals[0]?.id).toBe("P-1");
     expect(data.proposals[0]?.finding).toBe("Test finding");
-    expect(data.proposals[0]?.actions).toEqual(["implement", "done"]);
+    expect(data.proposals[0]?.actions).toEqual(["implement"]);
     expect(data.proposals[1]?.actions).toEqual(["implement"]);
     expect(data.updatedAt).toBeGreaterThan(0);
   });

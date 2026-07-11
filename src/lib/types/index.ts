@@ -299,14 +299,27 @@ export interface ResearchData {
   error?: string;
 }
 
+/** A single A/B/C decision option parsed from → [A: label|B: label] syntax. */
+export interface ActionOption {
+  key: string;
+  label: string;
+}
+
 /** Dashboard action relay types (orchestrator kanban + research proposals). */
 export type DashboardActionType =
+  | "resolve"
+  | "delegate"
+  | "investigate"
+  | "option_a"
+  | "option_b"
+  | "option_c"
+  | "option_d"
+  | "option_e"
   | "implement"
   | "done"
   | "escalate"
   | "restart"
   | "trigger"
-  | "investigate"
   | "activate"
   | "paid";
 
@@ -315,6 +328,7 @@ export interface ActionQueueItem {
   desc: string;
   meta: string;
   actions: DashboardActionType[];
+  options: ActionOption[];
 }
 
 export interface ActionQueueData {
