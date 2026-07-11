@@ -103,3 +103,33 @@ Ahol `displayEntries = reversed ? [...filteredEntries].reverse() : filteredEntri
 - [ ] Új sorok megjelennek anélkül hogy a régiók eltűnnének
 - [ ] ↓/↑ toggle működik
 - [ ] `pnpm check` hibátlan
+
+
+## 🎯 Mit
+
+_Placeholder — to be filled._
+
+
+## 📐 Scope
+
+_Placeholder — to be filled._
+
+
+## Mit érint
+
+_Placeholder — to be filled._
+
+
+## Mit NEM érint
+
+_Placeholder — to be filled._
+
+
+## Fázisok
+
+_Placeholder — to be filled._
+
+
+## ✅ Acceptance Criteria
+
+_Placeholder — to be filled._
