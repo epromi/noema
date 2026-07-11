@@ -1,6 +1,6 @@
 # Noema 🧠 — Development Package Index
 
-> Utolsó frissítés: 2026-07-06 18:45
+> Utolsó frissítés: 2026-07-08 22:30
 
 ## Aktív Csomagok
 
@@ -45,6 +45,8 @@
 | PKG-037 | **PKG Lista — Élő Frissítés Fájl Változásra** 🔄 | ✅ F5 | — | S | ✅ kész | PKG-031 |
 | PKG-038 | **Agent Detail + Navigáció Átalakítás** 🧭 | ✅ F5 | — | M | ✅ kész | PKG-021, PKG-022 |
 | PKG-039 | **Developer Freedom — Cursor Gardening + Research Jogkör** 🌿🔍 | ✅ F5 | — | M | ✅ kész | PKG-014, PKG-018, PKG-035 |
+| PKG-040 | **Action Queue Decisions v2 — Option Gombok** 🎯 | 📋 F0 | — | M | 2h | PKG-023 |
+| PKG-041 | **Dev-Loop Generalizálás — Plugin Tool** 🔧 | 📋 F0 | — | L | 6h | — |
 
 ## Függőségi Sorrend
 
