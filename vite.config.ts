@@ -4,7 +4,7 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   plugins: [sveltekit()],
   server: {
-    allowedHosts: ['alfred.local', '.local']
+    allowedHosts: ['alfred.local', 'noema.local', '.local']
   },
   test: {
     include: ['tests/**/*.{test,spec}.{js,ts}']
