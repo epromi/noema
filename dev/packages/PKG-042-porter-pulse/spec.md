@@ -1,194 +1,174 @@
-# PKG-042: Porter Email Triage + Operational Pulse
+# PKG-042: Porter Triage + Operational Pulse
 
-**Státusz**: 📋 F0 | **Méret**: M | **Becslés**: 2h | **Függőség**: — (legacy, önálló)
-**Target**: Legacy dashboard (`generate.cjs` + `archive/v4.html`)
-**Review-Rigor Finding**: Overview tab nem "single pane of glass" — Porter adatok teljesen hiányoznak, 5 mp alatt áttekinthető agent státusz nincs.
+**Státusz**: 📋 F0 | **Méret**: M | **Becslés**: 2h | **Függőség**: PKG-021 (Overview Tab)
+**Target**: SvelteKit (`src/lib/components/tabs/Overview.svelte` + `src/lib/core/` data pipeline)
 
 ## Kérés
 
-Két új kártya az Overview tab-on:
-1. **🫀 Operational Pulse** — 8 agent élő státusz pöttyös (zöld/sárga/piros) + detail, cron state-ből + Viktor live státusz
-2. **📧 Porter Email Triage** — utolsó scan idő, új email count, kritikus alert-ek (H1, számla, 🚨), unread count age bracket-enként, számlák/kiszállítás
+Két új szekció az Overview tab-on:
+1. **🫀 Operational Pulse** — 8 agent élő státusz pöttyös (zöld/sárga/piros) + detail
+2. **📧 Porter Email Triage** — utolsó scan, új emailek, alert-ek, unread countok age bracket-enként
 
 ## Jelenlegi Probléma
 
-1. Az Overview tab: csak System gauges + Weather + Critical Alerts + Projects Summary
-2. **Porter email triage adatok egyáltalán nincsenek** a dashboard-on — a `memory/state/porter-latest-triage.md` feldolgozatlan
-3. Nincs "single pane of glass" ahol 5 mp alatt látszik az összes agent operatív állapota
-4. A Critical Alerts persistens, de nem mutatja a rendszer valós "pulzusát"
+1. Az Overview tab (PKG-021): alap adatok, de nincs email triage vizibilitás
+2. A `memory/state/porter-latest-triage.md` feldolgozatlan a SvelteKit pipeline-ban
+3. Nincs "single pane of glass" az összes agent operatív státuszához
 
 ## Specifikáció
 
-### 1. generate.cjs — Porter Adatkinyerés (~30 perc)
+### 1. Data Pipeline — Porter Adatkinyerés
+
+**Új collector**: `src/lib/core/porter.ts` (vagy meglévő core bővítése)
 
 **Forrás**: `memory/state/porter-latest-triage.md`
 
-**Kinyert adatok**:
-```javascript
-porter = {
-  lastScan: "2026-07-12 16:09",    // # Porter Triage — dátum
-  newCount: 2,                       // Summary → "X new emails"
-  alerts: [                          // ## New Emails → 🚨/📰 alert-ek
-    { header: "...", detail: "...", severity: "critical|warning" }
-  ],
-  unreadLess7d: 5,                   // ## Persistent UNREAD → <7d
-  unread7to30d: 5,                   // 7-30d
-  unread30to60d: 0,                  // 30-60d
-  totalUnread: 10,                   // összeg
-  bills: "none",                     // ## Delivery/Shipping
-  deliveries: "none",
-  status: "ok",                      // ok/error
-  nextScan: "17:09"                  // lastScan + 1 óra
+**Kinyert adatok típusa**:
+```typescript
+interface PorterData {
+  lastScan: string;         // "2026-07-12 16:09"
+  newCount: number;         // 2
+  alerts: PorterAlert[];    // kritikus emailek
+  unreadLess7d: number;     // <7 napos
+  unread7to30d: number;     // 7-30 napos
+  unread30to60d: number;    // 30-60 napos
+  totalUnread: number;      // összesen
+  bills: string;            // "none" | szöveg
+  deliveries: string;       // "none" | szöveg
+  status: 'ok' | 'error';   // parse sikeresség
+  nextScan: string;         // "17:09"
+}
+
+interface PorterAlert {
+  header: string;
+  detail: string;
+  severity: 'critical' | 'warning';
 }
 ```
 
-**Regex-ek**:
+**Regex-ek a parse-oláshoz**:
 - Dátum: `/Porter Triage\s*[^0-9]*(\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2})/`
 - Új email count: `/Summary[\s\S]*?(\d+)\s+new\s+emails?/i`
-- Alert blokkok: `## New Emails` szekcióból `###` blokkonként, ha tartalmaz 🚨/CRITICAL/bounty/💳
-- Persistent unread: `## Persistent UNREAD` szekcióból `<7d`, `7-30d`, `30-60d` pattern-ek
-- Bills/deliveries: `## Delivery/Shipping` szekcióból
+- Alert-ek: `## New Emails` szekció `###` blokkjai, ha tartalmaz 🚨/CRITICAL/bounty/💳
+- Unread: `## Persistent UNREAD` → `<7d`, `7-30d`, `30-60d` regex
+- Bills: `## Delivery/Shipping` szekció
 
-**Hibakezelés**: ha a file nem olvasható → `status: "error"`, minden mező default
+### 2. Data Pipeline — Agent Operational Pulse
 
-### 2. generate.cjs — Agent Operational Pulse (~20 perc)
+**Új collector**: `src/lib/core/pulse.ts` (vagy meglévő agents.ts bővítése)
 
-**Adat**: 8 agent (`agentDefs` alapján) live státusszal
-
-```javascript
-pulse = agentDefs.map(a => {
-  // Cron-alapú agent-ek (Porter, Edwin, Otto): cronGrid-ből OK/Error/No recent run
-  // Otto: timeline[0] státuszból (ok/warn → green/yellow)
-  // Viktor: viktorData-ból (active/pending/circuit)
-  // Többiek: cronGrid ha van, egyébként agent staleness-ből
-  return { id, name, emoji, status: "green|yellow|red", detail: "...", schedule }
-})
+**Típus**:
+```typescript
+interface AgentPulse {
+  id: string;
+  name: string;
+  emoji: string;
+  status: 'green' | 'yellow' | 'red';
+  detail: string;
+  schedule: string;
+}
 ```
 
-**Részletes mapping**:
+**Status mapping**:
 
-| Agent | Státusz forrás | Detail |
-|-------|---------------|--------|
-| Otto | timeline[0].status (warn=yellow, ok=green) | timeline[0].time (dátum) |
-| Viktor | viktorData.circuit (TRIPPED=red), .active > 0 (green), else yellow | activeLabel vagy "Idle" |
-| Scout | cronGrid (ha van) | last spawn |
-| Porter | cronGrid "Porter Hourly Triage" | last run time |
-| Edwin | cronGrid "Edwin CCM (7-23)" | last run time |
+| Agent | Status forrás | Detail |
+|-------|--------------|--------|
+| Otto | timeline[0].status (warn=yellow, ok=green) | timeline[0].time |
+| Viktor | viktorData.circuit (TRIPPED=red), .active>0 (green), else yellow | activeLabel / "Idle" |
+| Scout | cronGrid match | lastSpawn |
+| Porter | cronGrid "Porter Hourly Triage" status | last run |
+| Edwin | cronGrid "Edwin CCM (7-23)" status | last run |
 | Hugo | cronGrid (ha van) | — |
 | Cortex | cronGrid (ha van) | — |
-| Alfred | mindig green (fő session) | — |
+| Alfred | always green | "Active" |
 
-**Cron név mapping** (pulse kódban):
-```javascript
-const cronAgentMap = {
-  porter: 'Porter Hourly Triage',
-  edwin: 'Edwin CCM (7-23)',
-  otto: 'Nightly Staff Review (Compile)'
-};
-```
+### 3. UI — Overview.svelte Módosítás
 
-### 3. archive/v4.html — HTML Kártyák (~15 perc)
+**Két új Svelte komponens** (vagy inline az Overview tab-on):
 
-**Hely**: Overview tab (`<section class="tab-content active" id="tab-overview">`), a System/Weather grid után, a Critical Alerts elé.
+**Operational Pulse szekció**:
+- Cím: "🫀 Operational Pulse"
+- Layout: flex-wrap, 8 agent kártya (emoji + név + színes pötty + detail)
+- Pötty színek: green → 🟢, yellow → 🟡, red → 🔴
+- Min-width 100px per item
 
-**Operational Pulse kártya**:
-```html
-<div class="card wide" style="margin-top:14px"><h3>🫀 Operational Pulse</h3>
-  <div id="op-pulse" style="display:flex;gap:20px;flex-wrap:wrap;
-    font-size:0.90em;align-items:center">Loading…</div>
-</div>
-```
+**Porter Email Triage szekció**:
+- Cím: "📧 Email Triage"
+- Fejléc: státusz + utolsó scan + következő scan + napi email count
+- Alert lista (ha van): 🚨/📰 ikon + header + detail
+- Unread summary sáv: <7d, 7-30d, 30-60d countok, összesen
+- Ha totalUnread === 0: "✅ Nincs feldolgozatlan email"
+- Bills/deliveries: csak ha van találat
 
-**Porter Email Triage kártya**:
-```html
-<div class="card wide" style="margin-top:14px"><h3>📧 Email Triage</h3>
-  <div id="porter-triage" style="font-size:0.90em;line-height:1.7">Loading…</div>
-</div>
-```
+### 4. Nézetváltás
 
-### 4. archive/v4.html — JS Rendering (~25 perc)
-
-**Operational Pulse rendering**:
-- Minden agent: emoji + név + színes pötty (🟢/🟡/🔴) + detail szöveg
-- `flex-wrap: wrap` layout, min-width 100px per item
-- Üres pulse esetén "No agent data"
-
-**Porter Email Triage rendering**:
-- Fejléc sor: státusz pötty + utolsó scan idő + következő scan + napi email count
-- Alert lista: 🚨/📰 ikon + header + detail, severity szerint
-- Unread summary: <7d, 7-30d, 30-60d countok, összesen
-- Ha `totalUnread === 0`: "✅ Nincs feldolgozatlan email" (zöld)
-- Bills/deliveries: csak ha van találat (nem "none")
-
-### 5. Új Overview Layout
-
-**Előtte**:
-```
-Metrics bar → System/Weather grid → Critical Alerts → Projects/Stalled
-```
-
-**Utána**:
-```
-Metrics bar → System/Weather grid → 🫀 Operational Pulse → 📧 Email Triage → 🚨 Critical Alerts → Projects/Stalled
-```
+| Előtte | Utána |
+|--------|-------|
+| System gauges + Active Projects + Stalled | System gauges → **🫀 Pulse** → **📧 Triage** → Projects |
 
 ## Módosítandó Fájlok
 
-| Fájl | Művelet | Scope |
-|------|---------|-------|
-| `generate.cjs` | Porter parser + Pulse kalkuláció hozzáadása | ~80 sor beszúrás |
-| `archive/v4.html` | HTML kártyák + JS rendering | ~90 sor beszúrás |
+| Fájl | Művelet |
+|------|---------|
+| `src/lib/core/porter.ts` | **ÚJ** — Porter triage parser |
+| `src/lib/core/pulse.ts` | **ÚJ** — Agent operational status |
+| `src/lib/types/index.ts` | PorterData, PorterAlert, AgentPulse type-ok |
+| `src/lib/core/index.ts` | porter + pulse collector regisztrálás |
+| `src/lib/components/tabs/Overview.svelte` | Pulse + Triage szekciók hozzáadása |
+| `tests/core/porter.test.ts` | **ÚJ** — Porter parser unit tesztek |
+| `tests/core/pulse.test.ts` | **ÚJ** — Pulse kalkuláció tesztek |
 
 **Out of scope**:
-- SvelteKit Overview.svelte módosítása (külön PKG, amikor a SvelteKit eléri a legacy paritást)
-- Porter relay endpoint (már van a v4 generate.cjs statikus adatkinyerés)
+- `archive/v4.html` vagy `generate.cjs` módosítása — DEPRECATED, nem érintjük
 - Action gombok a Porter kártyán (későbbi PKG)
+- SSE live update a pulse-hoz (PKG-009 már csinálta az infrastruktúrát)
 
 ## Plan
 
 ### F0 — Spec (~20 perc)
 - [x] spec.md megírva
 - [ ] plan.md megírva
-- [ ] phases.md becslésekkel
-- [ ] Scope ellenőrzés: max 2 fájl, <200 sor
+- [ ] Scope: max 7 fájl, XL alatt
 
-### F1 — generate.cjs Adatkinyerés (~30 perc)
-- [ ] Porter parser függvény (read porter-latest-triage.md → porter objektum)
-- [ ] Agent Operational Pulse kalkuláció (agentDefs + cronGrid + timeline + viktorData)
-- [ ] porter + pulse hozzáadása a JSON payload-hoz
-- [ ] `node generate.cjs` hiba nélkül fut
-- [ ] dashboard.html-ben `"porter":` és `"pulse":` jelen van
+### F1 — Core (~40 perc)
+- [ ] `porter.ts`: PorterData parser, regex-ek, hibakezelés
+- [ ] `pulse.ts`: AgentPulse kalkuláció cronGrid + timeline + viktorData-ból
+- [ ] `types/index.ts`: PorterData, PorterAlert, AgentPulse interface-ek
+- [ ] `core/index.ts`: collector regisztráció
+- [ ] Unit tesztek: porter.test.ts + pulse.test.ts
+- [ ] `pnpm check` ZÖLD
 
-### F2 — archive/v4.html Template (~30 perc)
-- [ ] HTML: Operational Pulse + Porter Triage kártyák az Overview tab-on
-- [ ] JS: Operational Pulse rendering (D.pulse → agent pöttyök)
-- [ ] JS: Porter Triage rendering (D.porter → scan idő, alert-ek, unread count)
-- [ ] `node generate.cjs` újra → dashboard.html-ben mindkét szekció renderelt
+### F2 — UI (~40 perc)
+- [ ] `Overview.svelte`: Porter + Pulse komponensek/szekciók
+- [ ] Porter szekció: scan idő, alert lista, unread summary
+- [ ] Pulse szekció: 8 agent kártya pöttyökkel
+- [ ] Reszponzív: flex-wrap, mobile-on is olvasható
+- [ ] `pnpm check` ZÖLD
 
 ### F3 — Integráció + Teszt (~30 perc)
-- [ ] Manuális ellenőrzés — dashboard.html böngészőben
-- [ ] Porter adatok verifikálása: lastScan, newCount, alerts, unread countok
-- [ ] Pulse adatok verifikálása: 8 agent, helyes státusz + detail
-- [ ] Edge case: porter-latest-triage.md hiányzik → "error" státusz, minden mező default
-- [ ] Edge case: cronGrid nem talál agent nevet → fallback agent staleness-ből
+- [ ] `pnpm test` ZÖLD (porter.test.ts + pulse.test.ts 90%+)
+- [ ] `pnpm build` ZÖLD
+- [ ] Manuális ellenőrzés (SvelteKit dev server)
+- [ ] Edge case: porter fájl hiányzik → error státusz, placeholder
+- [ ] Edge case: cronGrid nem talál név-egyezést → fallback
 
 ### F4 — Merge (~10 perc)
-- [ ] Git commit
-- [ ] Push
-- [ ] INDEX.md frissítve → PKG-042 ✅ F5
+- [ ] Git commit + push
+- [ ] INDEX.md PKG-042 → ✅ F5
+- [ ] Dashboard regen
 
 ## Verifikáció
 
-- [ ] `grep -c "Operational Pulse\|Email Triage\|op-pulse\|porter-triage" dashboard.html` → 13+ találat
-- [ ] `grep '"porter":{' dashboard.html` → valid JSON, lastScan, newCount, unreadLess7d, totalUnread
-- [ ] `grep '"pulse":[' dashboard.html` → 8 agent, status green/yellow/red
-- [ ] Böngésző: Operational Pulse kártya látható, 8 agent pöttyel
-- [ ] Böngésző: Porter Email Triage kártya látható, scan idővel + unread countokkal
-- [ ] `node generate.cjs` exit code 0, nincs stderr
-- [ ] Porter file hiányzik → "Porter triage data not available" (nem crash)
+- [ ] SvelteKit dev server: Overview tab-on Pulse + Triage szekció
+- [ ] Porter adatok validak (lastScan, newCount, unread countok)
+- [ ] Pulse: 8 agent, legalább 6-nak értelmes detail
+- [ ] `pnpm test` zöld, porter + pulse coverage 90%+
+- [ ] `pnpm build` hibátlan
+- [ ] Porter file hiányzik → nem crash-el, error státusz + placeholder
+- [ ] Mobile layout: pulse kártyák wrap-elnek, olvasható
 
 ## Log
 
 | Idő | Fázis | Mi történt |
 |-----|-------|------------|
-| 2026-07-12 17:00 | F0 | Spec megírva — Alfred, review-rigor alapján |
+| 2026-07-12 17:03 | F0 | Spec átírva SvelteKit targetre (András feedback) — legacy verzió törölve |

@@ -47,7 +47,7 @@
 | PKG-039 | **Developer Freedom — Cursor Gardening + Research Jogkör** 🌿🔍 | ✅ F5 | — | M | ✅ kész | PKG-014, PKG-018, PKG-035 |
 | PKG-040 | **Action Queue Decisions v2 — Option Gombok** 🎯 | ✅ F5 | — | M | ✅ kész | PKG-023 |
 | PKG-041 | **Dev-Loop Generalizálás — Plugin Tool** 🔧 | 📋 F0 | — | L | 6h | — |
-| PKG-042 | **Porter Triage + Operational Pulse** 🫀📧 | 📋 F0 | — | M | 2h | — |
+| PKG-042 | **Porter Triage + Operational Pulse** 🫀📧 | 📋 F0 | — | M | 2h | PKG-021 |
 
 ## Függőségi Sorrend
 
@@ -94,10 +94,10 @@ AJÁNLOTT SORREND:
   PKG-035 (Build Integrity) — sérült build detekció 🔒
   PKG-036 (CPU Percent) — CPU% a rendszer sorban 📊
   PKG-037 (Live Refresh) — PKG lista azonnal frissül fájl változásra 🔄
-  PKG-042 (Porter + Pulse) — Email triage + agent operational status az Overview-on 🫀📧 (LEGACY-ONLY)
+  PKG-042 (Porter + Pulse) — Email triage + agent operational status az Overview-on (SvelteKit) 🫀📧
 
 ✅ KÉSZ: PKG-001, PKG-013, PKG-014, PKG-015, PKG-002, PKG-003, PKG-004, PKG-005, PKG-016, PKG-021, PKG-022, PKG-023, PKG-024, PKG-025, PKG-026
-⚠️  LEGACY-ONLY: PKG-017, PKG-019, PKG-042 (Cursor rossz target — dashboard.html helyett SvelteKit kell)
+⚠️  LEGACY-ONLY: PKG-017, PKG-019 (Cursor rossz target — dashboard.html helyett SvelteKit kell)
 🔄 QUEUED: PKG-027 (Otto → Relay → Processor → Cursor bridge)
 ```
 

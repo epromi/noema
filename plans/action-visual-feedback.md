@@ -1,34 +1,37 @@
 # Action Queue — visual feedback after action
-> 2026-07-11 | P0 | PLANNING | est:35m act:—
+> 2026-07-11 | P0 | PLANNING | est:55m act:—
+> 🔍 Reviewed: 2026-07-11 | iter 1 — 5 findings fixed
 
 ## Spec
 
-Amikor András kattint egy action gombra (pl. Resolve, Delegate, Investigate), a gomb 3 másodpercre
-✅-ra vált, majd visszaáll idle állapotba. Az item ugyanott marad a táblán. Semmi nem jelzi
-hogy az action megtörtént. Olyan vizuális visszajelzés kell ami megmarad: az item elhalványul,
-áthúzott lesz, és egy ✅ Resolved badge jelenik meg. Pár másodperc múlva a dashboard automatikusan
-frissíti a queue adatokat és ha az item átkerült a Resolved szekcióba, eltűnik a boardról.
+Amikor András kattint egy action gombra, a gomb 3 mp-ig ✅-zik, majd visszaáll — az item
+ugyanott marad. Nincs vizuális visszajelzés. Kell: (1) azonnali resolved state (áthúzás, badge),
+(2) auto-refresh ami a queue-t frissíti, (3) egy Action Log idővonal ami mutatja az összes
+korábbi action-t (ki, mikor, mit csinált, mi lett az eredmény).
 
 ## Plan
 
-Kétlépcsős visszajelzés: (1) lokális state → azonnali vizuális feedback, (2) adat frissítés →
-ha a szerver oldalon is resolved, eltűnik.
+Három részből áll: vizuális feedback, adatfrissítés, és aktivitás log.
 
-A `sendAction` siker esetén az item ID-t egy lokális `resolvedItems` Set-be teszi.
-A resolved item-ek: `opacity: 0.4`, `text-decoration: line-through`, az action gombok helyett
-✅ Resolved badge. Ez megmarad session végéig.
+### 1. Vizuális feedback (lokális state)
+A `sendAction` siker esetén az item ID egy lokális `resolvedItems` Set-be kerül.
+Resolved item: `opacity: 0.4`, `text-decoration: line-through`, gombok helyett ✅ badge.
+Session végéig megmarad.
 
-Emellett a POST siker után 3 mp-cel SvelteKit `invalidateAll()` frissíti az összes page data-t.
-Ha az item már átkerült a action-queue.md Resolved szekciójába, eltűnik a boardról.
-Ha még nem (pl. mert az action-processor vagy Otto még nem dolgozta fel), a lokális resolved
-állapot akkor is mutatja a vizuális visszajelzést.
+### 2. Adatfrissítés
+POST siker után 3 mp-cel `invalidateAll()` újratölti az action queue-t.
+Mivel az `action-queue.md`-t jelenleg CSAK Otto nightly módosítja (nem valós időben),
+az auto-refresh tipikus esetben NEM találja az itemet a Resolved szekcióban — ilyenkor
+a lokális resolved badge marad. Ha Otto már áthelyezte (másnap), akkor eltűnik.
 
-Az action-queue.md Resolved szekciójának olvasása már működik a `getActionQueue()`-ban
-(a parser kihagyja a `[x]`-elt itemeket). A gond az hogy az action-processor jelenleg nem
-módosítja a fájlt real-time — ez egy külön task.
+### 3. Action Log idővonal
+Új `GET /api/action-log` endpoint olvassa a `noema-actions.jsonl`-t.
+A kanban board alatt "📋 Action Log" komponens: utolsó 20 action időbélyeggel,
+típussal, item ID-val, státusszal. 5 mp-enként poll-ol. Új action után azonnal megjelenik.
+A státusz alapértelmezetten "pending" amíg az action-processor nem frissíti.
 
-Constraint: a lokális resolved state ne befolyásolja az újratöltést (invalidate után a resolved
-itemek visszakerülhetnek ha a szerver még nem dolgozta fel őket → újra megjelennek halványan).
+Constraint: lokális resolved state ne befolyásolja az újratöltést (invalidate után
+resolved itemek visszakerülhetnek ha a szerver még nem dolgozta fel őket).
 
 ## Tasks
 
@@ -38,9 +41,10 @@ itemek visszakerülhetnek ha a szerver még nem dolgozta fel őket → újra meg
   ✅ Resolved badge. Az Auto-resolved oszlop item-ei nem kapnak resolved state-et (ott nincs action).
 
 - [ ] Action queue auto-refresh a POST siker után  `est:10m/act:—`
-  AC: Sikeres sendAction után 3 mp-cel a dashboard újratölti az action queue adatokat.
-  Ha az item már a Resolved szekcióban van a fájlban, eltűnik a boardról. A resolved badge
-  segíti az átmenetet amíg a refresh meg nem történik.
+  AC: Sikeres sendAction után 3 mp-cel `invalidateAll()` újratölti a queue-t.
+  Ha az item már a Resolved szekcióban van (Otto áthelyezte), eltűnik a boardról.
+  Ha még nincs ott (tipikus eset — a fájlt csak Otto nightly módosítja),
+  a lokális resolved badge marad. A resolved badge segíti az átmenetet.
 
 - [ ] Resolved badge komponens kiemelése  `est:10m/act:—`
   AC: A resolved item-eken a badge vizuálisan elkülönül: halványabb háttér, áthúzott szöveg,
@@ -51,3 +55,15 @@ itemek visszakerülhetnek ha a szerver még nem dolgozta fel őket → újra meg
   AC: Az action-queue.md ✅ Resolved szekciójából beolvasott itemek — amelyek jelenleg
   nem jelennek meg sehol — egy új negyedik oszlopban látszanak a kanban alján,
   "✅ Resolved (today)" címmel, összecsukva.
+
+- [ ] Action log API endpoint a JSONL olvasásához  `est:5m/act:—`
+  AC: `GET /api/action-log` visszaadja az utolsó 50 sort a `noema-actions.jsonl`-ből
+  JSON formátumban (timestamp, action, id, description, status).
+  Ha a fájl nem létezik, üres tömböt ad vissza.
+
+- [ ] Action log / aktivitás idővonal a kanban alatt  `est:15m/act:—`
+  AC: A kanban board és a Cron Timeline között egy "📋 Action Log" szekció jelenik meg.
+  Az utolsó 20 action-t listázza a `/api/action-log`-ból. Minden sor: időbélyeg,
+  action típus (pl. Resolve, Delegate), item ID, leírás, és státusz
+  (alapértelmezett: "pending", action-processor frissítheti "done"/"error"-ra).
+  A lista 5 mp-enként frissül. Új sendAction után azonnal újratölti a logot.
