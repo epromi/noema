@@ -912,13 +912,16 @@ const payload = JSON.stringify({
   })()
 });
 
-// ── Inject into template ──
-const template = fs.readFileSync(path.join(W,'projects/noema/archive/v4.html'),'utf8');
-const cronScheduleJs = fs.readFileSync(path.join(W,'projects/noema/lib/cron-schedule.cjs'),'utf8')
-  .replace(/if \(typeof module[\s\S]*$/m, '');
+// ── Generate output (legacy template deprecated — using minimal HTML) ──
 const escaped = payload.replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\n/g,'\\n');
-let html = template.replace("'DATA_JSON_PLACEHOLDER'", "'"+escaped+"'");
-html = html.replace('/* CRON_SCHEDULE_PLACEHOLDER */', cronScheduleJs);
+
+// Also write raw JSON for SvelteKit consumption
+const dataDir = path.join(W,'projects/noema/data');
+try { fs.mkdirSync(dataDir, {recursive:true}) } catch {}
+fs.writeFileSync(path.join(dataDir,'dashboard-v4.json'), payload);
+
+// Minimal HTML wrapper for backward compat
+const html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Noema Dashboard</title><style>body{background:#0d1117;color:#c9d1d9;font-family:system-ui,sans-serif;padding:40px;max-width:900px;margin:0 auto}pre{background:#161b22;padding:16px;border-radius:6px;overflow-x:auto;font-size:13px}.tag{color:var(--accent,#58a6ff);font-weight:600}.warn{background:#2a1a0a;border-left:3px solid #d2991d;padding:12px 16px;border-radius:4px;margin:20px 0}a{color:#58a6ff}</style></head><body><h1>🧠 Noema Dashboard</h1><div class="warn">⚠️ A legacy dashboard (<code>archive/v4.html</code>) törölve. A SvelteKit dashboard veszi át a helyét.<br>📊 Az alábbi adatok JSON formátumban érhetők el a <code>data/dashboard-v4.json</code> fájlban.</div><div class="tag">Generated: ${NOW}</div><details><summary style="cursor:pointer;margin:20px 0;font-size:1.1em;font-weight:600">📊 Raw Data (JSON)</summary><pre>${JSON.stringify(JSON.parse(payload), null, 2).substring(0, 50000)}</pre></details></body></html>`;
 const outFile = path.join(W,'projects/noema/dashboard.html');
 fs.writeFileSync(outFile, html);
 

@@ -136,7 +136,7 @@ function runChecks(spec, indexData) {
   const scopeSection = spec.match(/### Mit érint\n([\s\S]*?)(?=\n###)/);
   if (scopeSection) {
     const scopeFiles = [...scopeSection[1].matchAll(/`([^`]+)`/g)].map(m => m[1]);
-    const legacyTargets = ['archive/v4.html', 'generate.cjs', 'relay.cjs'];
+    const legacyTargets = ['generate.cjs', 'relay.cjs'];
     const svelteTargets = ['src/lib/', 'src/routes/', '$lib/'];
 
     const hasLegacy = scopeFiles.some(f => legacyTargets.includes(f) || f.endsWith('.html'));
@@ -162,13 +162,13 @@ function runChecks(spec, indexData) {
       message: 'Missing "Mit NEM érint" section — helps prevent scope creep',
       fixable: true,
       autoFix: 'add-not-scope',
-      placeholder: '- `archive/v4.html` — semmi (legacy)\n- `generate.cjs` — semmi\n- `relay.cjs` — semmi'
+      placeholder: '- `generate.cjs` — semmi (legacy data pipeline)\n- `relay.cjs` — semmi (legacy relay)'
     });
   } else {
     const notScope = notScopeSection[1];
     // If legacy PKG, should mention it doesn't touch SvelteKit
     // If SvelteKit PKG, should mention it doesn't touch legacy
-    const hasLegacyMention = notScope.includes('archive/v4') || notScope.includes('generate.cjs');
+    const hasLegacyMention = notScope.includes('generate.cjs');
     if (!hasLegacyMention) {
       issues.push({
         severity: 'info',
