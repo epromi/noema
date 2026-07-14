@@ -10,24 +10,11 @@
     isSpanningSched,
     parseDisplayMinutes,
   } from "$lib/core/cron-utils";
+  import { AGENT_ICONS } from "$lib/components/shared/agent-icons";
 
   const SIDEBAR_WINDOW_MS = 24 * 60 * 60 * 1000;
   const REFRESH_MS = 30_000;
   const STORAGE_KEY = "cron-sidebar";
-
-  const AGENT_ICONS: Record<string, string> = {
-    alfred: "👔",
-    porter: "🚪",
-    edwin: "🚀",
-    scout: "🏕️",
-    viktor: "🛡️",
-    otto: "🗄️",
-    albert: "🔍",
-    cortex: "🧠",
-    hugo: "📚",
-    main: "🏠",
-    system: "🤖",
-  };
 
   interface EnrichedCron extends CronEntry {
     displayMin: number;

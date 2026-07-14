@@ -28,6 +28,7 @@
     isSpanningSched,
     parseDisplayMinutes,
   } from "$lib/core/cron-utils";
+  import { AGENT_ICONS } from "$lib/components/shared/agent-icons";
 
   const RELAY_URL = DEFAULT_RELAY_URL;
   const POLL_MS = 5000;
@@ -54,20 +55,6 @@
     DAYTIME: "☀️ NAPPAL (08:00–18:00)",
     EVENING: "🌆 ESTE (18:00–24:00)",
     SPANNING: "🔄 AUTOMATIKUS (nincs fix idő)",
-  };
-
-  const AGENT_ICONS: Record<string, string> = {
-    alfred: "👔",
-    porter: "🚪",
-    edwin: "🚀",
-    scout: "🏕️",
-    viktor: "🛡️",
-    otto: "🗄️",
-    albert: "🔍",
-    cortex: "🧠",
-    hugo: "📚",
-    main: "🏠",
-    system: "🤖",
   };
 
   type ProcessorState = "idle" | "running" | "queued" | "offline";
