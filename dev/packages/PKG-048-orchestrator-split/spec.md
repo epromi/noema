@@ -1,0 +1,110 @@
+# PKG-048: Split Orchestrator.svelte → Sub-Components
+
+> Státusz: 🤖 QA Auto-Ready | Méret: L | Függőség: PKG-023 (Orchestrator)
+> Source: `clarity-audit-2026-07-14.md` finding #2 (🔴 Critical — 1150 line monolith)
+> Scope: ✅ (new UI components in `tabs/` — non-core, no routing/server/stores changes)
+
+## Problem
+
+`Orchestrator.svelte` is 1150 lines — the largest component in the codebase:
+- Script: 432 lines (logic, derived state, helper functions)
+- Template: 232 lines (5 distinct UI sections)
+- Style: 488 lines (CSS for all 5 sections)
+
+Each section has its own data structure, rendering logic, and CSS. They share only `actionBtnStates` state and `sendAction`/`getActionState` helpers.
+
+## Spec: Split into 5 Sub-Components
+
+### F1: ProcessorTimer.svelte (simplest — do first)
+- **Lines**: ~659–662 (current template)
+- **Props**: `{ processorState, devJobLabel }`
+- **Logic**: Shows processor state badge, label, and hidden iframe for relay polling
+- **Size target**: ~80 lines
+
+### F2: CronTimeline.svelte
+- **Lines**: ~504–565 (current template) + cron computation logic from script
+- **Props**: `{ crons: CronData, AGENT_ICONS }`
+- **Logic**: Groups crons by period, renders timeline with next-run countdowns, handles span toggles
+- **Shared with CronSidebar**: Both model `EnrichedCron`/`TimelineRow` — extract shared `CronTimelineData` type to `$lib/types/index.ts`
+- **Size target**: ~250 lines
+
+### F3: KanbanBoard.svelte
+- **Lines**: ~467–502 (current template) + action queue logic
+- **Props**: `{ actionQueue, actionBtnStates, onAction }`
+- **Logic**: Renders action queue as Kanban columns (Backlog, In Progress, Done), action buttons via `ActionButtonGroup`
+- **Size target**: ~200 lines
+
+### F4: OttoTimeline.svelte
+- **Lines**: ~438–465 (current template) + Otto data processing
+- **Props**: `{ ottoHistory: OttoRunEntry[] }`
+- **Logic**: Timeline visualization of Otto nightly runs with status badges and tooltips
+- **Size target**: ~150 lines
+
+### F5: ResearchProposals.svelte
+- **Lines**: ~567–657 (current template) + research logic
+- **Props**: `{ research, actionBtnStates, onAction }`
+- **Logic**: Research proposal cards with action buttons (implement, dismiss), expandable details
+- **Size target**: ~250 lines
+
+### Orchestrator.svelte → Thin Orchestrator
+- Remaining: shared state (`actionBtnStates`, `sendAction`, `getActionState`), polling logic, layout grid
+- **Size target**: ~200 lines (from 1150)
+
+## Props Flow
+
+```
+Orchestrator.svelte (layout + shared state)
+  ├── CronTimeline.svelte        { crons }
+  ├── KanbanBoard.svelte         { actionQueue, actionBtnStates }
+  │     └── ActionButtonGroup    (existing)
+  ├── ProcessorTimer.svelte      { processorState, devJobLabel }
+  ├── OttoTimeline.svelte        { ottoHistory }
+  └── ResearchProposals.svelte   { research, actionBtnStates }
+        └── ActionButtonGroup    (existing)
+```
+
+## Action Button Shared State
+
+`actionBtnStates` and `sendAction` currently live in Orchestrator. They're used by both KanbanBoard and ResearchProposals. Keep them in the parent Orchestrator and pass via props:
+
+```ts
+// Orchestrator.svelte (parent)
+let actionBtnStates: Record<string, ActionBtnState> = $state({});
+function sendAction(key: string, action: DashboardActionType) { ... }
+function getActionState(key: string): ActionBtnState { ... }
+
+// Pass to KanbanBoard and ResearchProposals
+<KanbanBoard {actionQueue} {actionBtnStates} onAction={sendAction} />
+<ResearchProposals {research} {actionBtnStates} onAction={sendAction} />
+```
+
+## Shared Types
+
+Extract to `$lib/types/index.ts`:
+```ts
+export interface CronTimelineEntry {
+  agentId: string;
+  label: string;
+  nextMs: number | null;
+  displayMin: number;
+  sortKey: number;
+}
+```
+
+## CSS Strategy
+
+Each sub-component gets its own scoped `<style>` block. Svelte scoping handles isolation. Extract any shared CSS variables to Orchestrator's `<style>` block.
+
+## Verify
+
+- `pnpm check` — 0 errors, 0 warnings
+- Visual: all 5 sections render correctly in Orchestrator tab
+- Interaction: action buttons work in both KanbanBoard and ResearchProposals
+- Cron timeline: countdowns, toggles, and period grouping work
+
+## Reference
+
+- `src/lib/components/tabs/Orchestrator.svelte` — current monolith (1150 lines)
+- `src/lib/components/layout/CronSidebar.svelte` — has similar `EnrichedCron` type (duplicate)
+- `src/lib/components/shared/ActionButtonGroup.svelte` — already extracted, used by KanbanBoard + ResearchProposals
+- `src/lib/core/cron-utils.ts` — cron computation utilities (already extracted ✅)

@@ -53,6 +53,7 @@
 | PKG-045 | **Sötét/Világos Téma Váltás** 🌗 | 📋 F0 | — | S | 1h | PKG-001 |
 | PKG-046 | **Billentyűparancsok + Gyors Navigáció** ⌨️ | 📋 F0 | — | M | 2-3h | PKG-001 |
 | PKG-047 | **Accessibility Baseline — aria-labels** ♿ | 🔧 IP | — | XS | 15m | — |
+| PKG-048 | **Orchestrator Split → Sub-Components** 🧩 | 🤖 QA | — | L | 2-3h | PKG-023 |
 
 ## Függőségi Sorrend
 
