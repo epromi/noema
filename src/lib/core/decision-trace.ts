@@ -13,6 +13,7 @@ const MAX_SESSIONS = 15;
 const MAX_STEPS = 200;
 const DEFAULT_BOTTLENECK_MS = 5_000;
 const PREVIEW_LEN = 240;
+const SESSION_LIST_LIMIT = 500;
 
 interface PendingStep {
   id: string;
@@ -340,7 +341,7 @@ export async function getDecisionTrace(
   const nowMs = Date.now();
 
   try {
-    const sessions = await p.session.listSessions({ limit: 500 });
+    const sessions = await p.session.listSessions({ limit: SESSION_LIST_LIMIT });
     const session = sessions.find((s) => s.key === sessionKey);
     const messages = await p.session.getHistory(
       sessionKey,
@@ -375,7 +376,7 @@ export async function getDecisionTraceData(
   const nowMs = Date.now();
 
   try {
-    const sessions = await p.session.listSessions({ limit: 500 });
+    const sessions = await p.session.listSessions({ limit: SESSION_LIST_LIMIT });
     const sorted = [...sessions].sort(
       (a, b) => (b.updatedAt ?? 0) - (a.updatedAt ?? 0),
     );
