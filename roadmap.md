@@ -1,7 +1,7 @@
 # Noema 🧠 — Fejlesztési Útiterv
 
-> Forrás: competitive-landscape.md + industry-review-2026.md + user visszajelzések + Noema Research cron javaslatok
-> Frissítve: 2026-07-05
+> Forrás: VISION.md + web_search/browser competitor research + user visszajelzések + Noema Research cron javaslatok
+> Frissítve: 2026-07-14
 
 ---
 

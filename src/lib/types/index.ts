@@ -32,6 +32,18 @@ export interface CronData {
   error?: string;
 }
 
+/** Time-of-day bucket used by the Orchestrator cron timeline grouping. */
+export type CronTimelineSection =
+  "night" | "morning" | "spanning" | "day" | "evening" | "auto";
+
+/** Cron entry enriched with computed timeline placement (Orchestrator.svelte's CronTimeline). */
+export interface CronTimelineEntry extends CronEntry {
+  displayMin: number;
+  nextMs: number | null;
+  section: CronTimelineSection;
+  sortScore: number;
+}
+
 export type AgentCardStatus = "green" | "yellow" | "red";
 
 /** Live session phase for an agent (distinct from card health color). */
