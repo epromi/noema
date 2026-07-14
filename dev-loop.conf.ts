@@ -20,9 +20,9 @@ export const config: DevLoopConfig = {
     autoFixFiles: ["generate.cjs", "relay.cjs", "action-processor.cjs"],
   },
 
-  executionBackend: "subagent",
+  executionBackend: "cursor",
   cursorPromptTemplate: "prompts/cursor-implement.txt",
-  implementModel: "deepseek/deepseek-v4-pro",
+  implementModel: "claude-sonnet-5-thinking-medium",
   timeout: 3600,
 
   features: {
