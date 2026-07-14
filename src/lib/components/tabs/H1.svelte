@@ -9,9 +9,9 @@
   }
 
   function signalClass(signal: string): string {
-    const n = parseFloat(signal);
-    if (Number.isNaN(n)) return "";
-    return n >= 0 ? "ok" : "error";
+    const signalNum = parseFloat(signal);
+    if (Number.isNaN(signalNum)) return "";
+    return signalNum >= 0 ? "ok" : "error";
   }
 
   function programStatus(program: H1Program): string {

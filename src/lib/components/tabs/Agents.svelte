@@ -33,9 +33,9 @@
 
   const sortedAgents = $derived(
     [...agents.agents].sort((a, b) => {
-      const sa = statusOrder[a.status] ?? 3;
-      const sb = statusOrder[b.status] ?? 3;
-      if (sa !== sb) return sa - sb;
+      const orderA = statusOrder[a.status] ?? 3;
+      const orderB = statusOrder[b.status] ?? 3;
+      if (orderA !== orderB) return orderA - orderB;
       return a.name.localeCompare(b.name);
     }),
   );

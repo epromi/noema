@@ -164,29 +164,29 @@ export function parseH1SignalFromReports(raw: unknown): H1Signal | null {
 export function parseH1FromAtAGlance(
   atAGlance: string,
 ): H1Signal & { open: string } {
-  const hs =
+  const h1Section =
     atAGlance.match(/📊 H1 Dashboard[\s\S]*?(?=\n## |\n---|$)/)?.[0] ??
     atAGlance;
 
   const open =
-    hs.match(/\|\s*Open\s*\|\s*(\d+)/)?.[1] ??
-    hs.match(/(\d+)\s+Open/)?.[1] ??
+    h1Section.match(/\|\s*Open\s*\|\s*(\d+)/)?.[1] ??
+    h1Section.match(/(\d+)\s+Open/)?.[1] ??
     atAGlance.match(/(\d+)\s+Open/)?.[1] ??
     "?";
 
   const signal =
     atAGlance.match(/Signal[\s:|]+([-0-9.]+)/)?.[1] ??
-    hs.match(/Signal[\s:|]+([-0-9.]+)/)?.[1] ??
+    h1Section.match(/Signal[\s:|]+([-0-9.]+)/)?.[1] ??
     "?";
 
   const reputation =
     atAGlance.match(/Reputation[\s:|]+(\d+)/)?.[1] ??
-    hs.match(/Reputation[\s:|]+(\d+)/)?.[1] ??
+    h1Section.match(/Reputation[\s:|]+(\d+)/)?.[1] ??
     "?";
 
   const trial =
-    hs.match(/Trial reports\s*\|\s*(\d+)/)?.[1] ??
-    hs.match(/Trial\s*\|\s*(\d+)/)?.[1] ??
+    h1Section.match(/Trial reports\s*\|\s*(\d+)/)?.[1] ??
+    h1Section.match(/Trial\s*\|\s*(\d+)/)?.[1] ??
     atAGlance.match(/trial reports?:?\s*(\d+)/i)?.[1] ??
     "0";
 
