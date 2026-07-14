@@ -1,0 +1,34 @@
+Implement the following specification:
+
+# PKG-047: Accessibility Baseline — aria-labels across all tabs
+
+**Generated**: 2026-07-14 | **Source**: Nova QA Pipeline | **Phase**: F0
+**Size**: XS | **Est. time**: 15m | **Scope**: ✅ Non-core
+
+## Problem
+QA gap scan found that 5 tab components have zero aria-labels despite containing interactive elements:
+- Overview.svelte (0 aria-labels) — clickable agent rows with keyboard handlers
+- Research.svelte (0 aria-labels)  
+- Brainstorm.svelte (0 aria-labels)
+- DecisionTrace.svelte (0 aria-labels)
+- Bills.svelte (0 aria-labels) — "Mark Paid" button + other interactive elements
+
+Additionally, the `log-btn` in ImplementButton.svelte (running state branch) is missing an aria-label.
+
+## Solution
+Add descriptive aria-labels to all interactive elements (buttons, clickable rows, links) in:
+- `src/lib/components/tabs/Overview.svelte`
+- `src/lib/components/tabs/Research.svelte`
+- `src/lib/components/tabs/Brainstorm.svelte`
+- `src/lib/components/tabs/DecisionTrace.svelte`
+- `src/lib/components/tabs/Bills.svelte`
+- `src/lib/components/shared/ImplementButton.svelte` (remaining log-btn)
+
+## Scope Check (per noema-dev-gate.md §Kivétel 2)
+- ✅ Accessibility (aria-label, alt text, focus management) is allowed ANYWHERE
+- ✅ All files are in `src/lib/components/` — allowed paths
+
+## Acceptance Criteria
+1. All interactive elements in listed components have aria-labels
+2. `pnpm check` passes
+3. No visual or functional changes

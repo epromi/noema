@@ -39,6 +39,7 @@
       type="button"
       class="implement-btn"
       class:error={buttonState === "error" || buttonState === "offline"}
+      aria-label={buttonState === "error" ? "Implementation failed" : buttonState === "offline" ? "Toggle implementation" : "Implement dev package"}
       onclick={() => onImplement?.()}
     >
       {buttonState === "error"
@@ -53,6 +54,7 @@
         class="log-btn"
         class:active={logOpen}
         title="Kattints a Cursor log megtekintéséhez"
+        aria-label={logOpen ? "Hide Cursor log" : "Show Cursor log"}
         onclick={(e) => {
           e.stopPropagation();
           onLogToggle?.();

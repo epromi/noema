@@ -48,6 +48,7 @@
 | PKG-040 | **Action Queue Decisions v2 — Option Gombok** 🎯 | ✅ F5 | — | M | ✅ kész | PKG-023 |
 | PKG-041 | **Dev-Loop Generalizálás — Plugin Tool** 🔧 | 📋 F0 | — | L | 6h | — |
 | PKG-042 | **Porter Triage + Operational Pulse** 🫀📧 | 📋 F0 | — | M | 2h | PKG-021 |
+| PKG-047 | **Accessibility Baseline — aria-labels** ♿ | 📋 F0 | — | XS | 15m | — |
 
 ## Függőségi Sorrend
 
