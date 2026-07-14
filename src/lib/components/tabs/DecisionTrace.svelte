@@ -54,7 +54,7 @@
   }
 </script>
 
-<section class="trace-tab">
+<section class="trace-tab" aria-label="Agent decision trace">
   <h3 class="section-title">🌳 Agent Decision Trace</h3>
   <p class="subtitle">
     Tool call decision chain — what ran, in what order, and what triggered the
@@ -71,6 +71,7 @@
         <span>Session</span>
         <select
           value={activeSessionKey}
+          aria-label="Select agent session"
           onchange={(event) =>
             selectSession((event.currentTarget as HTMLSelectElement).value)}
         >

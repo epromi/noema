@@ -75,7 +75,7 @@
   }
 </script>
 
-<section class="overview-tab">
+<section class="overview-tab" aria-label="System overview">
   <div class="system-bar">
     <span class="sys-item"><strong>{na(hostname)}</strong></span>
     <span class="sys-item">Uptime: {na(health.uptime)}</span>

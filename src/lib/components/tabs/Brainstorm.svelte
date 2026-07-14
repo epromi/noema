@@ -14,7 +14,7 @@
   );
 </script>
 
-<section class="brainstorm-tab">
+<section class="brainstorm-tab" aria-label="Brainstorming action tracker">
   <div class="tab-header">
     <h2 class="section-title">🧠 Brainstorming Action Tracker</h2>
     <div class="pending-badge">

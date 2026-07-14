@@ -25,6 +25,7 @@
       class="log-btn"
       class:active={logOpen}
       title="Kattints a Cursor log megtekintéséhez"
+      aria-label={logOpen ? "Hide Cursor log" : "Show Cursor log"}
       onclick={(e) => {
         e.stopPropagation();
         onLogToggle?.();

@@ -20,7 +20,7 @@
   }
 </script>
 
-<section class="research-tab">
+<section class="research-tab" aria-label="Dashboard research">
   <h3 class="section-title">🧠 Dashboard Research</h3>
 
   {#if research.error}

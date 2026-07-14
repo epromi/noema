@@ -132,7 +132,7 @@
   }
 </script>
 
-<section class="bills-tab">
+<section class="bills-tab" aria-label="Bills and open loops">
   <h3 class="section-title">💰 Bills</h3>
 
   {#if bills.error}
@@ -166,8 +166,11 @@
               </td>
               <td>
                 {#if row.link}
-                  <a href={row.link} target="_blank" rel="noopener noreferrer"
-                    >Open</a
+                  <a
+                    href={row.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`Open link for ${row.name}`}>Open</a
                   >
                 {:else}
                   —
