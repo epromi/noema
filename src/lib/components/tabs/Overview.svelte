@@ -143,6 +143,7 @@
           class="agent-card clickable"
           role="button"
           tabindex="0"
+          aria-label={`View agent ${agent.name}`}
           onclick={() => handleAgentSelect(agent.id)}
           onkeydown={(e) => handleAgentKeydown(e, agent.id)}
         >

@@ -108,6 +108,7 @@
                 <button
                   type="button"
                   class={stepClass(step)}
+                  aria-label={`View step ${step.index + 1}: ${step.toolName}`}
                   onclick={() => selectStep(step)}
                 >
                   <span class="step-index">#{step.index + 1}</span>
