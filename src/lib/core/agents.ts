@@ -1,3 +1,5 @@
+/** @file Agent roster data fetching and enrichment for the Agents tab. */
+
 import type { AllProviders } from "$lib/providers/types";
 import type { Session } from "$lib/providers/types";
 import { fileAgeDays } from "$lib/providers/openclaw";

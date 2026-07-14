@@ -1,3 +1,5 @@
+/** @file System health aggregation (CPU, memory, uptime, disk) for the Health tab. */
+
 import { join } from "node:path";
 import type { AllProviders } from "$lib/providers/types";
 import { fileAgeDays, workspaceRoot } from "$lib/providers/openclaw";

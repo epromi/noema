@@ -1,3 +1,5 @@
+/** @file Audit trail data extraction from agent session logs. */
+
 import type {
   AllProviders,
   CronRun,

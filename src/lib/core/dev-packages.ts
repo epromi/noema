@@ -1,3 +1,5 @@
+/** @file Dev package utilities: grouping, filtering, stats computation, phase icons. */
+
 import type { DevPackageEntry } from "$lib/types";
 
 export interface GroupedPackages {

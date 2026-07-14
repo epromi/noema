@@ -1,3 +1,5 @@
+/** @file Agent detail enrichment — merges agent data with log entries. */
+
 import type { AgentData, AgentLogSnippet, LogEntry } from "$lib/types";
 
 /** Pick the last N log lines that mention an agent id or display name. */

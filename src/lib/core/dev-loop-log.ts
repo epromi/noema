@@ -1,3 +1,5 @@
+/** @file Dev-loop log parsing: running jobs, package metadata extraction. */
+
 import { readdir, readFile, unlink, writeFile } from "node:fs/promises";
 import { basename, join } from "node:path";
 import type { AllProviders } from "$lib/providers/types";

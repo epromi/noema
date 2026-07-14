@@ -1,3 +1,5 @@
+/** @file Dashboard action parser — extracts actions from agent prompts and tool calls. */
+
 import type { ActionOption, DashboardActionType } from "$lib/types";
 
 /** Maps markdown action labels to dashboard relay action types. */

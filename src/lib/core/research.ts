@@ -1,3 +1,5 @@
+/** @file Research data aggregation from Albert and Scout agents. */
+
 import { readdir, stat } from "node:fs/promises";
 import { join } from "node:path";
 import type { AllProviders } from "$lib/providers/types";

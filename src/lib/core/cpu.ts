@@ -1,3 +1,5 @@
+/** @file CPU and system metrics collection for the Health dashboard. */
+
 import { cpus } from "node:os";
 import type { AllProviders } from "$lib/providers/types";
 import type { CpuData, CpuProcess } from "$lib/types";

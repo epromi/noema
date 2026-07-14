@@ -1,3 +1,5 @@
+/** @file Noema project data (changelog, dev packages, generate.cjs) for the Noema tab. */
+
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import type { AllProviders } from "$lib/providers/types";

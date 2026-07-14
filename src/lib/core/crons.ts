@@ -1,3 +1,5 @@
+/** @file Cron job data fetching for the Cron timeline widgets. */
+
 import type { AllProviders } from "$lib/providers/types";
 import { getProvider } from "$lib/providers";
 import type { CronData, CronEntry } from "$lib/types";

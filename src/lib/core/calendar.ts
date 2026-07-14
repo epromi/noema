@@ -1,3 +1,5 @@
+/** @file Google Calendar data fetching for the Calendar tab. */
+
 import type { AllProviders } from "$lib/providers/types";
 import { getProvider } from "$lib/providers";
 import type { CalendarData, CalendarEvent } from "$lib/types";

@@ -1,3 +1,5 @@
+/** @file Cron scheduling utilities: next run computation, display formatting, time labels. */
+
 /**
  * Cron schedule utility functions — ESM version of lib/cron-schedule.cjs
  * Used by SvelteKit SSR components (CJS imports don't work in Vite dev mode).

@@ -1,3 +1,5 @@
+/** @file Bill tracking data fetching for the Bills widget. */
+
 import type { AllProviders } from "$lib/providers/types";
 import { getProvider } from "$lib/providers";
 import type { BillEntry, BillsData, OpenLoop } from "$lib/types";

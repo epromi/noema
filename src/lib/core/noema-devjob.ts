@@ -1,3 +1,5 @@
+/** @file Noema dev job relay client: status polling, action triggering via relay endpoint. */
+
 // Browser-safe — NO Node.js imports. Used by DevJobIndicator.svelte client component.
 import type { DevJobStatus } from "$lib/types";
 

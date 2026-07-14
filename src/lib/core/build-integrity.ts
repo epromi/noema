@@ -1,3 +1,5 @@
+/** @file Build integrity checks — verifies dev pipeline files exist and are valid. */
+
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 import type { BuildIntegrityData } from "$lib/types";

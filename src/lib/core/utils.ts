@@ -1,3 +1,5 @@
+/** @file Shared utility functions (date formatting, string helpers, type guards). */
+
 import type { CronByGroup, CronEntry, CronGroup } from "$lib/types";
 
 const CRON_GROUPS: CronGroup[] = [

@@ -1,3 +1,5 @@
+/** @file Agent log aggregation and filtering for the Logs tab. */
+
 import { homedir } from "node:os";
 import { join } from "node:path";
 import type { AllProviders } from "$lib/providers/types";
