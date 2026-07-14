@@ -1,5 +1,5 @@
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
-import { join, dirname, relative } from "node:path";
+import { join, relative } from "node:path";
 import type { BuildIntegrityData } from "$lib/types";
 
 export const SSR_FAILURE_THRESHOLD = 3;

@@ -102,6 +102,22 @@ async function processActions() {
     }
     return true;
   });
+
+  // 1b. Zombie detection: entries stuck in 'processing' > 30 min → dead
+  const PROCESSING_TIMEOUT_MS = 30 * 60 * 1000;
+  for (const e of entries) {
+    if (e.status === 'processing' && e.updatedAt) {
+      const stuckMs = now - new Date(e.updatedAt).getTime();
+      if (stuckMs > PROCESSING_TIMEOUT_MS) {
+        console.log(`🧟 Zombie detected: ${e.id} — processing for ${Math.round(stuckMs/60000)}min → dead`);
+        e.status = 'dead';
+        e.lastError = (e.lastError || '') + ` [ZOMBIE: stuck in processing for ${Math.round(stuckMs/60000)}min — processor likely crashed]`;
+        e.updatedAt = nowISO();
+        e.retries = (e.retries || 0) + 1;
+      }
+    }
+  }
+
   if (cleaned) { writeEntries(entries); console.log(`🧹 ${cleaned} lejárt entry törölve`); }
 
   // 2. Keresd a feldolgozandókat (queued + implement action)

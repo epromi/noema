@@ -1,6 +1,6 @@
 # Noema 🧠 — Development Package Index
 
-> Utolsó frissítés: 2026-07-08 22:30
+> Utolsó frissítés: 2026-07-13 23:30
 
 ## Aktív Csomagok
 
@@ -41,13 +41,17 @@
 | PKG-033 | **Dev Package Log + Queue — Teljes Körű Fix** 🔧 | ✅ F5 | — | M | ✅ kész | PKG-014, PKG-016, PKG-018, PKG-026 |
 | PKG-034 | **Package Row — Lenyitható Részletek** 🔽 | 📋 F0 | — | S | 30m | PKG-015, PKG-021 |
 | PKG-035 | **Build Integrity Check — Soha Többé Sérült Build** 🔒 | ✅ F5 | — | S | ✅ kész | PKG-018, PKG-024 |
-| PKG-036 | **CPU Százalék a Rendszer Sorban** 📊 | 📋 F0 | — | XS | 15m | PKG-032 |
+| PKG-036 | **CPU Százalék a Rendszer Sorban** 📊 | ✅ F5 | — | XS | ✅ kész | PKG-032 |
 | PKG-037 | **PKG Lista — Élő Frissítés Fájl Változásra** 🔄 | ✅ F5 | — | S | ✅ kész | PKG-031 |
 | PKG-038 | **Agent Detail + Navigáció Átalakítás** 🧭 | ✅ F5 | — | M | ✅ kész | PKG-021, PKG-022 |
 | PKG-039 | **Developer Freedom — Cursor Gardening + Research Jogkör** 🌿🔍 | ✅ F5 | — | M | ✅ kész | PKG-014, PKG-018, PKG-035 |
 | PKG-040 | **Action Queue Decisions v2 — Option Gombok** 🎯 | ✅ F5 | — | M | ✅ kész | PKG-023 |
 | PKG-041 | **Dev-Loop Generalizálás — Plugin Tool** 🔧 | 📋 F0 | — | L | 6h | — |
 | PKG-042 | **Porter Triage + Operational Pulse** 🫀📧 | 📋 F0 | — | M | 2h | PKG-021 |
+| PKG-043 | **Action Queue — Teljes Feldolgozási Pipeline** 🔄 | 📋 F0 | — | M | 4h | PKG-023, PKG-040 |
+| PKG-044 | **Otto Nightly Runs — Collapsible + Readable** 🗄️ | 📋 F0 | — | S | 1h | PKG-023 |
+| PKG-045 | **Sötét/Világos Téma Váltás** 🌗 | 📋 F0 | — | S | 1h | PKG-001 |
+| PKG-046 | **Billentyűparancsok + Gyors Navigáció** ⌨️ | 📋 F0 | — | M | 2-3h | PKG-001 |
 | PKG-047 | **Accessibility Baseline — aria-labels** ♿ | 🔧 IP | — | XS | 15m | — |
 
 ## Függőségi Sorrend

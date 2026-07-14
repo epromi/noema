@@ -46,16 +46,14 @@ describe("index (getAllData)", () => {
   }, 15000);
 
   it("named exports are callable", async () => {
-    const {
-      getAgents,
-      getBills,
-      getCalendar,
-      getCrons,
-      getH1Data,
-      getHealth,
-      getNoema,
-      getResearch,
-    } = await import("$lib/core/index");
+    const { getAgents } = await import("$lib/core/agents");
+    const { getBills } = await import("$lib/core/bills");
+    const { getCalendar } = await import("$lib/core/calendar");
+    const { getCrons } = await import("$lib/core/crons");
+    const { getH1Data } = await import("$lib/core/h1");
+    const { getHealth } = await import("$lib/core/health");
+    const { getNoema } = await import("$lib/core/noema");
+    const { getResearch } = await import("$lib/core/research");
     expect(typeof getAgents).toBe("function");
     expect(typeof getBills).toBe("function");
     expect(typeof getCalendar).toBe("function");
