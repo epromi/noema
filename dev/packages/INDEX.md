@@ -50,6 +50,8 @@
 | PKG-042 | **Porter Triage + Operational Pulse** 🫀📧 | 📋 F0 | — | M | 2h | PKG-021 |
 | PKG-043 | **Action Queue — Teljes Feldolgozási Pipeline** 🔄 | 📋 F0 | — | M | 4h | PKG-023, PKG-040 |
 | PKG-044 | **Otto Nightly Runs — Collapsible + Readable** 🗄️ | 📋 F0 | — | S | 1h | PKG-023 |
+| PKG-049 | **Loading Skeleton States** 💀 | 📋 F0 | — | M | 2h | PKG-021 |
+| PKG-050 | **Shared MetricCard + DataTable** 📊 | 📋 F0 | — | M | 3h | PKG-021 |
 | PKG-045 | **Sötét/Világos Téma Váltás** 🌗 | 📋 F0 | — | S | 1h | PKG-001 |
 | PKG-046 | **Billentyűparancsok + Gyors Navigáció** ⌨️ | 📋 F0 | — | M | 2-3h | PKG-001 |
 | PKG-047 | **Accessibility Baseline — aria-labels** ♿ | 🔧 IP | — | XS | 15m | — |

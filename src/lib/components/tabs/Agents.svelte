@@ -90,6 +90,7 @@
               class:clickable={true}
               role="button"
               tabindex="0"
+              aria-label="View agent {agent.name}"
               onclick={() => handleAgentSelect(agent.id)}
               onkeydown={(e) => handleRowKeydown(e, agent.id)}
             >

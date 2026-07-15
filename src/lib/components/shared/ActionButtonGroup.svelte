@@ -118,6 +118,7 @@
         class:error={state === "error" || state === "offline"}
         disabled={state === "loading"}
         title={opt.label}
+        aria-label={opt.label}
         onclick={() =>
           onAction(opt.key as DashboardActionType, itemId, opt.label)}
       >
@@ -139,6 +140,7 @@
         class:error={state === "error" || state === "offline"}
         disabled={state === "loading"}
         title={ACTION_TOOLTIPS[action]}
+        aria-label="{ACTION_LABELS[action]}: {state === 'offline' ? 'Offline' : state}"
         onclick={() => onAction(action, itemId, description)}
       >
         {buttonLabel(action, state)}

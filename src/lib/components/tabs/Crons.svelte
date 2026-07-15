@@ -103,12 +103,12 @@
       <table class="data-table">
         <thead>
           <tr>
-            <th>Cron</th>
-            <th>Agent</th>
-            <th>Schedule</th>
-            <th>Description</th>
-            <th>Last run</th>
-            <th class="col-result">Result</th>
+            <th scope="col">Cron</th>
+            <th scope="col">Agent</th>
+            <th scope="col">Schedule</th>
+            <th scope="col">Description</th>
+            <th scope="col">Last run</th>
+            <th scope="col" class="col-result">Result</th>
           </tr>
         </thead>
         <tbody>

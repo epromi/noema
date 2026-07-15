@@ -9,6 +9,7 @@ export const AGENT_ICONS: Record<string, string> = {
   albert: "🔍",
   cortex: "🧠",
   hugo: "📚",
+  nova: "🔧",
   main: "🏠",
   system: "🤖",
 };

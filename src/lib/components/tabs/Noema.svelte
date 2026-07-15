@@ -176,6 +176,7 @@
               type="button"
               class="section-header"
               onclick={() => toggleSection("spec")}
+              aria-expanded={specOpen}
             >
               <span class="chevron">{specOpen ? "▾" : "▸"}</span>
               <span>📋 Specifikáció Kész ({grouped.spec.length})</span>
@@ -214,6 +215,7 @@
               type="button"
               class="section-header"
               onclick={() => toggleSection("active")}
+              aria-expanded={activeOpen}
             >
               <span class="chevron">{activeOpen ? "▾" : "▸"}</span>
               <span>🔨 Fejlesztés Alatt ({grouped.active.length})</span>
@@ -252,6 +254,7 @@
               type="button"
               class="section-header"
               onclick={() => toggleSection("done")}
+              aria-expanded={doneOpen}
             >
               <span class="chevron">{doneOpen ? "▾" : "▸"}</span>
               <span>✅ Kész ({grouped.done.length})</span>

@@ -1,0 +1,55 @@
+Implement the following specification:
+
+# PKG-049: Dashboard Loading & Skeleton States
+
+**Status**: 🤖 auto-ready → auto-implemented
+**Source**: QA 2026-07-15 — Phase 1 gap-components #4, stores-gap M7
+**Priority**: 🔴 Critical (user-visible)
+**Scope**: ✅ Non-core — UI components only
+
+## Problem
+
+Noema dashboard shows "No agents loaded" and "No crons loaded" during the initial 15-25s data load, misleading users into thinking the system is broken. There are no loading indicators, skeleton screens, or progressive disclosure — users see empty states instead of loading states.
+
+## Solution
+
+Add a `LoadingSkeleton` shared component and per-tab loading states:
+
+1. **`LoadingSkeleton.svelte`** — Pulse-animated skeleton card component (reusable)
+2. **`DashboardLoading.svelte`** — Top-level loading overlay for initial SSR wait
+3. **Per-tab loading checks** — Each tab checks if data is ready before rendering content
+4. **`ErrorMessage.svelte`** — Reusable error display with retry support
+
+## Implementation
+
+### Files to create:
+- `src/lib/components/shared/LoadingSkeleton.svelte` — Animated skeleton placeholder
+- `src/lib/components/shared/ErrorMessage.svelte` — Error banner with optional retry button
+
+### Files to modify (minimal):
+- `src/routes/+page.svelte` — Add loading check: if data not ready, show DashboardLoading
+  - ⚠️ NOTE: `src/routes/` is ❌ scope. SKIP routing changes.
+  - Instead: Add loading state detection WITHIN each tab component only
+
+### Tab components to enhance:
+- `src/lib/components/tabs/Agents.svelte` — Add loading state before data render
+- `src/lib/components/tabs/Crons.svelte` — Add loading state
+- `src/lib/components/tabs/Overview.svelte` — Add loading state
+- `src/lib/components/tabs/H1.svelte` — Add loading state
+- `src/lib/components/tabs/Bills.svelte` — Add loading state
+- `src/lib/components/tabs/Orchestrator.svelte` — Add loading state for async sections
+- `src/lib/components/layout/CronSidebar.svelte` — Add loading state
+
+## Acceptance Criteria
+
+- [ ] `LoadingSkeleton.svelte` component with CSS pulse animation
+- [ ] `ErrorMessage.svelte` component with error text + optional retry button
+- [ ] At least 4 tabs show skeleton/loading when `data` is null/undefined
+- [ ] pnpm check passes (0 errors, 0 warnings)
+- [ ] No changes to: `src/routes/`, `src/lib/stores/`, `src/lib/server/`, config files
+
+## Estimated Effort
+- LoadingSkeleton component: 30min
+- ErrorMessage component: 20min
+- Per-tab loading checks: 60min
+- Total: ~2h

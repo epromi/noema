@@ -2,9 +2,11 @@
   let { message }: { message: string } = $props();
 </script>
 
-<div class="build-integrity-banner" role="alert">
-  🚨 {message}
-</div>
+{#if message}
+  <div class="build-integrity-banner" role="alert">
+    🚨 {message}
+  </div>
+{/if}
 
 <style>
   .build-integrity-banner {
