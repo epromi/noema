@@ -198,6 +198,13 @@
       <span class="dji-val running">{status.running}</span>
     </div>
   {/if}
+
+  {#if status.error}
+    <div class="dji-row dji-error">
+      <span class="dji-label">⚠️ Hiba:</span>
+      <span class="dji-val error-msg">{status.error}</span>
+    </div>
+  {/if}
 </div>
 
 <style>

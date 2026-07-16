@@ -277,6 +277,7 @@
         type="button"
         class="cs-toggle"
         title={collapsed ? "Sidebar kinyitása" : "Sidebar összecsukása"}
+        aria-label={collapsed ? "Sidebar kinyitása" : "Sidebar összecsukása"}
         onclick={toggleCollapsed}
       >
         {collapsed ? "▶" : "◀"}

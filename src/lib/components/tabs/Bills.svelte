@@ -144,12 +144,12 @@
       <table class="bills-table">
         <thead>
           <tr>
-            <th>Név</th>
-            <th>Összeg</th>
-            <th>Határidő</th>
-            <th>Státusz</th>
-            <th>Link</th>
-            <th></th>
+            <th scope="col">Név</th>
+            <th scope="col">Összeg</th>
+            <th scope="col">Határidő</th>
+            <th scope="col">Státusz</th>
+            <th scope="col">Link</th>
+            <th scope="col"></th>
           </tr>
         </thead>
         <tbody>

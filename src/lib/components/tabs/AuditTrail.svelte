@@ -120,6 +120,7 @@
             type="button"
             class="range-btn"
             class:active={timeRange === range.id}
+            aria-pressed={timeRange === range.id}
             onclick={() => (timeRange = range.id)}
           >
             {range.label}

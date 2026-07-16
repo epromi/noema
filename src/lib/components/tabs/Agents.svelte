@@ -73,14 +73,14 @@
       <table class="data-table">
         <thead>
           <tr>
-            <th class="col-emoji"></th>
-            <th>Agent</th>
-            <th class="col-status">Status</th>
-            <th>Status text</th>
-            <th>Last run</th>
-            <th>Schedule</th>
-            <th>Model</th>
-            <th>Role</th>
+            <th class="col-emoji" scope="col"></th>
+            <th scope="col">Agent</th>
+            <th class="col-status" scope="col">Status</th>
+            <th scope="col">Status text</th>
+            <th scope="col">Last run</th>
+            <th scope="col">Schedule</th>
+            <th scope="col">Model</th>
+            <th scope="col">Role</th>
           </tr>
         </thead>
         <tbody>

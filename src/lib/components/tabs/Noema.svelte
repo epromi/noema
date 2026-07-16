@@ -162,6 +162,7 @@
         type="search"
         class="search-input"
         placeholder="Keresés..."
+        aria-label="Keresés csomagok között"
         bind:value={searchQuery}
       />
     </label>
