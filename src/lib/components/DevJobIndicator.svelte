@@ -165,7 +165,7 @@
       type="button"
       class="dji-grip"
       class:dragging
-      aria-label="Húzd az indikátor pozíciójához"
+      aria-label="Drag to reposition indicator"
       onmousedown={onDragStart}
       ontouchstart={onDragStart}
     >

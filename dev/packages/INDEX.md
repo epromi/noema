@@ -52,6 +52,9 @@
 | PKG-044 | **Otto Nightly Runs — Collapsible + Readable** 🗄️ | 📋 F0 | — | S | 1h | PKG-023 |
 | PKG-049 | **Loading Skeleton States** 💀 | 📋 F0 | — | M | 2h | PKG-021 |
 | PKG-050 | **Shared MetricCard + DataTable** 📊 | 📋 F0 | — | M | 3h | PKG-021 |
+| PKG-051 | **CSS Color Token Standardization** 🎨 | 📋 F0 | — | S | 1h | — |
+| PKG-052 | **Shared UI Utilities** 🧰 | 📋 F0 | — | M | 1.5h | PKG-021 |
+| PKG-053 | **Focus Trap + Keyboard UX** ⌨️ | 📋 F0 | — | S | 30m | — |
 | PKG-045 | **Sötét/Világos Téma Váltás** 🌗 | 📋 F0 | — | S | 1h | PKG-001 |
 | PKG-046 | **Billentyűparancsok + Gyors Navigáció** ⌨️ | 📋 F0 | — | M | 2-3h | PKG-001 |
 | PKG-047 | **Accessibility Baseline — aria-labels** ♿ | 🔧 IP | — | XS | 15m | — |

@@ -1,0 +1,105 @@
+# PKG-053: Focus Trap + Keyboard UX for AgentDetailPanel ⌨️
+
+**Created**: 2026-07-16 | **Source**: QA Nightly a11y scan (C3 + C4) | **Severity**: 🔴 Critical
+**Scope**: ✅ non-core (shared component only) | **Estimated**: 30m
+
+## Problem
+
+AgentDetailPanel slide-in has WCAG Level A violations:
+1. **No focus trap**: When the panel opens, keyboard users Tab into background content they can't see
+2. **No auto-focus on close button**: Users must Tab through entire background page to reach the close button
+3. **Escape key doesn't close panel**: Standard modal behavior missing
+
+## Current State
+
+`src/lib/components/shared/AgentDetailPanel.svelte` has `open` prop + `onClose` callback, but no keyboard handling beyond the close button's click handler.
+
+## Proposed Solution
+
+1. **Auto-focus close button on open**: Bind close button element + `tick()` + `.focus()` in `$effect`
+2. **Focus trap**: On Tab from last focusable → wrap to close button; on Shift+Tab from close → wrap to last focusable
+3. **Escape key handler**: `onkeydown` on the panel that calls `onClose?.()` on Escape
+4. **Restore focus on close**: Remember `document.activeElement` before opening, restore on close
+
+## Scope Gates
+
+| Check | Status |
+|-------|--------|
+| ✅ `src/lib/components/shared/` | Allowed |
+| ❌ `src/lib/stores/` | NOT touched |
+| ❌ `src/lib/server/` | NOT touched |
+| ❌ `src/routes/` | NOT touched |
+| ❌ Config files | NOT touched |
+
+## Files
+
+| File | Action |
+|------|--------|
+| `src/lib/components/shared/AgentDetailPanel.svelte` | Add focus trap + escape handler + focus management |
+
+## Implementation
+
+```svelte
+<script lang="ts">
+  // ... existing imports ...
+  import { tick } from 'svelte';
+
+  // ... existing props ...
+
+  let panelEl = $state<HTMLElement>();
+  let closeBtn = $state<HTMLButtonElement>();
+  let previousFocus = $state<Element | null>(null);
+
+  $effect(() => {
+    if (open && agent && closeBtn) {
+      previousFocus = document.activeElement;
+      tick().then(() => closeBtn?.focus());
+    }
+    if (!open && previousFocus instanceof HTMLElement) {
+      previousFocus.focus();
+      previousFocus = null;
+    }
+  });
+
+  function handleKeydown(e: KeyboardEvent) {
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      onClose?.();
+      return;
+    }
+    if (e.key === 'Tab' && panelEl) {
+      const focusable = panelEl.querySelectorAll<HTMLElement>(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (!first || !last) return;
+
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+  }
+</script>
+
+<aside
+  bind:this={panelEl}
+  class="agent-detail-panel open"
+  onkeydown={handleKeydown}
+  ...
+>
+  <button bind:this={closeBtn} ...>✕</button>
+</aside>
+```
+
+## Success Criteria
+
+- [ ] Opening panel → close button focused immediately
+- [ ] Tab cycling trapped within panel
+- [ ] Escape closes panel
+- [ ] Closing panel → focus returns to previous element
+- [ ] `pnpm check` passes with 0 errors

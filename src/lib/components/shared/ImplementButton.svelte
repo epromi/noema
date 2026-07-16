@@ -78,7 +78,7 @@
   .implement-btn {
     cursor: pointer;
     background: var(--green);
-    color: #fff;
+    color: #0d1117;
     border: none;
     border-radius: 4px;
     padding: 2px 10px;
@@ -90,6 +90,7 @@
 
   .implement-btn.error {
     background: var(--red);
+    color: #0d1117;
   }
 
   .done-badge {

@@ -276,8 +276,8 @@
       <button
         type="button"
         class="cs-toggle"
-        title={collapsed ? "Sidebar kinyitása" : "Sidebar összecsukása"}
-        aria-label={collapsed ? "Sidebar kinyitása" : "Sidebar összecsukása"}
+        title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+        aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         onclick={toggleCollapsed}
       >
         {collapsed ? "▶" : "◀"}
