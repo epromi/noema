@@ -287,6 +287,9 @@ fi
 CURSOR_LINES=0
 [ -f "$CURSOR_LOG" ] && CURSOR_LINES=$(wc -l < "$CURSOR_LOG" 2>/dev/null || echo 0)
 CREATED_FILES=$(echo "$EXPECTED_FILES" | grep -c . 2>/dev/null || echo 0)
+# Sanitize: grab first integer only (grep -c may emit whitespace/multiline junk when EXPECTED_FILES is empty)
+CREATED_FILES=$(echo "$CREATED_FILES" | grep -oP '[0-9]+' | head -1 || echo 0)
+MISSING=${MISSING:-0}
 CREATED_FILES=$((CREATED_FILES - MISSING))
 HAS_PKG="$([ -f "$PROJECT_DIR/package.json" ] && echo 1 || echo 0)"
 log_dev "✅ Phase 4: Cursor Agent — kész ($CREATED_FILES files, $CURSOR_LINES lines)"
@@ -422,15 +425,17 @@ if [ "$HAS_PKG" -eq 1 ]; then
     COV_LINE=0
     COV_JSON="$PROJECT_DIR/coverage/coverage-summary.json"
     if [ -f "$COV_JSON" ]; then
-      COV_LINE=$(python3 -c "
-import json
-with open('$COV_JSON') as f:
+      cat > /tmp/noema-cov-$$.py << 'PYEOF'
+import json, os
+with open(os.environ["NOEMA_COV_JSON"]) as f:
     data = json.load(f)
-    total = data.get('total', {})
-    lines = total.get('lines', {}).get('pct', 0)
-    stmts = total.get('statements', {}).get('pct', 0)
+    total = data.get("total", {})
+    lines = total.get("lines", {}).get("pct", 0)
+    stmts = total.get("statements", {}).get("pct", 0)
     print(max(lines, stmts))
-" 2>/dev/null || echo 0)
+PYEOF
+      COV_LINE=$(NOEMA_COV_JSON="$COV_JSON" python3 /tmp/noema-cov-$$.py 2>/dev/null || echo 0)
+      rm -f /tmp/noema-cov-$$.py
     fi
 
     # Fallback: try to parse from terminal output
