@@ -341,7 +341,9 @@ export async function getDecisionTrace(
   const nowMs = Date.now();
 
   try {
-    const sessions = await p.session.listSessions({ limit: SESSION_LIST_LIMIT });
+    const sessions = await p.session.listSessions({
+      limit: SESSION_LIST_LIMIT,
+    });
     const session = sessions.find((s) => s.key === sessionKey);
     const messages = await p.session.getHistory(
       sessionKey,
@@ -376,7 +378,9 @@ export async function getDecisionTraceData(
   const nowMs = Date.now();
 
   try {
-    const sessions = await p.session.listSessions({ limit: SESSION_LIST_LIMIT });
+    const sessions = await p.session.listSessions({
+      limit: SESSION_LIST_LIMIT,
+    });
     const sorted = [...sessions].sort(
       (a, b) => (b.updatedAt ?? 0) - (a.updatedAt ?? 0),
     );

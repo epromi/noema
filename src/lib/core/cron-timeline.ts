@@ -1,6 +1,11 @@
 /** @file Gantt-style cron run timeline data for CronTimeline.svelte (PKG-008). */
 
-import type { CronEntry, CronGanttData, CronGanttRow, CronGanttStatus } from "$lib/types";
+import type {
+  CronEntry,
+  CronGanttData,
+  CronGanttRow,
+  CronGanttStatus,
+} from "$lib/types";
 
 const DEFAULT_WINDOW_HOURS = 24;
 /** Fixed visual width of a run bar (crons don't currently report duration). */
