@@ -189,7 +189,7 @@
         aria-valuenow={stats.donePercent}
         aria-valuemin={0}
         aria-valuemax={100}
-        aria-label="Csomag haladás"
+        aria-label="Package progress"
       >
         <span class="seg spec" style:width="{specPct}%"></span>
         <span class="seg active" style:width="{activePct}%"></span>
@@ -208,7 +208,7 @@
         type="search"
         class="search-input"
         placeholder="Keresés..."
-        aria-label="Keresés csomagok között"
+        aria-label="Search packages"
         bind:value={searchQuery}
       />
     </label>

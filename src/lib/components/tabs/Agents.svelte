@@ -71,6 +71,7 @@
   {:else}
     <div class="table-wrap">
       <table class="data-table">
+        <caption>Agent Registry</caption>
         <thead>
           <tr>
             <th class="col-emoji" scope="col"></th>

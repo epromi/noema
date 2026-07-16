@@ -1,6 +1,6 @@
 # Noema 🧠 — Development Package Index
 
-> Utolsó frissítés: 2026-07-13 23:30
+> Utolsó frissítés: 2026-07-16 21:24
 
 ## Aktív Csomagok
 
@@ -66,6 +66,8 @@
 | PKG-058 | **Dev-Loop + Review — Spec Teljesség Védőháló** 🛡️ | 📋 F0 | — | M | 1h | PKG-054, PKG-056 |
 | PKG-059 | **Relay Action Queue Validáció** 🔒 | ✅ F5 | — | XS | ✅ kész | — |
 | PKG-060 | **Failed/Dead Packages — Hibás Lista** ⚠️ | 📋 F0 | — | S | 30m | PKG-055, PKG-056 |
+| PKG-061 | **Focus Trap in AgentDetailPanel** ⌨️ | 🤖 auto-ready | — | XS | 30m | — |
+| PKG-062 | **Loading Skeleton States** 💀 | 🤖 auto-ready | — | S | 45m | — |
 
 ## Függőségi Sorrend
 

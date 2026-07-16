@@ -111,6 +111,7 @@
     {:else}
       <div class="table-wrap">
         <table class="data-table">
+          <caption>Security Audit Repositories</caption>
           <thead>
             <tr>
               <th scope="col">Repo</th>

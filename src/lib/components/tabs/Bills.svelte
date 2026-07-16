@@ -142,6 +142,7 @@
   {:else}
     <div class="table-wrap card">
       <table class="bills-table">
+        <caption>Bills &amp; Open Loops</caption>
         <thead>
           <tr>
             <th scope="col">Név</th>

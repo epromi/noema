@@ -69,6 +69,7 @@
   {:else}
     <div class="table-wrap">
       <table class="data-table">
+        <caption>H1 Bug Bounty Programs</caption>
         <thead>
           <tr>
             <th scope="col">Program</th>

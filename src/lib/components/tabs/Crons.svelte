@@ -101,6 +101,7 @@
   {:else}
     <div class="table-wrap">
       <table class="data-table">
+        <caption>Cron Job Registry</caption>
         <thead>
           <tr>
             <th scope="col">Cron</th>

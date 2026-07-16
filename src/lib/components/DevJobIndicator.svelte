@@ -219,7 +219,7 @@
         type="button"
         class="dji-toggle"
         title="Részletes nézet"
-        aria-label="Részletes nézet"
+        aria-label="Detailed view"
         onmousedown={(e) => e.stopPropagation()}
         ontouchstart={(e) => e.stopPropagation()}
         onclick={toggleCollapsed}
@@ -234,7 +234,7 @@
         type="button"
         class="dji-toggle"
         title="Egysoros nézet"
-        aria-label="Egysoros nézet"
+        aria-label="Compact view"
         onclick={toggleCollapsed}
       >
         −
