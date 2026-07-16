@@ -21,13 +21,18 @@ export interface PackageStats {
  * static INDEX.md phase — a package that's queued or running is "active" no
  * matter what its last recorded phase says, and one still failing isn't done.
  */
-const LIVE_ACTIVE_STATUSES = new Set(["pending", "processing", "failed", "dead"]);
+const LIVE_ACTIVE_STATUSES = new Set(["pending", "processing", "failed"]);
 
 /** A done PKG stays in the active list for this many ms after completion. */
 const DONE_GRACE_MS = 60_000;
 
+/** After this long as "failed", a PKG is no longer considered actively failing. */
+const FAILED_GRACE_MS = 30 * 60_000;
+
 export function isDonePackage(pkg: DevPackageEntry): boolean {
   if (pkg.actionStatus === "done" || pkg.actionStatus === "resolved") return true;
+  // Terminal states — not truly "done" but should not pollute active list
+  if (pkg.actionStatus === "dead") return true;
   if (pkg.actionStatus && LIVE_ACTIVE_STATUSES.has(pkg.actionStatus)) {
     return false;
   }
@@ -36,8 +41,15 @@ export function isDonePackage(pkg: DevPackageEntry): boolean {
 
 export function isActivePackage(pkg: DevPackageEntry): boolean {
   if (pkg.actionStatus && LIVE_ACTIVE_STATUSES.has(pkg.actionStatus)) {
+    // "failed" has a grace period — after 30 min it's stale, not actively failing
+    if (pkg.actionStatus === "failed" && pkg.actionUpdatedAt) {
+      const elapsed = Date.now() - new Date(pkg.actionUpdatedAt).getTime();
+      if (elapsed >= FAILED_GRACE_MS) return false;
+    }
     return true;
   }
+  // "dead" is terminal — never active (must be manually resolved)
+  if (pkg.actionStatus === "dead") return false;
   // Resolved + done are NEVER active
   if (pkg.actionStatus === "done" || pkg.actionStatus === "resolved") return false;
   // Grace period: "done" packages stay active briefly for smooth UX
@@ -45,7 +57,8 @@ export function isActivePackage(pkg: DevPackageEntry): boolean {
     const elapsed = Date.now() - new Date(pkg.actionCompletedAt).getTime();
     if (elapsed < DONE_GRACE_MS) return true;
   }
-  return /F[1-4]|🔨|⏸|🔧|🤖|\b(IP|QA)\b/.test(pkg.phase);
+  // 🤖 only matches "QA" (queued by automation), not "auto-ready" (spec waiting for queue)
+  return /F[1-4]|🔨|⏸|🔧|🤖\s+QA|\b(IP|QA)\b/.test(pkg.phase);
 }
 
 /** Extract the leading numeric PKG id (e.g. "PKG-014" → 14) for sorting. */
@@ -56,7 +69,7 @@ function pkgNum(pkg: DevPackageEntry): number {
 
 export function isSpecPackage(pkg: DevPackageEntry): boolean {
   if (pkg.actionStatus) return false;
-  return /F0|📋/.test(pkg.phase);
+  return /F0|📋|auto-ready/.test(pkg.phase);
 }
 
 /**

@@ -29,6 +29,7 @@ export interface ActionOverlayEntry {
   status: NonNullable<DevPackageEntry["actionStatus"]>;
   queuedAt?: string;
   completedAt?: string;
+  updatedAt?: string;
 }
 
 const VALID_ACTION_STATUSES = new Set([
@@ -72,6 +73,8 @@ export function parseActionOverlay(
       queuedAt: typeof entry.ts === "string" ? entry.ts : undefined,
       completedAt:
         typeof entry.completedAt === "string" ? entry.completedAt : undefined,
+      updatedAt:
+        typeof entry.updatedAt === "string" ? entry.updatedAt : undefined,
     });
   }
 
@@ -91,6 +94,7 @@ export function applyActionOverlay(
       actionStatus: ov.status,
       actionQueuedAt: ov.queuedAt,
       actionCompletedAt: ov.completedAt,
+      actionUpdatedAt: ov.updatedAt,
     };
   });
 }

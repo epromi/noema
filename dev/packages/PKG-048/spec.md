@@ -108,3 +108,33 @@ Each sub-component gets its own scoped `<style>` block. Svelte scoping handles i
 - `src/lib/components/layout/CronSidebar.svelte` — has similar `EnrichedCron` type (duplicate)
 - `src/lib/components/shared/ActionButtonGroup.svelte` — already extracted, used by KanbanBoard + ResearchProposals
 - `src/lib/core/cron-utils.ts` — cron computation utilities (already extracted ✅)
+
+
+## 🎯 Mit
+
+_Placeholder — to be filled._
+
+
+## 📐 Scope
+
+_Placeholder — to be filled._
+
+
+## Mit érint
+
+_Placeholder — to be filled._
+
+
+## Mit NEM érint
+
+_Placeholder — to be filled._
+
+
+## Fázisok
+
+_Placeholder — to be filled._
+
+
+## ✅ Acceptance Criteria
+
+_Placeholder — to be filled._

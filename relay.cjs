@@ -135,6 +135,27 @@ const server = http.createServer((req, res) => {
         return res.end(JSON.stringify({ ok: false, error: 'Missing action or id' }));
       }
 
+      // 🆕 Decision actions (resolve, option_a..e) — mark as resolved in the queue
+      const DECISION_ACTIONS = new Set(['resolve', 'option_a', 'option_b', 'option_c', 'option_d', 'option_e']);
+      if (DECISION_ACTIONS.has(action)) {
+        const entries = readEntries();
+        const ts = nowISO();
+        entries.push({
+          id,
+          action,
+          description: (description || '').substring(0, 200),
+          status: 'resolved',
+          ts,
+          updatedAt: ts,
+          resolvedAt: ts,
+          resolvedReason: description || 'Decision resolved via orchestrator'
+        });
+        writeEntries(entries);
+        log('✅', `${action} ${id} → resolved (${description || 'no description'})`);
+        res.writeHead(200, { ...cors, 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ ok: true, id, status: 'resolved', action }));
+      }
+
       // 🆕 Validáció: csak "implement" action engedélyezett a dev pipeline queue-ba
       if (action !== 'implement') {
         log('⛔', `${action} ${id}: rejected — non-implement action`);

@@ -441,6 +441,7 @@ export interface DevPackageEntry {
   actionStatus?: DevPackageActionStatus | null;
   actionQueuedAt?: string;
   actionCompletedAt?: string;
+  actionUpdatedAt?: string;
   /** 🆕 PKG-034 — first descriptive line parsed from the package's spec.md. */
   description?: string;
   /** 🆕 PKG-034 — "📁"-marked file list parsed from spec.md, if present. */
