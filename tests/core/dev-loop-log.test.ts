@@ -8,12 +8,16 @@ import {
   parseActionOverlay,
   parseEstimatedMinutes,
   parsePackageIndex,
+  parseSpecMarkdown,
+  readSpec,
   writeQueueMarker,
 } from "$lib/core/dev-loop-log";
 import { createMockProviders } from "./mock-providers";
 
 const mockFileContents: Record<string, string> = {};
 let mockLogDirFiles: string[] = [];
+let mockPackageDirs: string[] = [];
+const mockSpecContents: Record<string, string> = {};
 
 function fileKey(path: string): string {
   return path.split("/").pop() ?? path;
@@ -27,6 +31,9 @@ vi.mock("node:fs/promises", async (importOriginal) => {
       if (String(dir).endsWith("logs")) {
         return mockLogDirFiles;
       }
+      if (String(dir).endsWith("packages")) {
+        return mockPackageDirs;
+      }
       return [];
     }),
     readFile: vi.fn(async (path: string) => {
@@ -38,6 +45,11 @@ vi.mock("node:fs/promises", async (importOriginal) => {
           "| PKG-031 | Package Clarity | 📋 F2 | — | M | 1.5h | PKG-021 |",
           "| PKG-001 | SvelteKit Scaffold | ✅ F5 | — | L | ✅ kész | — |",
         ].join("\n");
+      }
+      if (key.endsWith("/spec.md")) {
+        const dirName = key.split("/").at(-2) ?? "";
+        if (dirName in mockSpecContents) return mockSpecContents[dirName] ?? "";
+        throw new Error(`ENOENT: ${key}`);
       }
       const base = fileKey(key);
       if (base in mockFileContents) {
@@ -58,6 +70,8 @@ describe("dev-loop-log", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     for (const key of Object.keys(mockFileContents)) delete mockFileContents[key];
+    for (const key of Object.keys(mockSpecContents)) delete mockSpecContents[key];
+    mockPackageDirs = [];
     mockLogDirFiles = [
       "cursor-PKG-014-log-viewer.log",
       "dev-PKG-014-log-viewer.log",
@@ -234,5 +248,83 @@ describe("dev-loop-log", () => {
     const data = await getDevPackages(providers);
     expect(data.packages.length).toBe(3);
     expect(data.packages.every((p) => p.actionStatus === undefined)).toBe(true);
+  });
+
+  it("parseSpecMarkdown extracts description, file list, and phase mentions", () => {
+    const spec = [
+      "# PKG-034: Package Row",
+      "",
+      "**Státusz**: 📋 F0 | **Méret**: S",
+      "",
+      "## Kérés",
+      "",
+      "A régi dashboardon a package lista elemre kattintva lenyílt a leírás.",
+      "",
+      "### 📁 Fájlok",
+      "- src/lib/core/dev-loop-log.ts",
+      "- src/lib/components/shared/DevPackageRow.svelte",
+      "",
+      "## F1 — Core",
+      "## F2 — UI",
+    ].join("\n");
+
+    const parsed = parseSpecMarkdown(spec);
+    expect(parsed.description).toBe(
+      "A régi dashboardon a package lista elemre kattintva lenyílt a leírás.",
+    );
+    expect(parsed.files).toContain("📁 Fájlok");
+    expect(parsed.files).toContain("dev-loop-log.ts");
+    expect(parsed.phases).toBe("F1, F2");
+  });
+
+  it("parseSpecMarkdown returns an empty object for blank input", () => {
+    expect(parseSpecMarkdown("")).toEqual({
+      description: undefined,
+      files: undefined,
+      phases: undefined,
+    });
+  });
+
+  it("readSpec finds the package dir by prefix and parses its spec.md", async () => {
+    mockPackageDirs = ["PKG-014", "PKG-031-package-clarity"];
+    mockSpecContents["PKG-031-package-clarity"] = [
+      "# PKG-031: Package Clarity",
+      "",
+      "## Kérés",
+      "",
+      "A csomagok átláthatóbbak legyenek.",
+    ].join("\n");
+
+    const parsed = await readSpec("PKG-031");
+    expect(parsed.description).toBe("A csomagok átláthatóbbak legyenek.");
+  });
+
+  it("readSpec resolves to an empty object when the package dir is missing", async () => {
+    mockPackageDirs = ["PKG-014"];
+    const parsed = await readSpec("PKG-999");
+    expect(parsed).toEqual({});
+  });
+
+  it("readSpec resolves to an empty object when spec.md is unreadable", async () => {
+    mockPackageDirs = ["PKG-014"];
+    const parsed = await readSpec("PKG-014");
+    expect(parsed).toEqual({});
+  });
+
+  it("getDevPackages enriches packages with description/files/phases from spec.md", async () => {
+    mockPackageDirs = ["PKG-014", "PKG-031", "PKG-001"];
+    mockSpecContents["PKG-014"] = [
+      "# PKG-014",
+      "",
+      "## Kérés",
+      "",
+      "Dev loop logokat lássunk élőben.",
+    ].join("\n");
+
+    const data = await getDevPackages();
+    const pkg014 = data.packages.find((p) => p.id === "PKG-014");
+    expect(pkg014?.description).toBe("Dev loop logokat lássunk élőben.");
+    const pkg031 = data.packages.find((p) => p.id === "PKG-031");
+    expect(pkg031?.description).toBeUndefined();
   });
 });

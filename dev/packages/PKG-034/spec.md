@@ -134,3 +134,28 @@ Az INDEX.md-ben a PKG sor mellé egy rövid leírás oszlopot. VAGY: az `Impleme
 - [ ] Újra kattintva a sorra a panel visszacsukódik
 - [ ] A chevron (▸/▾) vizuálisan jelzi a nyitott/zárt állapotot
 - [ ] Tailscale-en keresztül is működik
+
+
+## 🎯 Mit
+
+_Placeholder — to be filled._
+
+
+## 📐 Scope
+
+_Placeholder — to be filled._
+
+
+## Mit érint
+
+_Placeholder — to be filled._
+
+
+## Mit NEM érint
+
+_Placeholder — to be filled._
+
+
+## ✅ Acceptance Criteria
+
+_Placeholder — to be filled._

@@ -241,6 +241,9 @@
                         name={pkg.name}
                         phase={resolveLivePhase(pkg)}
                         done={pkg.done}
+                        description={pkg.description}
+                        files={pkg.files}
+                        phases={pkg.phases}
                         compact={compactView}
                         implementState={state.implementState}
                         showLogButton={state.showLogButton}
@@ -282,6 +285,9 @@
                         name={pkg.name}
                         phase={resolveLivePhase(pkg)}
                         done={pkg.done}
+                        description={pkg.description}
+                        files={pkg.files}
+                        phases={pkg.phases}
                         compact={compactView}
                         implementState={state.implementState}
                         showLogButton={state.showLogButton}
@@ -320,6 +326,9 @@
                       name={pkg.name}
                       phase={resolveLivePhase(pkg)}
                       done={pkg.done}
+                      description={pkg.description}
+                      files={pkg.files}
+                      phases={pkg.phases}
                       compact={compactView}
                       implementState={state.implementState}
                       showLogButton={state.showLogButton}

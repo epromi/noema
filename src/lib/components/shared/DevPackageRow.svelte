@@ -14,6 +14,9 @@
     phase,
     done = false,
     compact = false,
+    description = undefined,
+    files = undefined,
+    phases = undefined,
     implementState = "idle" as ImplementState,
     showLogButton = false,
     logOpen = false,
@@ -27,6 +30,9 @@
     phase: string;
     done?: boolean;
     compact?: boolean;
+    description?: string;
+    files?: string;
+    phases?: string;
     implementState?: ImplementState;
     showLogButton?: boolean;
     logOpen?: boolean;
@@ -35,6 +41,30 @@
     onImplement?: () => void;
     onLogToggle?: () => void;
   } = $props();
+
+  let detailOpen = $state(false);
+
+  const hasDetail = $derived(Boolean(description || files || phases));
+
+  function toggleDetail(): void {
+    if (!hasDetail) return;
+    detailOpen = !detailOpen;
+  }
+
+  /** Ignore clicks that originate from interactive children (buttons, log panel, detail text). */
+  function onRowClick(e: MouseEvent): void {
+    const target = e.target as HTMLElement | null;
+    if (target?.closest(".pkg-actions, .log-panel-wrap, .pkg-detail")) return;
+    toggleDetail();
+  }
+
+  function onRowKeydown(e: KeyboardEvent): void {
+    if (e.key !== "Enter" && e.key !== " ") return;
+    const target = e.target as HTMLElement | null;
+    if (target?.closest(".pkg-actions, .log-panel-wrap, .pkg-detail")) return;
+    e.preventDefault();
+    toggleDetail();
+  }
 
   const blocked = $derived(isBlockedPackage({ id: pkgId, name, phase, done }));
   const displayName = $derived(compact ? truncateName(name) : name);
@@ -62,8 +92,25 @@
   });
 </script>
 
-<div class="pkg-row" class:done class:compact class:blocked>
+<div
+  class="pkg-row"
+  class:done
+  class:compact
+  class:blocked
+  class:expanded={detailOpen}
+  class:has-detail={hasDetail && !compact}
+  onclick={compact ? undefined : onRowClick}
+  onkeydown={compact ? undefined : onRowKeydown}
+  role="button"
+  tabindex={compact ? -1 : 0}
+  aria-expanded={detailOpen}
+>
   <div class="pkg-main">
+    {#if !compact}
+      <span class="pkg-chevron" class:invisible={!hasDetail}
+        >{detailOpen ? "▾" : "▸"}</span
+      >
+    {/if}
     <span class="pkg-id">{pkgId}</span>
     {#if compact}
       <span class="pkg-name compact-name" title={name}>{displayName}</span>
@@ -83,16 +130,38 @@
         {displayPhase.text}
       </span>
       {#if !done}
-        <ImplementButton
-          buttonState={implementState}
-          {showLogButton}
-          {logOpen}
-          {onImplement}
-          {onLogToggle}
-        />
+        <div class="pkg-actions">
+          <ImplementButton
+            buttonState={implementState}
+            {showLogButton}
+            {logOpen}
+            {onImplement}
+            {onLogToggle}
+          />
+        </div>
       {/if}
     {/if}
   </div>
+
+  {#if !compact && detailOpen && hasDetail}
+    <div class="pkg-detail">
+      {#if description}
+        <p class="detail-desc">{description}</p>
+      {/if}
+      {#if files}
+        <div class="detail-files">
+          <strong>📁 Fájlok:</strong>
+          <pre>{files}</pre>
+        </div>
+      {/if}
+      {#if phases}
+        <div class="detail-phases">
+          <strong>📋 Fázisok:</strong> {phases}
+        </div>
+      {/if}
+    </div>
+  {/if}
+
   {#if !compact}
     <LogPanel open={logOpen} content={logContent} {pkgId} />
   {/if}
@@ -121,6 +190,57 @@
   .pkg-row.blocked .pkg-phase,
   .pkg-row.blocked .pkg-phase-icon {
     color: var(--orange);
+  }
+
+  .pkg-row.has-detail {
+    cursor: pointer;
+  }
+
+  .pkg-row.has-detail:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  .pkg-chevron {
+    color: var(--muted);
+    flex-shrink: 0;
+    font-size: 0.8em;
+    width: 1em;
+    text-align: center;
+  }
+
+  .pkg-chevron.invisible {
+    visibility: hidden;
+  }
+
+  .pkg-actions {
+    display: contents;
+  }
+
+  .pkg-detail {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+    cursor: default;
+  }
+
+  .detail-desc {
+    margin: 0 0 6px;
+    color: var(--text);
+    font-size: 0.88em;
+  }
+
+  .detail-files,
+  .detail-phases {
+    font-size: 0.82em;
+    color: var(--muted);
+  }
+
+  .detail-files pre {
+    margin: 4px 0 0;
+    font-family: inherit;
+    white-space: pre-wrap;
+    word-break: break-word;
   }
 
   .pkg-main {
