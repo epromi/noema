@@ -135,6 +135,16 @@ const server = http.createServer((req, res) => {
         return res.end(JSON.stringify({ ok: false, error: 'Missing action or id' }));
       }
 
+      // 🆕 Validáció: csak "implement" action engedélyezett a dev pipeline queue-ba
+      if (action !== 'implement') {
+        log('⛔', `${action} ${id}: rejected — non-implement action`);
+        res.writeHead(400, { ...cors, 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({
+          ok: false,
+          error: `Action type "${action}" not allowed — only "implement" actions belong in the dev pipeline queue. Route non-implement items to Alfred inbox.`
+        }));
+      }
+
       const entries = readEntries();
       const existing = entries.find(e => e.id === id);
 
@@ -265,7 +275,9 @@ const server = http.createServer((req, res) => {
         try {
           const raw = fs.readFileSync(ACTION_FILE, 'utf-8').trim();
           const entries = raw ? raw.split('\n').filter(l => l.trim()).map(l => JSON.parse(l)) : [];
-          queueSize = entries.filter(e => e.status === 'queued' || e.status === 'pending').length;
+          queueSize = entries.filter(e =>
+            (e.status === 'queued' || e.status === 'pending') && e.action === 'implement'
+          ).length;
         } catch {}
       } catch (e) { log('⚠️', 'timer query: ' + e.message); }
       res.writeHead(200, { ...cors, 'Content-Type': 'application/json' });

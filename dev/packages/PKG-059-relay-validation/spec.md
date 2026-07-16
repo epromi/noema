@@ -65,3 +65,33 @@ if (action !== 'implement') {
 2. `POST /action` `implement` típussal → 200, `{"ok":true}`
 3. `/next-trigger` → `queue` csak implement action-öket számol
 4. `curl -s http://127.0.0.1:18998/next-trigger | grep queue` — 0 ha nincs implement queue-ban
+
+
+## 🎯 Mit
+
+_Placeholder — to be filled._
+
+
+## 📐 Scope
+
+_Placeholder — to be filled._
+
+
+## Mit érint
+
+_Placeholder — to be filled._
+
+
+## Mit NEM érint
+
+_Placeholder — to be filled._
+
+
+## Fázisok
+
+_Placeholder — to be filled._
+
+
+## ✅ Acceptance Criteria
+
+_Placeholder — to be filled._
