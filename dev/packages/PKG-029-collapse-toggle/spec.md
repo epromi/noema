@@ -111,3 +111,33 @@ Megegyezik a jelenlegi PKG-026 kinézettel, plusz a collapse gomb a header-ben.
 - [ ] Idle/soon/active/offline állapotok mind helyesek kompakt módban
 - [ ] Nincs layout shift a váltáskor
 - [ ] `pnpm check` hibátlan
+
+
+## 🎯 Mit
+
+_Placeholder — to be filled._
+
+
+## 📐 Scope
+
+_Placeholder — to be filled._
+
+
+## Mit érint
+
+_Placeholder — to be filled._
+
+
+## Mit NEM érint
+
+_Placeholder — to be filled._
+
+
+## Fázisok
+
+_Placeholder — to be filled._
+
+
+## ✅ Acceptance Criteria
+
+_Placeholder — to be filled._
