@@ -83,7 +83,7 @@
       </div>
 
       {#if agent.extra}
-        <div class="agent-extra">{agent.extra}</div>
+        <div class="agent-extra">{@html agent.extra}</div>
       {/if}
 
       {#if agent.memory}

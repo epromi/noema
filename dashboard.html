@@ -1,33 +1,28 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Noema Dashboard</title><style>body{background:#0d1117;color:#c9d1d9;font-family:system-ui,sans-serif;padding:40px;max-width:900px;margin:0 auto}pre{background:#161b22;padding:16px;border-radius:6px;overflow-x:auto;font-size:13px}.tag{color:var(--accent,#58a6ff);font-weight:600}.warn{background:#2a1a0a;border-left:3px solid #d2991d;padding:12px 16px;border-radius:4px;margin:20px 0}a{color:#58a6ff}</style></head><body><h1>🧠 Noema Dashboard</h1><div class="warn">⚠️ A legacy dashboard (<code>archive/v4.html</code>) törölve. A SvelteKit dashboard veszi át a helyét.<br>📊 Az alábbi adatok JSON formátumban érhetők el a <code>data/dashboard-v4.json</code> fájlban.</div><div class="tag">Generated: 2026-07-12 15:05:39 Europe/Budapest</div><details><summary style="cursor:pointer;margin:20px 0;font-size:1.1em;font-weight:600">📊 Raw Data (JSON)</summary><pre>{
-  "generated": "2026-07-12 15:05:39 Europe/Budapest",
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Noema Dashboard</title><style>body{background:#0d1117;color:#c9d1d9;font-family:system-ui,sans-serif;padding:40px;max-width:900px;margin:0 auto}pre{background:#161b22;padding:16px;border-radius:6px;overflow-x:auto;font-size:13px}.tag{color:var(--accent,#58a6ff);font-weight:600}.warn{background:#2a1a0a;border-left:3px solid #d2991d;padding:12px 16px;border-radius:4px;margin:20px 0}a{color:#58a6ff}</style></head><body><h1>🧠 Noema Dashboard</h1><div class="warn">⚠️ A legacy dashboard (<code>archive/v4.html</code>) törölve. A SvelteKit dashboard veszi át a helyét.<br>📊 Az alábbi adatok JSON formátumban érhetők el a <code>data/dashboard-v4.json</code> fájlban.</div><div class="tag">Generated: 2026-07-16 01:46:19 Europe/Budapest</div><details><summary style="cursor:pointer;margin:20px 0;font-size:1.1em;font-weight:600">📊 Raw Data (JSON)</summary><pre>{
+  "generated": "2026-07-16 01:46:19 Europe/Budapest",
   "system": {
     "hostname": "pop-os",
-    "uptime": "2 days, 1 hour, 57 minutes",
-    "disk": "49% used (214G/460G)",
-    "ram": "9Gi used / 15Gi total",
-    "memFiles": 56607,
-    "dailyLogs": 73,
-    "lastDaily": "2026-07-12",
-    "cpuPct": 15.3,
-    "ramPct": 65,
-    "diskPct": 49,
+    "uptime": "2 days, 11 hours, 40 minutes",
+    "disk": "52% used (224G/460G)",
+    "ram": "5.7Gi used / 15Gi total",
+    "memFiles": 56655,
+    "dailyLogs": 77,
+    "lastDaily": "2026-07-16",
+    "cpuPct": 2.3,
+    "ramPct": 37,
+    "diskPct": 52,
     "cpuColor": "g",
     "ramColor": "g",
     "diskColor": "g"
   },
   "weather": {
-    "temp": "27",
-    "desc": "Partly Cloudy ",
-    "humidity": "30",
-    "wind": "21",
+    "temp": "21",
+    "desc": "Clear ",
+    "humidity": "73",
+    "wind": "7",
     "icon": ""
   },
   "alerts": [
-    {
-      "id": "daily-log-2026-07-11",
-      "severity": "critical",
-      "text": "Missing daily log: 2026-07-11"
-    },
     {
       "id": "open-loops-critical",
       "severity": "critical",
@@ -40,7 +35,7 @@
     }
   ],
   "metrics": {
-    "agentsHealthy": "8/8",
+    "agentsHealthy": "7/8",
     "agentsCritical": "0 critical",
     "viktorAudits": 51,
     "viktorRecall": 80,
@@ -65,6 +60,27 @@
   },
   "timeline": [
     {
+      "title": "Nightly Staff Review — 2026-07-15 (Wednesday)",
+      "time": "2026-07-15",
+      "summary": "## V0: COMPLETION GATE — 🟡 HOLD  | Check | Status |",
+      "steps": [],
+      "status": "ok"
+    },
+    {
+      "title": "Nightly Staff Review — 2026-07-14 (Tuesday)",
+      "time": "2026-07-14",
+      "summary": "## V0: COMPLETION GATE — 🟡 HOLD  | Check | Status |",
+      "steps": [],
+      "status": "ok"
+    },
+    {
+      "title": "Nightly Staff Review — 2026-07-13 (Run #64)",
+      "time": "2026-07-13",
+      "summary": "## N+8: Calendar Sync ✅ VERIFIED  ### Primary Calendar (2026-07-13 – 2026-07-26)",
+      "steps": [],
+      "status": "ok"
+    },
+    {
       "title": "Nightly Staff Review — 2026-07-12",
       "time": "2026-07-12",
       "summary": "## N+4: at-a-glance.md  ✅ Written (4,076 bytes)",
@@ -77,32 +93,11 @@
       "summary": "## N+4: at-a-glance.md  ✅ Written (5,695 bytes)",
       "steps": [],
       "status": "ok"
-    },
-    {
-      "title": "Nightly Memory Audit — 2026-07-10",
-      "time": "2026-07-10",
-      "summary": "## ⚡ Critical (needs attention before morning)  - 🔴 **Albert 37d inactive**: Last spawn 06-03. Research capacity completely offline. András decision 8d+ pending. Hacker Intel still generated overnigh",
-      "steps": [],
-      "status": "ok"
-    },
-    {
-      "title": "Nightly Memory Audit — 2026-07-09",
-      "time": "2026-07-09",
-      "summary": "## ⚡ Critical (needs attention before morning)  - 🔴 **Albert 36d inactive**: No research capacity. Last spawn 06-03. András decision pending 7d+. Hacker Intel still being generated but Albert's broad",
-      "steps": [],
-      "status": "ok"
-    },
-    {
-      "title": "Nightly Memory Audit — 2026-07-08",
-      "time": "2026-07-08",
-      "summary": "## ⚡ Critical (needs attention before morning) - 🔴 **Helm 16d inactive**: Crossed to 🔴 Critical. András said júl 7 is THE priority day — no reconnect action in 07-07 log. Token verified working (07-",
-      "steps": [],
-      "status": "ok"
     }
   ],
   "dashboardResearch": {
-    "date": "qa-review-2026-07-11",
-    "latestFile": "qa-review-2026-07-11.md",
+    "date": "qa-review-2026-07-15",
+    "latestFile": "qa-review-2026-07-15.md",
     "autoFixCount": 0,
     "proposeCount": 0,
     "ideaCount": 0,
@@ -111,152 +106,12 @@
   },
   "cronGrid": [
     {
-      "id": "b17b3b17",
-      "name": "Edwin CCM (7-23)",
-      "status": "g",
-      "last": "6m ago",
-      "next": "—",
-      "agent": "edwin",
-      "sched": "07-23 hourly",
-      "desc": "👁️ Cross-domain pattern detection — 6 pattern types, silence by default"
-    },
-    {
-      "id": "dc91353b",
-      "name": "Porter Hourly Triage",
-      "status": "g",
-      "last": "6m ago",
-      "next": "—",
-      "agent": "porter",
-      "sched": "06-23 hourly",
-      "desc": "🚪 Gmail scan: categorize, bill detection → calendar+tasks"
-    },
-    {
-      "id": "37dff63d",
-      "name": "Daytime Fact Sync",
-      "status": "g",
-      "last": "2h ago",
-      "next": "in 54m",
-      "agent": "alfred",
-      "sched": "12,15,18,21",
-      "desc": "📋 Fact consolidation from daily logs into SSOT files"
-    },
-    {
-      "id": "38448605",
-      "name": "Hugo Repo Prep",
-      "status": "g",
-      "last": "21h ago",
-      "next": "in 3h",
-      "agent": "alfred",
-      "sched": "20:00 daily",
-      "desc": "📚 Advisory → answer key preparation for Viktor audits"
-    },
-    {
-      "id": "a9cc051f",
-      "name": "Weekly Strategic Brief",
-      "status": "g",
-      "last": "7d ago",
-      "next": "in 3h",
-      "agent": "edwin",
-      "sched": "20:00 Sun",
-      "desc": "📊 Edwin weekly strategy briefing"
-    },
-    {
-      "id": "d014fe23",
-      "name": "KG Extractor",
-      "status": "g",
-      "last": "20h ago",
-      "next": "in 4h",
-      "agent": "system",
-      "sched": "21:00 daily",
-      "desc": "🧩 Knowledge graph extraction from daily logs"
-    },
-    {
-      "id": "f2dcd659",
-      "name": "Proactive Evening Compact",
-      "status": "g",
-      "last": "20h ago",
-      "next": "in 4h",
-      "agent": "alfred",
-      "sched": "auto",
-      "desc": "🗜️ Evening session compaction"
-    },
-    {
-      "id": "bf90e36a",
-      "name": "Idle Brainstorming Trigger",
-      "status": "g",
-      "last": "19h ago",
-      "next": "in 5h",
-      "agent": "main",
-      "sched": "22:00 daily",
-      "desc": "💡 Research-backed action item generation (Flash)"
-    },
-    {
-      "id": "7dea3686",
-      "name": "Nightly Backup",
-      "status": "g",
-      "last": "18h ago",
-      "next": "in 6h",
-      "agent": "main",
-      "sched": "23:05 daily",
-      "desc": "💾 File-level backup (rsync to dated folder)"
-    },
-    {
-      "id": "3b4ea5d3",
-      "name": "Noema Product Research",
-      "status": "g",
-      "last": "16h ago",
-      "next": "in 8h",
-      "agent": "alfred",
-      "sched": "01:00 daily",
-      "desc": "🛠️ Dashboard analysis + web research + auto-fix (Flash, off-peak)"
-    },
-    {
-      "id": "0306bef4",
-      "name": "Autoresearch Orchestrator",
-      "status": "g",
-      "last": "16h ago",
-      "next": "in 8h",
-      "agent": "alfred",
-      "sched": "01:30 daily",
-      "desc": "🧠 Viktor benchmark loop — spawns Viktor for blind repo audits, tracks recall stats"
-    },
-    {
-      "id": "627c32f6",
-      "name": "Nightly Hacker Intel",
-      "status": "g",
-      "last": "15h ago",
-      "next": "in 9h",
-      "agent": "albert",
-      "sched": "01:30 daily",
-      "desc": "🔍 Albert — CVE/exploit intelligence gathering, H1 program scanning"
-    },
-    {
-      "id": "f55af5a9",
-      "name": "Autoexecutor A (02:00)",
-      "status": "g",
-      "last": "15h ago",
-      "next": "in 9h",
-      "agent": "alfred",
-      "sched": "02:00 daily",
-      "desc": "⚡ Action tracker AUTOEXECUTE items (Flash) — off-peak 00-03"
-    },
-    {
-      "id": "745964aa",
-      "name": "Nightly Staff Review (Core)",
-      "status": "g",
-      "last": "15h ago",
-      "next": "in 9h",
-      "agent": "alfred",
-      "sched": "02:30 daily",
-      "desc": "🗄️ Memory audit + agent status + KG consistency check"
-    },
-    {
       "id": "eed1df55",
       "name": "Noema Nightly QA",
       "status": "g",
-      "last": "14h ago",
-      "next": "in 10h",
-      "agent": "alfred",
+      "last": "16m ago",
+      "next": "—",
+      "agent": "system",
       "sched": "03:00 daily",
       "desc": "🧪 Nightly dashboard QA audit (03:00)"
     },
@@ -264,8 +119,8 @@
       "id": "7394914b",
       "name": "Proactive Compaction",
       "status": "g",
-      "last": "13h ago",
-      "next": "in 11h",
+      "last": "23h ago",
+      "next": "in 4m",
       "agent": "alfred",
       "sched": "auto",
       "desc": "🗜️ Session context compaction (automatic trigger)"
@@ -274,28 +129,48 @@
       "id": "fa7c7d61",
       "name": "Edwin Morning Study",
       "status": "g",
-      "last": "12h ago",
-      "next": "in 12h",
+      "last": "23h ago",
+      "next": "in 1h",
       "agent": "alfred",
       "sched": "05:00 daily",
       "desc": "📚 Capability research: news, self-improvement, local context"
     },
     {
-      "id": "c10105c3",
-      "name": "Nightly Staff Review (Compile)",
+      "id": "b17b3b17",
+      "name": "Edwin CCM (7-23)",
       "status": "g",
-      "last": "11h ago",
-      "next": "in 13h",
+      "last": "5h ago",
+      "next": "in 2h",
+      "agent": "edwin",
+      "sched": "07-23 hourly",
+      "desc": "👁️ Cross-domain pattern detection — 6 pattern types, silence by default"
+    },
+    {
+      "id": "c10105c3",
+      "name": "Nightly Staff Review (Core)",
+      "status": "g",
+      "last": "22h ago",
+      "next": "in 2h",
       "agent": "alfred",
-      "sched": "06:00 daily",
-      "desc": "🗄️ Nightly review → Telegram (bilingual metrics + explanation)"
+      "sched": "02:30 daily",
+      "desc": "🗄️ Memory audit + agent status + KG consistency check"
+    },
+    {
+      "id": "dc91353b",
+      "name": "Porter Hourly Triage",
+      "status": "g",
+      "last": "5h ago",
+      "next": "in 2h",
+      "agent": "porter",
+      "sched": "06-23 hourly",
+      "desc": "🚪 Gmail scan: categorize, bill detection → calendar+tasks"
     },
     {
       "id": "9e96c028",
       "name": "Cortex Pipeline Optimizer",
       "status": "g",
-      "last": "2d ago",
-      "next": "in 13h",
+      "last": "3d ago",
+      "next": "in 3h",
       "agent": "alfred",
       "sched": "06:30 /3d",
       "desc": "🧠 System optimization proposals for Viktor pipeline + agent fleet"
@@ -304,8 +179,8 @@
       "id": "79c16201",
       "name": "Morning Backup",
       "status": "g",
-      "last": "10h ago",
-      "next": "in 14h",
+      "last": "21h ago",
+      "next": "in 3h",
       "agent": "main",
       "sched": "07:05 daily",
       "desc": "💾 Workspace snapshot backup (rsync)"
@@ -314,48 +189,148 @@
       "id": "e5966519",
       "name": "Autoexecutor B (07:00)",
       "status": "g",
-      "last": "10h ago",
-      "next": "in 14h",
+      "last": "21h ago",
+      "next": "in 3h",
       "agent": "alfred",
       "sched": "07:00 daily",
       "desc": "⚡ Action tracker AUTOEXECUTE items (Flash) — off-peak 06-08"
     },
     {
-      "id": "ce68a9f5",
-      "name": "Mid-day Proactive Compact",
-      "status": "g",
-      "last": "4h ago",
-      "next": "in 20h",
-      "agent": "alfred",
-      "sched": "auto",
-      "desc": "🗜️ Mid-day session compaction"
-    },
-    {
-      "id": "831c3764",
-      "name": "Stand-up Prep (Tuesday)",
-      "status": "g",
-      "last": "5d ago",
-      "next": "in 2d",
-      "agent": "main",
-      "sched": "15:30 Tue",
-      "desc": "📋 Tuesday scrum stand-up preparation"
-    },
-    {
       "id": "62d790f0",
       "name": "Alíz zsebpénz emlékeztető",
       "status": "g",
-      "last": "3d ago",
-      "next": "in 4d",
+      "last": "6d ago",
+      "next": "in 4h",
       "agent": "alfred",
       "sched": "16:00 Thu",
       "desc": "💰 Alíz weekly pocket money reminder"
     },
     {
+      "id": "37dff63d",
+      "name": "Daytime Fact Sync",
+      "status": "g",
+      "last": "7h ago",
+      "next": "in 8h",
+      "agent": "alfred",
+      "sched": "12,15,18,21",
+      "desc": "📋 Fact consolidation from daily logs into SSOT files"
+    },
+    {
+      "id": "ce68a9f5",
+      "name": "Mid-day Proactive Compact",
+      "status": "g",
+      "last": "15h ago",
+      "next": "in 9h",
+      "agent": "alfred",
+      "sched": "auto",
+      "desc": "🗜️ Mid-day session compaction"
+    },
+    {
+      "id": "38448605",
+      "name": "Hugo Repo Prep",
+      "status": "g",
+      "last": "8h ago",
+      "next": "in 16h",
+      "agent": "alfred",
+      "sched": "20:00 daily",
+      "desc": "📚 Advisory → answer key preparation for Viktor audits"
+    },
+    {
+      "id": "d014fe23",
+      "name": "KG Extractor",
+      "status": "g",
+      "last": "7h ago",
+      "next": "in 17h",
+      "agent": "system",
+      "sched": "21:00 daily",
+      "desc": "🧩 Knowledge graph extraction from daily logs"
+    },
+    {
+      "id": "f2dcd659",
+      "name": "Proactive Evening Compact",
+      "status": "g",
+      "last": "6h ago",
+      "next": "in 18h",
+      "agent": "alfred",
+      "sched": "auto",
+      "desc": "🗜️ Evening session compaction"
+    },
+    {
+      "id": "bf90e36a",
+      "name": "Idle Brainstorming Trigger",
+      "status": "g",
+      "last": "6h ago",
+      "next": "in 18h",
+      "agent": "main",
+      "sched": "22:00 daily",
+      "desc": "💡 Research-backed action item generation (Flash)"
+    },
+    {
+      "id": "7dea3686",
+      "name": "Nightly Backup",
+      "status": "g",
+      "last": "5h ago",
+      "next": "in 19h",
+      "agent": "main",
+      "sched": "23:05 daily",
+      "desc": "💾 File-level backup (rsync to dated folder)"
+    },
+    {
+      "id": "3b4ea5d3",
+      "name": "Noema Product Research",
+      "status": "g",
+      "last": "3h ago",
+      "next": "in 21h",
+      "agent": "alfred",
+      "sched": "01:00 daily",
+      "desc": "🛠️ Dashboard analysis + web research + auto-fix (Flash, off-peak)"
+    },
+    {
+      "id": "0306bef4",
+      "name": "Autoresearch Orchestrator",
+      "status": "g",
+      "last": "2h ago",
+      "next": "in 22h",
+      "agent": "alfred",
+      "sched": "01:30 daily",
+      "desc": "🧠 Viktor benchmark loop — spawns Viktor for blind repo audits, tracks recall stats"
+    },
+    {
+      "id": "627c32f6",
+      "name": "Nightly Hacker Intel",
+      "status": "g",
+      "last": "2h ago",
+      "next": "in 22h",
+      "agent": "albert",
+      "sched": "01:30 daily",
+      "desc": "🔍 Albert — CVE/exploit intelligence gathering, H1 program scanning"
+    },
+    {
+      "id": "f55af5a9",
+      "name": "Autoexecutor A (02:00)",
+      "status": "g",
+      "last": "2h ago",
+      "next": "in 22h",
+      "agent": "alfred",
+      "sched": "02:00 daily",
+      "desc": "⚡ Action tracker AUTOEXECUTE items (Flash) — off-peak 00-03"
+    },
+    {
+      "id": "745964aa",
+      "name": "Nightly Staff Review (Compile)",
+      "status": "g",
+      "last": "1h ago",
+      "next": "in 23h",
+      "agent": "alfred",
+      "sched": "06:00 daily",
+      "desc": "🗄️ Nightly review → Telegram (bilingual metrics + explanation)"
+    },
+    {
       "id": "537a90f5",
       "name": "Stand-up Prep (Friday)",
       "status": "g",
-      "last": "2d ago",
-      "next": "in 5d",
+      "last": "6d ago",
+      "next": "in 1d",
       "agent": "main",
       "sched": "15:30 Fri",
       "desc": "📋 Friday scrum stand-up preparation"
@@ -364,8 +339,8 @@
       "id": "df971df6",
       "name": "Week in Review (Friday)",
       "status": "g",
-      "last": "2d ago",
-      "next": "in 5d",
+      "last": "5d ago",
+      "next": "in 2d",
       "agent": "main",
       "sched": "17:00 Fri",
       "desc": "📊 Weekly review + metrics compilation"
@@ -374,11 +349,31 @@
       "id": "650fd4a9",
       "name": "KG Weekly Validation",
       "status": "g",
-      "last": "7h ago",
-      "next": "in 7d",
+      "last": "4d ago",
+      "next": "in 3d",
       "agent": "otto",
       "sched": "10:00 Sun",
       "desc": "🧩 Knowledge graph weekly audit + dedup"
+    },
+    {
+      "id": "a9cc051f",
+      "name": "Weekly Strategic Brief",
+      "status": "g",
+      "last": "3d ago",
+      "next": "in 4d",
+      "agent": "edwin",
+      "sched": "20:00 Sun",
+      "desc": "📊 Edwin weekly strategy briefing"
+    },
+    {
+      "id": "831c3764",
+      "name": "Stand-up Prep (Tuesday)",
+      "status": "g",
+      "last": "1d ago",
+      "next": "in 6d",
+      "agent": "main",
+      "sched": "15:30 Tue",
+      "desc": "📋 Tuesday scrum stand-up preparation"
     }
   ],
   "h1Timeline": [
@@ -390,7 +385,7 @@
       "created": "2026-05-08",
       "triaged": "2026-05-11",
       "bounty": "💰",
-      "days": 64
+      "days": 68
     },
     {
       "id": "3721944",
@@ -400,7 +395,7 @@
       "created": "2026-05-08",
       "triaged": "—",
       "bounty": "",
-      "days": 64
+      "days": 68
     },
     {
       "id": "3731194",
@@ -410,7 +405,7 @@
       "created": "2026-05-12",
       "triaged": "—",
       "bounty": "",
-      "days": 60
+      "days": 64
     },
     {
       "id": "3732041",
@@ -420,7 +415,7 @@
       "created": "2026-05-13",
       "triaged": "—",
       "bounty": "",
-      "days": 60
+      "days": 63
     },
     {
       "id": "3732488",
@@ -430,7 +425,7 @@
       "created": "2026-05-13",
       "triaged": "—",
       "bounty": "",
-      "days": 60
+      "days": 63
     },
     {
       "id": "3733374",
@@ -440,7 +435,7 @@
       "created": "2026-05-13",
       "triaged": "—",
       "bounty": "",
-      "days": 59
+      "days": 63
     },
     {
       "id": "3733551",
@@ -450,7 +445,7 @@
       "created": "2026-05-13",
       "triaged": "—",
       "bounty": "",
-      "days": 59
+      "days": 63
     },
     {
       "id": "3736492",
@@ -460,7 +455,7 @@
       "created": "2026-05-14",
       "triaged": "—",
       "bounty": "",
-      "days": 58
+      "days": 62
     },
     {
       "id": "3736550",
@@ -470,7 +465,7 @@
       "created": "2026-05-14",
       "triaged": "—",
       "bounty": "",
-      "days": 58
+      "days": 62
     },
     {
       "id": "3740209",
@@ -480,7 +475,7 @@
       "created": "2026-05-16",
       "triaged": "—",
       "bounty": "",
-      "days": 57
+      "days": 60
     }
   ],
   "actionQueue": {
@@ -488,94 +483,119 @@
     "alfred": [
       {
         "id": "signal_reporting_discrepancy",
-        "desc": "07-07 daily log incorrectly reports Signal as -1.0 (API shows -2.0) + Cosmos F5 #3818424 wrongly listed as pending. Corrective edit needed. ⚠️ 4d",
+        "desc": "07-07 daily log reports Signal -1.0 (API shows -2.0). Corrective edit needed. ⚠️ 8d 🚩",
         "meta": "[07-08] P2"
       },
       {
         "id": "scout_scan_review",
-        "desc": "Scout scan from Jul 11 completed. Review findings at memory/research/h1-programs/scout-scan-2026-07-11.md. Ruby BBP + Rails VDP + Concrete CMS VDP accessible. ⚠️ 1d",
+        "desc": "Scout scan Jul 11 findings at memory/research/h1-programs/scout-scan-2026-07-11.md. Ruby BBP + Rails VDP + Concrete CMS VDP. ⚠️ 5d",
         "meta": "[07-11] P2"
       },
       {
         "id": "daily_log_streak_broken",
-        "desc": "Daily log streak BROKEN at Jul 11. Last log: Jul 10 (Friday). Flag in morning briefing, András may want to know. 🆕",
+        "desc": "Daily log streak BROKEN at Jul 11. Flag in morning briefing. ⚠️ 4d",
         "meta": "[07-12] P1"
+      },
+      {
+        "id": "nova_deploy_qa_v2",
+        "desc": "Nova designed Jul 14 but NOT deployed. Pending: cron eed1df55 update (agentId nova, timeout 6000s, 03:30), agents-roster.md Nova section, qa-prompt-v2.md flush. → [A: Deploy all 3 changes|B: Deploy only cron+roster|C: Wait for András review]",
+        "meta": "[07-15] P2"
+      },
+      {
+        "id": "cursor_backend_timeout",
+        "desc": "Cursor backend `--print` fails on L-size PKGs (>120s, zero output). PKG-048 blocked. → [A: Investigate cursor CLI flags|B: Switch to subagent backend for L PKGs|C: Increase timeout only]",
+        "meta": "[07-15] P2"
+      },
+      {
+        "id": "subscription_verifier_script",
+        "desc": "Create script + cron (Sat 6:00) for subscription payment verification. All 5 subs: no July payment confirmations found. → [A: Create script + cron now|B: Wait for András input|C: Use existing finance-summary.sh]",
+        "meta": "[07-16] P2"
+      },
+      {
+        "id": "nova_server_down",
+        "desc": "Noema server 9th day down. Self-monitoring watchdog P0 priority + server auto-start (15-line fix). → [A: Implement watchdog + autostart|B: Implement watchdog only|C: Flag for András manual fix]",
+        "meta": "[07-16] P1"
       }
     ],
     "andras": [
       {
         "id": "decide_ol004",
-        "desc": "8x8 appeal **59d** 🔴 — abandon or escalate? (+29d past H1 30-day appeal window) 🚩 10d+ pending",
+        "desc": "8x8 appeal **63d** 🔴 (+33d past H1 appeal window) 🚩 14d pending → [A: Abandon permanently|B: Escalate to H1 support|C: Wait 7 more days]",
         "meta": "[07-02] P1"
       },
       {
         "id": "decide_albert_future",
-        "desc": "Albert **39d** 🔴 inactive (last spawn 06-03). No research capacity. 🚩 10d+ pending",
+        "desc": "Albert **42d** 🔴 inactive (last spawn 06-03). No research capacity for 6 weeks. 🚩 14d pending → [A: Reactivate Albert|B: Archive Albert permanently|C: Hibernate 30 more days]",
         "meta": "[07-02] P1"
       },
       {
         "id": "otto_auto_resolution",
-        "desc": "3 decisions: (1) Otto cron tool access, (2) action-queue JSON format, (3) Edwin timeout recovery policy. 🚩 10d+ pending",
+        "desc": "3 Otto auto-decisions: cron tool access, action-queue format, Edwin recovery policy. 🚩 14d pending → [A: Approve all 3|B: Approve selectively|C: Deny all]",
         "meta": "[07-02] P2"
       },
       {
         "id": "decide_noema_crons",
-        "desc": "Noema Nightly QA (eed1df55) + Product Research (3b4ea5d3) timeout (1800s). Decision: delete or restructure? ⚠️ 5d",
+        "desc": "Noema Nightly QA (eed1df55) + Product Research (3b4ea5d3) timeout 1800s ⚠️ 9d 🚩 → [A: Delete both crons|B: Increase timeout to 3600s|C: Leave as-is]",
         "meta": "[07-07] P2"
       },
       {
         "id": "fan_out_dev_loop_skills",
-        "desc": "SKILL.md creation needed for fan-out + dev-loop plugins to enable tool injection into agent sessions. ⚠️ 3d",
+        "desc": "SKILL.md creation needed for fan-out + dev-loop plugins. Blocked on tool injection knowledge. ⚠️ 7d 🚩 → [A: Create SKILL.md now|B: Delegate to Hugo|C: Skip for now]",
         "meta": "[07-09] P2"
       },
       {
-        "id": "matomo_signal_decision",
-        "desc": "Matomo Signal gate check, **deadline júl 16 (4 days)**. Viktor idle, 3600s timeout ready. 30s browser check: https://hackerone.com/matomo/reports/new. If no decision by Jul 16 → archive. ⚠️ 2d",
-        "meta": "[07-10] P2"
-      },
-      {
         "id": "crane_operator_tanfolyam",
-        "desc": "Crane operator course (jún 15-17) missed, not in 2026 plans. Next date? Registration? Employer pays? ⚠️ 1d",
+        "desc": "Crane operator course (jún 15-17) missed. Next date? Employer pays? ⚠️ 5d → [A: Research next dates|B: Ask employer|C: Skip for 2026]",
         "meta": "[07-11] P2"
       },
       {
-        "id": "hitelkartya_unconfirmed",
-        "desc": "Hitelkártya kiegyenlítés due **Jul 10** (2 days past). No confirmation of payment in any daily log, email scan, or user message. Status: UNCONFIRMED. 🆕 ⚠️ 2d overdue",
-        "meta": "[07-12] P1"
+        "id": "momart_transfer_window",
+        "desc": "Momart maradék 61,520 Ft utalási ablak (júl 13-17 — **DAY 4 of 5**). Email ID: 19f24d03a0b93de2. ⚠️ WINDOW CLOSING → [A: Mark as paid|B: Remind me today|C: Remind on Jul 17]",
+        "meta": "[07-13] P2"
+      },
+      {
+        "id": "matomo_signal_expired",
+        "desc": "Matomo Signal gate deadline Jul 15 PASSED. Daily log says \"deferred (H1 frozen, -3.0 Signal)\". → [A: Archive Matomo path permanently|B: Check Signal gate anyway|C: Defer indefinitely]",
+        "meta": "[07-16] P2"
+      },
+      {
+        "id": "h1_zero_open_reports",
+        "desc": "H1: 0 open reports 🔴 (GlotPress #3814443 closed duplicate Jul 15). Signal ~-3.0. 1 trial remaining. 0 attack vectors. → [A: Pivot to Intigriti|B: Wait for Signal regen|C: Focus on Ruby BBP via Scout]",
+        "meta": "[07-16] P2"
       }
     ]
   },
   "agentHeatmap": {
     "columns": [
-      "2026-07-06",
-      "2026-07-07",
-      "2026-07-08",
-      "2026-07-09",
       "2026-07-10",
       "2026-07-11",
-      "2026-07-12"
+      "2026-07-12",
+      "2026-07-13",
+      "2026-07-14",
+      "2026-07-15",
+      "2026-07-16"
     ],
     "rows": [
       {
         "name": "Otto 🗄️",
         "cells": [
-          "x",
-          "g",
-          "g",
-          "g",
           "g",
           "x",
-          "g"
+          "g",
+          "g",
+          "g",
+          "g",
+          "x"
         ]
       },
       {
         "name": "Viktor 🛡️",
         "cells": [
+          "g",
           "x",
           "g",
-          "g",
-          "g",
-          "g",
+          "x",
+          "x",
           "x",
           "g"
         ]
@@ -583,37 +603,37 @@
       {
         "name": "Scout 🏕️",
         "cells": [
-          "x",
-          "x",
-          "x",
-          "x",
           "g",
           "x",
-          "g"
+          "g",
+          "g",
+          "x",
+          "x",
+          "x"
         ]
       },
       {
         "name": "Porter 🚪",
         "cells": [
-          "x",
-          "g",
-          "g",
-          "g",
           "g",
           "x",
-          "g"
+          "g",
+          "g",
+          "x",
+          "g",
+          "x"
         ]
       },
       {
         "name": "Edwin 🚀",
         "cells": [
-          "x",
-          "g",
-          "g",
-          "g",
           "g",
           "x",
-          "g"
+          "g",
+          "g",
+          "g",
+          "g",
+          "x"
         ]
       },
       {
@@ -621,35 +641,35 @@
         "cells": [
           "x",
           "x",
+          "g",
           "x",
           "x",
           "x",
-          "x",
-          "g"
+          "x"
         ]
       },
       {
         "name": "Cortex 🧠",
         "cells": [
-          "x",
           "g",
           "x",
           "g",
           "g",
           "x",
-          "g"
+          "x",
+          "x"
         ]
       },
       {
         "name": "Alfred 👔",
         "cells": [
           "g",
-          "g",
+          "x",
           "g",
           "g",
           "g",
           "x",
-          "g"
+          "x"
         ]
       }
     ]
@@ -674,7 +694,7 @@
       "status": "green",
       "statusText": "Active",
       "staleLevel": 0,
-      "lastRun": "3d ago",
+      "lastRun": "6d ago",
       "schedule": "On-demand",
       "role": "Security Analyst — Repo audit pipeline",
       "extra": ""
@@ -686,7 +706,7 @@
       "status": "green",
       "statusText": "Active",
       "staleLevel": 0,
-      "lastRun": "1d ago",
+      "lastRun": "0d ago",
       "schedule": "On-demand (auto-spawn)",
       "role": "Intel — H1 program discovery",
       "extra": ""
@@ -698,7 +718,7 @@
       "status": "green",
       "statusText": "Active",
       "staleLevel": 0,
-      "lastRun": "0d ago",
+      "lastRun": "3d ago",
       "schedule": "06-23 hourly",
       "role": "Email Triage — Gmail filtering",
       "extra": ""
@@ -719,13 +739,13 @@
       "id": "hugo",
       "name": "Hugo",
       "emoji": "📚",
-      "status": "green",
-      "statusText": "Active",
-      "staleLevel": 0,
-      "lastRun": "4d ago",
+      "status": "yellow",
+      "statusText": "Aging (8d)",
+      "staleLevel": 3,
+      "lastRun": "8d ago",
       "schedule": "20:00 nightly",
       "role": "Repo Prep — Advisory → answer keys",
-      "extra": ""
+      "extra": "<div class=\"metric\"><span class=\"lbl r\">⚠ Stale</span><span class=\"val r\">8d without update</span></div>"
     },
     {
       "id": "cortex",
@@ -761,7 +781,7 @@
     "failed": 10,
     "circuit": "Normal",
     "negDone": 1,
-    "negFP": 0,
+    "negFP": 1,
     "transfer": 0,
     "h1Submitted": 2,
     "h1Accepted": 1,
@@ -782,7 +802,7 @@
   "h1": {
     "open": "?",
     "signal": "-2.0",
-    "reputation": "82",
+    "reputation": "?",
     "trial": "0",
     "programs": "⛔ Signal -2.0 — Ruby (BBP) + Rails (VDP) only"
   },
@@ -959,9 +979,9 @@
     ],
     "pending": 5
   },
-  "logStreak": "🟢 2026-06-29<br>🟢 2026-06-30<br>🟢 2026-07-01<br>🟢 2026-07-02<br>🟢 2026-07-03<br>🟢 2026-07-04<br>🟢 2026-07-05<br>🟢 2026-07-06<br>🟢 2026-07-07<br>🟢 2026-07-08<br>🟢 2026-07-09<br>🟢 2026-07-10<br>🔴 2026-07-11<br>🟢 2026-07-12",
-  "researchActivity": "📄 857 research files<br>🆕 85 in last 7 days<br>📂 active + archive",
-  "keyDecisions": "📅 2026-07-12 — ## 🚨 Otto Run #62 Post-Mortem (Alfred audit, 07:34-08:41) [9]<br>📅 2026-07-10 — ## 🔍 Otto Claims Audit — 08:52 (András session) [10]",
+  "logStreak": "🟢 2026-07-03<br>🟢 2026-07-04<br>🟢 2026-07-05<br>🟢 2026-07-06<br>🟢 2026-07-07<br>🟢 2026-07-08<br>🟢 2026-07-09<br>🟢 2026-07-10<br>🔴 2026-07-11<br>🟢 2026-07-12<br>🟢 2026-07-13<br>🟢 2026-07-14<br>🟢 2026-07-15<br>🟢 2026-07-16",
+  "researchActivity": "📄 887 research files<br>🆕 58 in last 7 days<br>📂 active + archive",
+  "keyDecisions": "📅 2026-07-14 — **Importance: [9]** — QA redesign, cron fix expansion, v2 operational gap analysis<br>📅 2026-07-14 — ### Döntések:<br>📅 2026-07-14 — **Importance: [9]** — QA redesign, cron fix expansion, v2 operational gap analysis",
   "noema": {
     "healthScore": 85,
     "healthLabel": "935 LOC · 5 fájl · 3 cron",
@@ -971,11 +991,11 @@
     "qaLatest": "⏳",
     "qaLabel": "első futás ma 03:00",
     "qaScore": "?",
-    "activeProposals": 10,
-    "proposalsLabel": "10 csomag",
-    "architecture": "  generate.cjs ──► dashboard.html\n   (50.7KB)       (164.9KB)\n       ▲                  │\n  22+ data srcs      HTTP :8080\n       │                  │\n  relay.js ◄── Browser gombok\n   (0.0KB)          :18998\n       │\n  action-processor.js\n   (0.0KB)      10p timer\n       │\n  dev-loop.sh ──► Cursor",
-    "codeMetrics": "\n      <div class=\"metric\"><span class=\"lbl\">generate.cjs</span><span class=\"val\">935 sor · 50.7KB</span></div>\n      <div class=\"metric\"><span class=\"lbl\">relay.js</span><span class=\"val\">0 sor · 0.0KB</span></div>\n      <div class=\"metric\"><span class=\"lbl\">action-processor.js</span><span class=\"val\">0 sor · 0.0KB</span></div>\n      <div class=\"metric\"><span class=\"lbl\">dashboard.html (kimenet)</span><span class=\"val\">164.9KB</span></div>\n      <div class=\"metric\" style=\"border-top:1px solid var(--border);margin-top:4px;padding-top:4px\"><span class=\"lbl\">Összes forráskód</span><span class=\"val a\">935 sor · 50.7KB</span></div>",
+    "activeProposals": 19,
+    "proposalsLabel": "19 csomag",
+    "architecture": "  generate.cjs ──► dashboard.html\n   (50.7KB)       (50.6KB)\n       ▲                  │\n  22+ data srcs      HTTP :8080\n       │                  │\n  relay.js ◄── Browser gombok\n   (0.0KB)          :18998\n       │\n  action-processor.js\n   (0.0KB)      10p timer\n       │\n  dev-loop.sh ──► Cursor",
+    "codeMetrics": "\n      <div class=\"metric\"><span class=\"lbl\">generate.cjs</span><span class=\"val\">935 sor · 50.7KB</span></div>\n      <div class=\"metric\"><span class=\"lbl\">relay.js</span><span class=\"val\">0 sor · 0.0KB</span></div>\n      <div class=\"metric\"><span class=\"lbl\">action-processor.js</span><span class=\"val\">0 sor · 0.0KB</span></div>\n      <div class=\"metric\"><span class=\"lbl\">dashboard.html (kimenet)</span><span class=\"val\">50.6KB</span></div>\n      <div class=\"metric\" style=\"border-top:1px solid var(--border);margin-top:4px;padding-top:4px\"><span class=\"lbl\">Összes forráskód</span><span class=\"val a\">935 sor · 50.7KB</span></div>",
     "projectCrons": "<span style=\"color:var(--muted)\">Cron lekérdezés sikertelen</span>",
     "changelog": "<div style=\"margin-bottom:8px\"><strong style=\"color:var(--accent)\">2026-07-05</strong><br><span style=\"color:var(--muted);font-size:0.88em\">### Noema Rebrand</span><br><span style=\"color:var(--muted);font-size:0.88em\">- Projekt hivatalosan átnevezve **Noema**-ra</span><br><span style=\"color:var(--muted);font-size:0.88em\">- `projects/dashboard/` → `projects/noema/`, fájlok átnevezve, systemd + cron frissítve</span><br><span style=\"color:var(--muted);font-size:0.88em\">- Backward compat symlinkek megtartva</span></div><div style=\"margin-bottom:8px\"><strong style=\"color:var(--accent)\">2026-07-04</strong><br><span style=\"color:var(--muted);font-size:0.88em\">### Interaktív Gombok</span><br><span style=\"color:var(--muted);font-size:0.88em\">- Böngésző gombok → relay.js (HTTP :18998) → JSONL → action-processor.js (10p) → Alfred</span><br><span style=\"color:var(--muted);font-size:0.88em\">- 8 action típus: implement, done, escalate, restart, trigger, investigate, activate, paid</span><br><span style=\"color:var(--muted);font-size:0.88em\">- Systemd: dashboard-relay.service + dashboard-action-processor.timer</span></div><div style=\"margin-bottom:8px\"><strong style=\"color:var(--accent)\">2026-07-03</strong><br><span style=\"color:var(--muted);font-size:0.88em\">### Dashboard v4</span><br><span style=\"color:var(--muted);font-size:0.88em\">- Card grid → grouped table + 24h timeline strip</span><br><span style=\"color:var(--muted);font-size:0.88em\">- 5 csoport: ÉJSZAKA, REGGEL, EGÉSZ NAP, NAPPAL, ESTE</span><br><span style=\"color:var(--muted);font-size:0.88em\">- Cron detail: 30+ entry részletes leírással</span></div>",
     "qaReport": "⏳ Első Noema QA futás ma éjjel 03:00-kor. Még nincs adat.",
-    "proposals": "<div style=\"font-size:0.85em;font-weight:700;color:var(--green);margin:8px 0 6px 0\">✅ Kész (32)</div><div onclick=\"togglePkg('pkgrow-PKG-001')\" style=\"font-size:0.88em;padding:6px 8px;margin-bottom:3px;background:var(--card);border-left:3px solid var(--green);border-radius:3px;line-height:1.5;display:flex;align-items:center;gap:8px;cursor:pointer;opacity:0.6\" onmouseenter=\"this.style.opacity='0.85'\" onmouseout=\"this.style.opacity='0.6'\"><span style=\"flex:1\"><strong>PKG-001</strong> SvelteKit Scaffold <span style=\"color:var(--accent);font-weight:700;font-size:0.82em\">L</span>  <span style=\"font-size:0.75em;color:var(--accent);opacity:0.6\">▸</span></span><span style=\"color:var(--green);font-weight:700;font-size:0.82em;white-space:nowrap\">✅</span><button class=\"log-btn\" onclick=\"event.stopPropagation();viewLog('PKG-001',this.parentElement)\" title=\"Dev log megtekintése\">📋 Log</button></div><div id=\"pkgrow-PKG-001\" class=\"pkg-detail\" style=\"display:none;margin:-2px 0 4px 0;padding:8px 10px;background:var(--card);border-left:3px solid var(--border);border-radius:0 3px 3px 0;font-size:0.84em;line-height:1.6\"><div style=\"padding:4px 0 2px 0;color:var(--muted);font-size:0.84em\">SvelteKit projekt létrehozása, TypeScript konfiguráció, könyvtárstruktúra, dark theme CSS variables, build pipeline. A v2 fejlesztés alapja.</div><div style=\"font-size:0.80em;color:var(--muted);opacity:0.7\">📁 noema-v2/` project root (vagy a meglévő `projects/noema` alatt új struktúra) · package.json`, `tsconfig.json`, `svelte.config.js`, `vite.config.ts · src/app.css` — CSS variables, dark theme · src/routes/+layout.svelte` — tab navigáció, fejléc · src/routes/+page.svelte` — üres dashboard konténer · src/routes/+page.ts` — SSR data loading placeholder · CI frissítése: SvelteKit check + build</div></div><div onclick=\"togglePkg('pkgrow-PKG-013')\" style=\"font-size:0.88em;padding:6px 8px;margin-bottom:3px;background:var(--card);border-left:3px solid var(--green);border-radius:3px;line-height:1.5;display:flex;align-items:center;gap:8px;cursor:pointer;opacity:0.6\" onmouseenter=\"this.style.opacity='0.85'\" onmouseout=\"this.style.opacity='0.6'\"><span style=\"flex:1\"><strong>PKG-013</strong> **Provider Abstraction Layer** 🧱 <span style=\"color:var(--yellow);font-weight:700;font-size:0.82em\">M</span> <span style=\"color:var(--muted);font-size:0.82em\">→ <span style=\"color:var(--green)\">PKG-001✅</span></span> <span style=\"font-size:0.75em;color:var(--accent);opacity:0.6\">▸</span></span><span style=\"color:var(--green);font-weight:700;font-size:0.82em;white-space:nowrap\">✅</span><button class=\"log-btn\" onclick=\"event.stopPropagation();viewLog('PKG-013',this.parentElement)\" title=\"Dev log megtekintése\">📋 Log</button></div><div id=\"pkgrow-PKG-013\" class=\"pkg-detail\" style=\"display:none;margin:-2px 0 4px 0;padding:8px 10px;background:var(--card);border-left:3px solid var(--border);border-radius:0 3px 3px 0;font-size:0.84em;line-height:1.6\"><div style=\"padding:4px 0 2px 0;color:var(--muted);font-size:0.84em\">**Provider Abstraction Layer** 🧱</div></div><div onclick=\"togglePkg('pkgrow-PKG-014')\" style=\"font-size:0.88em;padding:6px 8px;margin-bottom:3px;background:var(--card);border-left:3px solid var(--green);border-radius:3px;line-height:1.5;display:flex;align-items:center;gap:8px;cursor:pointer;opacity:0.6\" onmouseenter=\"this.style.opacity='0.85'\" onmouseout=\"this.style.opacity='0.6'\"><span style=\"flex:1\"><strong>PKG-014</strong> Dev Loop Log Viewer <span style=\"color:var(--green);font-weight:700;font-size:0.82em\">S</span> <span style=\"color:var(--muted);font-size:0.82em\">→ <span style=\"color:var(--green)\">PKG-001✅</span></span> <span style=\"font-size:0.75em;color:var(--accent);opacity:0.6\">▸</span></span><span style=\"color:var(--green);font-weight:700;font-size:0.82em;white-space:nowrap\">✅</span><button class=\"log-btn\" onclick=\"event.stopPropagation();viewLog('PKG-014',this.parentElement)\" title=\"Dev log megtekintése\">📋 Log</button></div><div id=\"pkgrow-PKG-014\" class=\"pkg-detail\" style=\"display:none;margin:-2px 0 4px 0;padding:8px 10px;background:var(--card);border-left:3px solid var(--border);border-radius:0 3px 3px 0;font-size:0.84em;line-height:1.6\"><div style=\"padding:4px 0 2px 0;color:var(--muted);font-size:0.84em\">Élő Cursor log megjelenítése a dashboardon. Amikor egy csomag ▶ Mehet gombját megnyomod, a gomb `⏳`-ra vált és megjelenik egy `📋 Log` gomb mellette. A log gombra kattintva egy görgethető panel nyílik, ami 3 másodpercenként frissíti a Cursor kimenetét.</div><div style=\"font-size:0.80em;color:var(--muted);opacity:0.7\">📁 scripts/dashboard-relay.cjs`: `GET /log/:pkgId` + `GET /running` endpointok · projects/noema/archive/v4.html`: CSS + JS (sendAction frissítés, viewLog, pollLog) · projects/noema/generate.cjs`: nincs változás (a relay és a template módosul)</div></div><div onclick=\"togglePkg('pkgrow-PKG-015')\" style=\"font-size:0.88em;padding:6px 8px;margin-bottom:3px;background:var(--card);border-left:3px solid var(--green);border-radius:3px;line-height:1.5;display:flex;align-items:center;gap:8px;cursor:pointer;opacity:0.6\" onmouseenter=\"this.style.opacity='0.85'\" onmouseout=\"this.style.opacity='0.6'\"><span style=\"flex:1\"><strong>PKG-015</strong> Expandable Package Rows <span style=\"color:var(--green);font-weight:700;font-size:0.82em\">S</span> <span style=\"color:var(--muted);font-size:0.82em\">→ <span style=\"color:var(--green)\">PKG-001✅</span></span> <span style=\"font-size:0.75em;color:var(--accent);opacity:0.6\">▸</span></span><span style=\"color:var(--green);font-weight:700;font-size:0.82em;white-space:nowrap\">✅</span><button class=\"log-btn\" onclick=\"event.stopPropagation();viewLog('PKG-015',this.parentElement)\" title=\"Dev log megtekintése\">📋 Log</button></div><div id=\"pkgrow-PKG-015\" class=\"pkg-detail\" style=\"display:none;margin:-2px 0 4px 0;padding:8px 10px;background:var(--card);border-left:3px solid var(--border);border-radius:0 3px 3px 0;font-size:0.84em;line-height:1.6\"><div style=\"padding:4px 0 2px 0;color:var(--muted);font-size:0.84em\">Minden fejlesztési csomag sora a dashboardon lenyitható. Kattintásra megjelenik a csomag részletes leírása: mit csinál, milyen fájlokat érint, milyen fázisokból áll. A sorok mellett `▸` / `▾` chevron jelzi a nyitott/zárt állapotot.</div><div style=\"font-size:0.80em;color:var(--muted);opacity:0.7\">📁 projects/noema/generate.cjs`: spec.md parse-olás, detail HTML generálás, soronként onclick · projects/noema/archive/v4.html`: CSS (`.pkg-detail`, `.pkg-row`), JS (`togglePkg()`)</div><div style=\"font-size:0.80em;margin-top:2px\"><span style=\"color:var(--muted)\">F0</span> F5` fázisok</div></div><div onclick=\"togglePkg('pkgrow-PKG-002')\" style=\"font-size:0.88em;padding:6px 8px;margin-bottom:3px;background:var(--card);border-left:3px solid var(--green);border-radius:3px;line-height:1.5;display:flex;align-items:center;gap:8px;cursor:pointer;opacity:0.6\" onmouseenter=\"this.style.opacity='0.85'\" onmouseout=\"this.style.opacity='0.6'\"><span style=\"flex:1\"><strong>PKG-002</strong> Core: Cron Data <span style=\"color:var(--green);font-weight:700;font-size:0.82em\">S</span> <span style=\"color:var(--muted);font-size:0.82em\">→ <span style=\"color:var(--green)\">PKG-013✅</span></span> <span style=\"font-size:0.75em;color:var(--accent);opacity:0.6\">▸</span></span><span style=\"color:var(--green);font-weight:700;font-size:0.82em;white-space:nowrap\">✅</span><button class=\"log-btn\" onclick=\"event.stopPropagation();viewLog('PKG-002',this.parentElement)\" title=\"Dev log megtekintése\">📋 Log</button></div><div id=\"pkgrow-PKG-002\" class=\"pkg-detail\" style=\"display:none;margin:-2px 0 4px 0;padding:8px 10px;background:var(--card);border-left:3px solid var(--border);border-radius:0 3px 3px 0;font-size:0.84em;line-height:1.6\"><div style=\"padding:4px 0 2px 0;color:var(--muted);font-size:0.84em\">`lib/core/crons.ts` — openclaw cron list adatok lekérése, parse-olása, klasszifikációja.</div><div style=\"font-size:0.80em;color:var(--muted);opacity:0.7\">📁 src/lib/types/index.ts`: CronEntry, CronData · src/lib/core/utils.ts`: exec() helper · src/lib/core/crons.ts`: getCrons() · tests/core/crons.test.ts</div></div><div onclick=\"togglePkg('pkgrow-PKG-003')\" style=\"font-size:0.88em;padding:6px 8px;margin-bottom:3px;background:var(--card);border-left:3px solid var(--green);border-radius:3px;line-height:1.5;display:flex;align-items:center;gap:8px;cursor:pointer;opacity:0.6\" onmouseenter=\"this.style.opacity='0.85'\" onmouseout=\"this.style.opacity='0.6'\"><span style=\"flex:1\"><strong>PKG-003</strong> Core: Agent Data <span style=\"color:var(--green);font-weight:700;font-size:0.82em\">S</span> <span style=\"color:var(--muted);font-size:0.82em\">→ <span style=\"color:var(--green)\">PKG-013✅</span></span> <span style=\"font-size:0.75em;color:var(--accent);opacity:0.6\">▸</span></span><span style=\"color:var(--green);font-weight:700;font-size:0.82em;white-space:nowrap\">✅</span><button class=\"log-btn\" onclick=\"event.stopPropagation();viewLog('PKG-003',this.parentElement)\" title=\"Dev log megtekintése\">📋 Log</button></div><div id=\"pkgrow-PKG-003\" class=\"pkg-detail\" style=\"display:none;margin:-2px 0 4px 0;padding:8px 10px;background:var(--card);border-left:3px solid var(--border);border-radius:0 3px 3px 0;font-size:0.84em;line-height:1.6\"><div style=\"padding:4px 0 2px 0;color:var(--muted);font-size:0.84em\">`lib/core/agents.ts` — agent státuszok, session-ök, utolsó spawn időpontok lekérése.</div><div style=\"font-size:0.80em;color:var(--muted);opacity:0.7\">📁 src/lib/types/index.ts`: AgentEntry, AgentData · src/lib/core/agents.ts`: getAgents() · tests/core/agents.test.ts</div></div><div onclick=\"togglePkg('pkgrow-PKG-004')\" style=\"font-size:0.88em;padding:6px 8px;margin-bottom:3px;background:var(--card);border-left:3px solid var(--green);border-radius:3px;line-height:1.5;display:flex;align-items:center;gap:8px;cursor:pointer;opacity:0.6\" onmouseenter=\"this.style.opacity='0.85'\" onmouseout=\"this.style.opacity='0.6'\"><span style=\"flex:1\"><strong>PKG-004</strong> Core: Health & Heartbeat <span style=\"color:var(--green);font-weight:700;font-size:0.82em\">S</span> <span style=\"color:var(--muted);font-size:0.82em\">→ <span style=\"color:var(--green)\">PKG-013✅</span></span> <span style=\"font-size:0.75em;color:var(--accent);opacity:0.6\">▸</span></span><span style=\"color:var(--green);font-weight:700;font-size:0.82em;white-space:nowrap\">✅</span><button class=\"log-btn\" onclick=\"event.stopPropagation();viewLog('PKG-004',this.parentElement)\" title=\"Dev log megtekintése\">📋 Log</button></div><div id=\"pkgrow-PKG-004\" class=\"pkg-detail\" style=\"display:none;margin:-2px 0 4px 0;padding:8px 10px;background:var(--card);border-left:3px solid var(--border);border-radius:0 3px 3px 0;font-size:0.84em;line-height:1.6\"><div style=\"padding:4px 0 2px 0;color:var(--muted);font-size:0.84em\">`lib/core/health.ts` — heartbeat monitoring, model mapping, uptime tracking.</div><div style=\"font-size:0.80em;color:var(--muted);opacity:0.7\">📁 src/lib/types/index.ts`: HealthData · src/lib/core/health.ts`: getHealth() · tests/core/health.test.ts</div></div><div onclick=\"togglePkg('pkgrow-PKG-005')\" style=\"font-size:0.88em;padding:6px 8px;margin-bottom:3px;background:var(--card);border-left:3px solid var(--green);border-radius:3px;line-height:1.5;display:flex;align-items:center;gap:8px;cursor:pointer;opacity:0.6\" onmouseenter=\"this.style.opacity='0.85'\" onmouseout=\"this.style.opacity='0.6'\"><span style=\"flex:1\"><strong>PKG-005</strong> Core: H1 Data <span style=\"color:var(--yellow);font-weight:700;font-size:0.82em\">M</span> <span style=\"color:var(--muted);font-size:0.82em\">→ <span style=\"color:var(--green)\">PKG-013✅</span></span> <span style=\"font-size:0.75em;color:var(--accent);opacity:0.6\">▸</span></span><span style=\"color:var(--green);font-weight:700;font-size:0.82em;white-space:nowrap\">✅</span><button class=\"log-btn\" onclick=\"event.stopPropagation();viewLog('PKG-005',this.parentElement)\" title=\"Dev log megtekintése\">📋 Log</button></div><div id=\"pkgrow-PKG-005\" class=\"pkg-detail\" style=\"display:none;margin:-2px 0 4px 0;padding:8px 10px;background:var(--card);border-left:3px solid var(--border);border-radius:0 3px 3px 0;font-size:0.84em;line-height:1.6\"><div style=\"padding:4px 0 2px 0;color:var(--muted);font-size:0.84em\">`lib/core/h1.ts` — HackerOne API adatok (programs, reports, earnings, balance).</div><div style=\"font-size:0.80em;color:var(--muted);opacity:0.7\">📁 src/lib/types/index.ts`: H1Program, H1Report, H1Data · src/lib/core/h1.ts`: getH1Data() · tests/core/h1.test.ts</div></div><div onclick=\"togglePkg('pkgrow-PKG-016')\" style=\"font-size:0.88em;padding:6px 8px;margin-bottom:3px;background:var(--card);border-left:3px solid var(--green);border-radius:3px;line-height:1.5;display:flex;align-items:center;gap:8px;cursor:pointer;opacity:0.6\" onmouseenter=\"this.style.opacity='0.85'\" onmouseout=\"this.style.opacity='0.6'\"><span style=\"flex:1\"><strong>PKG-016</strong> Development Log Enhance <span style=\"color:var(--green);font-weight:700;font-size:0.82em\">S</span> <span style=\"color:var(--muted);font-size:0.82em\">→ <span style=\"color:var(--green)\">PKG-001✅</span> <span style=\"color:var(--green)\">PKG-014✅</span></span> <span style=\"font-size:0.75em;color:var(--accent);opacity:0.6\">▸</span></span><span style=\"color:var(--green);font-weight:700;font-size:0.82em;white-space:nowrap\">✅</span><button class=\"log-btn\" onclick=\"event.stopPropagation();viewLog('PKG-016',this.parentElement)\" title=\"Dev log megtekintése\">📋 Log</button></div><div id=\"pkgrow-PKG-016\" class=\"pkg-detail\" style=\"display:none;margin:-2px 0 4px 0;padding:8px 10px;background:var(--card);border-left:3px solid var(--border);border-radius:0 3px 3px 0;font-size:0.84em;line-height:1.6\"><div style=\"padding:4px 0 2px 0;color:var(--muted);font-size:0.84em\">Három fejlesztés a dashboard development log funkciójához:</div></div><div onclick=\"togglePkg('pkgrow-PKG-025')\" style=\"font-size:0.88em;padding:6px 8px;margin-bottom:3px;background:var(--card);border-left:3px solid var(--green);border-radius:3px;line-height:1.5;display:flex;align-items:center;gap:8px;cursor:pointer;opacity:0.6\" onmouseenter=\"this.style.opacity='0.85'\" onmouseout=\"this.style.opacity='0.6'\"><span style=\"flex:1\"><strong>PKG-025</strong> Brainstorm + Bills + Research Tabs <span style=\"color:var(--yellow);font-weight:700;font-size:0.82em\">M</span> <span style=\"color:var(--muted);font-size:0.82em\">→ <span style=\"color:var(--green)\">PKG-021✅</span></span> <span style=\"font-size:0.75em;color:var(--accent);opacity:0.6\">▸</span></span><span style=\"color:var(--green);font-weight:700;font-size:0.82em;white-space:nowrap\">✅</span><button class=\"log-btn\" onclick=\"event.stopPropagation();viewLog('PKG-025',this.parentElement)\" title=\"Dev log megtekintése\">📋 Log</button></div><div id=\"pkgrow-PKG-025\" class=\"pkg-detail\" style=\"display:none;margin:-2px 0 4px 0;padding:8px 10px;background:var(--card);border-left:3px solid var(--border);border-radius:0 3px 3px 0;font-size:0.84em;line-height:1.6\"><div style=\"padding:4px 0 2px 0;color:var(--muted);font-size:0.84em\">Brainstorm + Bills + Research Tabs</div></div><div onclick=\"togglePkg('pkgrow-PKG-024')\" style=\"font-size:0.88em;padding:6px 8px;margin-bottom:3px;background:var(--card);border-left:3px solid var(--green);border-radius:3px;line-height:1.5;display:flex;align-items:center;gap:8px;cursor:pointer;opacity:0.6\" onmouseenter=\"this.style.opacity='0.85'\" onmouseout=\"this.style.opacity='0.6'\"><span style=\"flex:1\"><strong>PKG-024</strong> H1 + Viktor Tabs <span style=\"color:var(--yellow);font-weight:700;font-size:0.82em\">M</span> <span style=\"color:var(--muted);font-size:0.82em\">→ <span style=\"color:var(--green)\">PKG-021✅</span></span> <span style=\"font-size:0.75em;color:var(--accent);opacity:0.6\">▸</span></span><span style=\"color:var(--green);font-weight:700;font-size:0.82em;white-space:nowrap\">✅</span><button class=\"log-btn\" onclick=\"event.stopPropagation();viewLog('PKG-024',this.parentElement)\" title=\"Dev log megtekintése\">📋 Log</button></div><div id=\"pkgrow-PKG-024\" class=\"pkg-detail\" style=\"display:none;margin:-2px 0 4px 0;padding:8px 10px;background:var(--card);border-left:3px solid var(--border);border-radius:0 3px 3px 0;font-size:0.84em;line-height:1.6\"><div style=\"padding:4px 0 2px 0;color:var(--muted);font-size:0.84em\">H1 + Viktor Tabs</div></div><div onclick=\"togglePkg('pkgrow-PKG-023')\" style=\"font-size:0.88em;padding:6px 8px;margin-bottom:3px;background:var(--card);border-left:3px solid var(--green);border-radius:3px;line-height:1.5;display:flex;align-items:center;gap:8px;cursor:pointer;opacity:0.6\" onmouseenter=\"this.style.opacity='0.85'\" onmouseout=\"this.style.opacity='0.6'\"><span style=\"flex:1\"><strong>PKG-023</strong> Orchestrator Tab <span style=\"color:var(--accent);font-weight:700;font-size:0.82em\">L</span> <span style=\"color:var(--muted);font-size:0.82em\">→ <span style=\"color:var(--green)\">PKG-021✅</span> <span style=\"color:var(--green)\">PKG-022✅</span></span> <span style=\"font-size:0.75em;color:var(--accent);opacity:0.6\">▸</span></span><span style=\"color:var(--green);font-weight:700;font-size:0.82em;white-space:nowrap\">✅</span><button class=\"log-btn\" onclick=\"event.stopPropagation();viewLog('PKG-023',this.parentElement)\" title=\"Dev log megtekintése\">📋 Log</button></div><div id=\"pkgrow-PKG-023\" class=\"pkg-detail\" style=\"display:none;margin:-2px 0 4px 0;padding:8px 10px;background:var(--card);border-left:3px solid var(--border);border-radius:0 3px 3px 0;font-size:0.84em;line-height:1.6\"><div style=\"padding:4px 0 2px 0;color:var(--muted);font-size:0.84em\">Orchestrator Tab</div></div><div onclick=\"togglePkg('pkgrow-PKG-022')\" style=\"font-size:0.88em;padding:6px 8px;margin-bottom:3px;background:var(--card);border-left:3px solid var(--green);border-radius:3px;line-height:1.5;display:flex;align-items:center;gap:8px;cursor:pointer;opacity:0.6\" onmouseenter=\"this.style.opacity='0.85'\" onmouseout=\"this.style.opacity='0.6'\"><span style=\"flex:1\"><strong>PKG-022</strong> Agents + Crons Tabs <span style=\"color:var(--yellow);font-weight:700;font-size:0.82em\">M</span> <span style=\"color:var(--muted);font-size:0.82em\">→ <span style=\"color:var(--green)\">PKG-021✅</span></span> <span style=\"font-size:0.75em;color:var(--accent);opacity:0.6\">▸</span></span><span style=\"color:var(--green);font-weight:700;font-size:0.82em;white-space:nowrap\">✅</span><button class=\"log-btn\" onclick=\"event.stopPropagation();viewLog('PKG-022',this.parentElement)\" title=\"Dev log megtekintése\">📋 Log</button></div><div id=\"pkgrow-PKG-022\" class=\"pkg-detail\" style=\"display:none;margin:-2px 0 4px 0;padding:8px 10px;background:var(--card);border-left:3px solid var(--border);border-radius:0 3px 3px 0;font-size:0.84em;line-height:1.6\"><div style=\"padding:4px 0 2px 0;color:var(--muted);font-size:0.84em\">Agents + Crons Tabs</div></div><div onclick=\"togglePkg('pkgrow-PKG-021')\" style=\"font-size:0.88em;padding:6px 8px;margin-bottom:3px;background:var(--card);border-left:3px solid var(--green);border-radius:3px;line-height:1.5;display:flex;align-items:center;gap:8px;cursor:pointer;opacity:0.6\" onmouseenter=\"this.style.opacity='0.85'\" onmouseout=\"this.style.opacity='0.6'\"><span style=\"flex:1\"><strong>PKG-021</strong> Data Pipeline + Overview Tab <span style=\"color:var(--accent);font-weight:700;font-size:0.82em\">L</span> <span style=\"color:var(--muted);font-size:0.82em\">→ <span style=\"color:var(--green)\">PKG-001✅</span> <span style=\"color:var(--green)\">PKG-002✅</span> <span style=\"color:var(--green)\">PKG-003✅</span> <span style=\"color:var(--green)\">PKG-004✅</span> <span style=\"color:var(--green)\">PKG-005✅</span></span> <span style=\"font-size:0.75em;color:var(--accent);opacity:0.6\">▸</span></span><span style=\"color:var(--green);font-weight:700;font-size:0.82em;white-space:nowrap\">✅</span><button class=\"log-btn\" onclick=\"event.stopPropagation();viewLog('PKG-021',this.parentElement)\" title=\"Dev log megtekintése\">📋 Log</button></div><div id=\"pkgrow-PKG-021\" class=\"pkg-detail\" style=\"display:none;margin:-2px 0 4px 0;padding:8px 10px;background:var(--card);border-left:3px solid var(--border);border-radius:0 3px 3px 0;font-size:0.84em;line-height:1.6\"><div style=\"padding:4px 0 2px 0;color:var(--muted);font-size:0.84em\">Data Pipeline + Overview Tab</div></div><div onclick=\"togglePkg('pkgrow-PKG-020')\" style=\"font-size:0.88em;padding:6px 8px;margin-bottom:3px;background:var(--card);border-left:3px solid var(--green);border-radius:3px;line-height:</pre></details></body></html>
+    "proposals": "<div style=\"font-size:0.85em;font-weight:700;color:var(--green);margin:8px 0 6px 0\">✅ Kész (33)</div><div onclick=\"togglePkg('pkgrow-PKG-001')\" style=\"font-size:0.88em;padding:6px 8px;margin-bottom:3px;background:var(--card);border-left:3px solid var(--green);border-radius:3px;line-height:1.5;display:flex;align-items:center;gap:8px;cursor:pointer;opacity:0.6\" onmouseenter=\"this.style.opacity='0.85'\" onmouseout=\"this.style.opacity='0.6'\"><span style=\"flex:1\"><strong>PKG-001</strong> SvelteKit Scaffold <span style=\"color:var(--accent);font-weight:700;font-size:0.82em\">L</span>  <span style=\"font-size:0.75em;color:var(--accent);opacity:0.6\">▸</span></span><span style=\"color:var(--green);font-weight:700;font-size:0.82em;white-space:nowrap\">✅</span><button class=\"log-btn\" onclick=\"event.stopPropagation();viewLog('PKG-001',this.parentElement)\" title=\"Dev log megtekintése\">📋 Log</button></div><div id=\"pkgrow-PKG-001\" class=\"pkg-detail\" style=\"display:none;margin:-2px 0 4px 0;padding:8px 10px;background:var(--card);border-left:3px solid var(--border);border-radius:0 3px 3px 0;font-size:0.84em;line-height:1.6\"><div style=\"padding:4px 0 2px 0;color:var(--muted);font-size:0.84em\">SvelteKit projekt létrehozása, TypeScript konfiguráció, könyvtárstruktúra, dark theme CSS variables, build pipeline. A v2 fejlesztés alapja.</div><div style=\"font-size:0.80em;color:var(--muted);opacity:0.7\">📁 noema-v2/` project root (vagy a meglévő `projects/noema` alatt új struktúra) · package.json`, `tsconfig.json`, `svelte.config.js`, `vite.config.ts · src/app.css` — CSS variables, dark theme · src/routes/+layout.svelte` — tab navigáció, fejléc · src/routes/+page.svelte` — üres dashboard konténer · src/routes/+page.ts` — SSR data loading placeholder · CI frissítése: SvelteKit check + build</div></div><div onclick=\"togglePkg('pkgrow-PKG-013')\" style=\"font-size:0.88em;padding:6px 8px;margin-bottom:3px;background:var(--card);border-left:3px solid var(--green);border-radius:3px;line-height:1.5;display:flex;align-items:center;gap:8px;cursor:pointer;opacity:0.6\" onmouseenter=\"this.style.opacity='0.85'\" onmouseout=\"this.style.opacity='0.6'\"><span style=\"flex:1\"><strong>PKG-013</strong> **Provider Abstraction Layer** 🧱 <span style=\"color:var(--yellow);font-weight:700;font-size:0.82em\">M</span> <span style=\"color:var(--muted);font-size:0.82em\">→ <span style=\"color:var(--green)\">PKG-001✅</span></span> <span style=\"font-size:0.75em;color:var(--accent);opacity:0.6\">▸</span></span><span style=\"color:var(--green);font-weight:700;font-size:0.82em;white-space:nowrap\">✅</span><button class=\"log-btn\" onclick=\"event.stopPropagation();viewLog('PKG-013',this.parentElement)\" title=\"Dev log megtekintése\">📋 Log</button></div><div id=\"pkgrow-PKG-013\" class=\"pkg-detail\" style=\"display:none;margin:-2px 0 4px 0;padding:8px 10px;background:var(--card);border-left:3px solid var(--border);border-radius:0 3px 3px 0;font-size:0.84em;line-height:1.6\"><div style=\"padding:4px 0 2px 0;color:var(--muted);font-size:0.84em\">**Provider Abstraction Layer** 🧱</div></div><div onclick=\"togglePkg('pkgrow-PKG-014')\" style=\"font-size:0.88em;padding:6px 8px;margin-bottom:3px;background:var(--card);border-left:3px solid var(--green);border-radius:3px;line-height:1.5;display:flex;align-items:center;gap:8px;cursor:pointer;opacity:0.6\" onmouseenter=\"this.style.opacity='0.85'\" onmouseout=\"this.style.opacity='0.6'\"><span style=\"flex:1\"><strong>PKG-014</strong> Dev Loop Log Viewer <span style=\"color:var(--green);font-weight:700;font-size:0.82em\">S</span> <span style=\"color:var(--muted);font-size:0.82em\">→ <span style=\"color:var(--green)\">PKG-001✅</span></span> <span style=\"font-size:0.75em;color:var(--accent);opacity:0.6\">▸</span></span><span style=\"color:var(--green);font-weight:700;font-size:0.82em;white-space:nowrap\">✅</span><button class=\"log-btn\" onclick=\"event.stopPropagation();viewLog('PKG-014',this.parentElement)\" title=\"Dev log megtekintése\">📋 Log</button></div><div id=\"pkgrow-PKG-014\" class=\"pkg-detail\" style=\"display:none;margin:-2px 0 4px 0;padding:8px 10px;background:var(--card);border-left:3px solid var(--border);border-radius:0 3px 3px 0;font-size:0.84em;line-height:1.6\"><div style=\"padding:4px 0 2px 0;color:var(--muted);font-size:0.84em\">Élő Cursor log megjelenítése a dashboardon. Amikor egy csomag ▶ Mehet gombját megnyomod, a gomb `⏳`-ra vált és megjelenik egy `📋 Log` gomb mellette. A log gombra kattintva egy görgethető panel nyílik, ami 3 másodpercenként frissíti a Cursor kimenetét.</div><div style=\"font-size:0.80em;color:var(--muted);opacity:0.7\">📁 scripts/dashboard-relay.cjs`: `GET /log/:pkgId` + `GET /running` endpointok · projects/noema/archive/v4.html`: CSS + JS (sendAction frissítés, viewLog, pollLog) · projects/noema/generate.cjs`: nincs változás (a relay és a template módosul)</div></div><div onclick=\"togglePkg('pkgrow-PKG-015')\" style=\"font-size:0.88em;padding:6px 8px;margin-bottom:3px;background:var(--card);border-left:3px solid var(--green);border-radius:3px;line-height:1.5;display:flex;align-items:center;gap:8px;cursor:pointer;opacity:0.6\" onmouseenter=\"this.style.opacity='0.85'\" onmouseout=\"this.style.opacity='0.6'\"><span style=\"flex:1\"><strong>PKG-015</strong> Expandable Package Rows <span style=\"color:var(--green);font-weight:700;font-size:0.82em\">S</span> <span style=\"color:var(--muted);font-size:0.82em\">→ <span style=\"color:var(--green)\">PKG-001✅</span></span> <span style=\"font-size:0.75em;color:var(--accent);opacity:0.6\">▸</span></span><span style=\"color:var(--green);font-weight:700;font-size:0.82em;white-space:nowrap\">✅</span><button class=\"log-btn\" onclick=\"event.stopPropagation();viewLog('PKG-015',this.parentElement)\" title=\"Dev log megtekintése\">📋 Log</button></div><div id=\"pkgrow-PKG-015\" class=\"pkg-detail\" style=\"display:none;margin:-2px 0 4px 0;padding:8px 10px;background:var(--card);border-left:3px solid var(--border);border-radius:0 3px 3px 0;font-size:0.84em;line-height:1.6\"><div style=\"padding:4px 0 2px 0;color:var(--muted);font-size:0.84em\">Minden fejlesztési csomag sora a dashboardon lenyitható. Kattintásra megjelenik a csomag részletes leírása: mit csinál, milyen fájlokat érint, milyen fázisokból áll. A sorok mellett `▸` / `▾` chevron jelzi a nyitott/zárt állapotot.</div><div style=\"font-size:0.80em;color:var(--muted);opacity:0.7\">📁 projects/noema/generate.cjs`: spec.md parse-olás, detail HTML generálás, soronként onclick · projects/noema/archive/v4.html`: CSS (`.pkg-detail`, `.pkg-row`), JS (`togglePkg()`)</div><div style=\"font-size:0.80em;margin-top:2px\"><span style=\"color:var(--muted)\">F0</span> F5` fázisok</div></div><div onclick=\"togglePkg('pkgrow-PKG-002')\" style=\"font-size:0.88em;padding:6px 8px;margin-bottom:3px;background:var(--card);border-left:3px solid var(--green);border-radius:3px;line-height:1.5;display:flex;align-items:center;gap:8px;cursor:pointer;opacity:0.6\" onmouseenter=\"this.style.opacity='0.85'\" onmouseout=\"this.style.opacity='0.6'\"><span style=\"flex:1\"><strong>PKG-002</strong> Core: Cron Data <span style=\"color:var(--green);font-weight:700;font-size:0.82em\">S</span> <span style=\"color:var(--muted);font-size:0.82em\">→ <span style=\"color:var(--green)\">PKG-013✅</span></span> <span style=\"font-size:0.75em;color:var(--accent);opacity:0.6\">▸</span></span><span style=\"color:var(--green);font-weight:700;font-size:0.82em;white-space:nowrap\">✅</span><button class=\"log-btn\" onclick=\"event.stopPropagation();viewLog('PKG-002',this.parentElement)\" title=\"Dev log megtekintése\">📋 Log</button></div><div id=\"pkgrow-PKG-002\" class=\"pkg-detail\" style=\"display:none;margin:-2px 0 4px 0;padding:8px 10px;background:var(--card);border-left:3px solid var(--border);border-radius:0 3px 3px 0;font-size:0.84em;line-height:1.6\"><div style=\"padding:4px 0 2px 0;color:var(--muted);font-size:0.84em\">`lib/core/crons.ts` — openclaw cron list adatok lekérése, parse-olása, klasszifikációja.</div><div style=\"font-size:0.80em;color:var(--muted);opacity:0.7\">📁 src/lib/types/index.ts`: CronEntry, CronData · src/lib/core/utils.ts`: exec() helper · src/lib/core/crons.ts`: getCrons() · tests/core/crons.test.ts</div></div><div onclick=\"togglePkg('pkgrow-PKG-003')\" style=\"font-size:0.88em;padding:6px 8px;margin-bottom:3px;background:var(--card);border-left:3px solid var(--green);border-radius:3px;line-height:1.5;display:flex;align-items:center;gap:8px;cursor:pointer;opacity:0.6\" onmouseenter=\"this.style.opacity='0.85'\" onmouseout=\"this.style.opacity='0.6'\"><span style=\"flex:1\"><strong>PKG-003</strong> Core: Agent Data <span style=\"color:var(--green);font-weight:700;font-size:0.82em\">S</span> <span style=\"color:var(--muted);font-size:0.82em\">→ <span style=\"color:var(--green)\">PKG-013✅</span></span> <span style=\"font-size:0.75em;color:var(--accent);opacity:0.6\">▸</span></span><span style=\"color:var(--green);font-weight:700;font-size:0.82em;white-space:nowrap\">✅</span><button class=\"log-btn\" onclick=\"event.stopPropagation();viewLog('PKG-003',this.parentElement)\" title=\"Dev log megtekintése\">📋 Log</button></div><div id=\"pkgrow-PKG-003\" class=\"pkg-detail\" style=\"display:none;margin:-2px 0 4px 0;padding:8px 10px;background:var(--card);border-left:3px solid var(--border);border-radius:0 3px 3px 0;font-size:0.84em;line-height:1.6\"><div style=\"padding:4px 0 2px 0;color:var(--muted);font-size:0.84em\">`lib/core/agents.ts` — agent státuszok, session-ök, utolsó spawn időpontok lekérése.</div><div style=\"font-size:0.80em;color:var(--muted);opacity:0.7\">📁 src/lib/types/index.ts`: AgentEntry, AgentData · src/lib/core/agents.ts`: getAgents() · tests/core/agents.test.ts</div></div><div onclick=\"togglePkg('pkgrow-PKG-004')\" style=\"font-size:0.88em;padding:6px 8px;margin-bottom:3px;background:var(--card);border-left:3px solid var(--green);border-radius:3px;line-height:1.5;display:flex;align-items:center;gap:8px;cursor:pointer;opacity:0.6\" onmouseenter=\"this.style.opacity='0.85'\" onmouseout=\"this.style.opacity='0.6'\"><span style=\"flex:1\"><strong>PKG-004</strong> Core: Health & Heartbeat <span style=\"color:var(--green);font-weight:700;font-size:0.82em\">S</span> <span style=\"color:var(--muted);font-size:0.82em\">→ <span style=\"color:var(--green)\">PKG-013✅</span></span> <span style=\"font-size:0.75em;color:var(--accent);opacity:0.6\">▸</span></span><span style=\"color:var(--green);font-weight:700;font-size:0.82em;white-space:nowrap\">✅</span><button class=\"log-btn\" onclick=\"event.stopPropagation();viewLog('PKG-004',this.parentElement)\" title=\"Dev log megtekintése\">📋 Log</button></div><div id=\"pkgrow-PKG-004\" class=\"pkg-detail\" style=\"display:none;margin:-2px 0 4px 0;padding:8px 10px;background:var(--card);border-left:3px solid var(--border);border-radius:0 3px 3px 0;font-size:0.84em;line-height:1.6\"><div style=\"padding:4px 0 2px 0;color:var(--muted);font-size:0.84em\">`lib/core/health.ts` — heartbeat monitoring, model mapping, uptime tracking.</div><div style=\"font-size:0.80em;color:var(--muted);opacity:0.7\">📁 src/lib/types/index.ts`: HealthData · src/lib/core/health.ts`: getHealth() · tests/core/health.test.ts</div></div><div onclick=\"togglePkg('pkgrow-PKG-005')\" style=\"font-size:0.88em;padding:6px 8px;margin-bottom:3px;background:var(--card);border-left:3px solid var(--green);border-radius:3px;line-height:1.5;display:flex;align-items:center;gap:8px;cursor:pointer;opacity:0.6\" onmouseenter=\"this.style.opacity='0.85'\" onmouseout=\"this.style.opacity='0.6'\"><span style=\"flex:1\"><strong>PKG-005</strong> Core: H1 Data <span style=\"color:var(--yellow);font-weight:700;font-size:0.82em\">M</span> <span style=\"color:var(--muted);font-size:0.82em\">→ <span style=\"color:var(--green)\">PKG-013✅</span></span> <span style=\"font-size:0.75em;color:var(--accent);opacity:0.6\">▸</span></span><span style=\"color:var(--green);font-weight:700;font-size:0.82em;white-space:nowrap\">✅</span><button class=\"log-btn\" onclick=\"event.stopPropagation();viewLog('PKG-005',this.parentElement)\" title=\"Dev log megtekintése\">📋 Log</button></div><div id=\"pkgrow-PKG-005\" class=\"pkg-detail\" style=\"display:none;margin:-2px 0 4px 0;padding:8px 10px;background:var(--card);border-left:3px solid var(--border);border-radius:0 3px 3px 0;font-size:0.84em;line-height:1.6\"><div style=\"padding:4px 0 2px 0;color:var(--muted);font-size:0.84em\">`lib/core/h1.ts` — HackerOne API adatok (programs, reports, earnings, balance).</div><div style=\"font-size:0.80em;color:var(--muted);opacity:0.7\">📁 src/lib/types/index.ts`: H1Program, H1Report, H1Data · src/lib/core/h1.ts`: getH1Data() · tests/core/h1.test.ts</div></div><div onclick=\"togglePkg('pkgrow-PKG-016')\" style=\"font-size:0.88em;padding:6px 8px;margin-bottom:3px;background:var(--card);border-left:3px solid var(--green);border-radius:3px;line-height:1.5;display:flex;align-items:center;gap:8px;cursor:pointer;opacity:0.6\" onmouseenter=\"this.style.opacity='0.85'\" onmouseout=\"this.style.opacity='0.6'\"><span style=\"flex:1\"><strong>PKG-016</strong> Development Log Enhance <span style=\"color:var(--green);font-weight:700;font-size:0.82em\">S</span> <span style=\"color:var(--muted);font-size:0.82em\">→ <span style=\"color:var(--green)\">PKG-001✅</span> <span style=\"color:var(--green)\">PKG-014✅</span></span> <span style=\"font-size:0.75em;color:var(--accent);opacity:0.6\">▸</span></span><span style=\"color:var(--green);font-weight:700;font-size:0.82em;white-space:nowrap\">✅</span><button class=\"log-btn\" onclick=\"event.stopPropagation();viewLog('PKG-016',this.parentElement)\" title=\"Dev log megtekintése\">📋 Log</button></div><div id=\"pkgrow-PKG-016\" class=\"pkg-detail\" style=\"display:none;margin:-2px 0 4px 0;padding:8px 10px;background:var(--card);border-left:3px solid var(--border);border-radius:0 3px 3px 0;font-size:0.84em;line-height:1.6\"><div style=\"padding:4px 0 2px 0;color:var(--muted);font-size:0.84em\">Három fejlesztés a dashboard development log funkciójához:</div></div><div onclick=\"togglePkg('pkgrow-PKG-025')\" style=\"font-size:0.88em;padding:6px 8px;margin-bottom:3px;background:var(--card);border-left:3px solid var(--green);border-radius:3px;line-height:1.5;display:flex;align-items:center;gap:8px;cursor:pointer;opacity:0.6\" onmouseenter=\"this.style.opacity='0.85'\" onmouseout=\"this.style.opacity='0.6'\"><span style=\"flex:1\"><strong>PKG-025</strong> Brainstorm + Bills + Research Tabs <span style=\"color:var(--yellow);font-weight:700;font-size:0.82em\">M</span> <span style=\"color:var(--muted);font-size:0.82em\">→ <span style=\"color:var(--green)\">PKG-021✅</span></span> <span style=\"font-size:0.75em;color:var(--accent);opacity:0.6\">▸</span></span><span style=\"color:var(--green);font-weight:700;font-size:0.82em;white-space:nowrap\">✅</span><button class=\"log-btn\" onclick=\"event.stopPropagation();viewLog('PKG-025',this.parentElement)\" title=\"Dev log megtekintése\">📋 Log</button></div><div id=\"pkgrow-PKG-025\" class=\"pkg-detail\" style=\"display:none;margin:-2px 0 4px 0;padding:8px 10px;background:var(--card);border-left:3px solid var(--border);border-radius:0 3px 3px 0;font-size:0.84em;line-height:1.6\"><div style=\"padding:4px 0 2px 0;color:var(--muted);font-size:0.84em\">Brainstorm + Bills + Research Tabs</div></div><div onclick=\"togglePkg('pkgrow-PKG-024')\" style=\"font-size:0.88em;padding:6px 8px;margin-bottom:3px;background:var(--card);border-left:3px solid var(--green);border-radius:3px;line-height:1.5;display:flex;align-items:center;gap:8px;cursor:pointer;opacity:0.6\" onmouseenter=\"this.style.opacity='0.85'\" onmouseout=\"this.style.opacity='0.6'\"><span style=\"flex:1\"><strong>PKG-024</strong> H1 + Viktor Tabs <span style=\"color:var(--yellow);font-weight:700;font-size:0.82em\">M</span> <span style=\"color:var(--muted);font-size:0.82em\">→ <span style=\"color:var(--green)\">PKG-021✅</span></span> <span style=\"font-size:0.75em;color:var(--accent);opacity:0.6\">▸</span></span><span style=\"color:var(--green);font-weight:700;font-size:0.82em;white-space:nowrap\">✅</span><button class=\"log-btn\" onclick=\"event.stopPropagation();viewLog('PKG-024',this.parentElement)\" title=\"Dev log megtekintése\">📋 Log</button></div><div id=\"pkgrow-PKG-024\" class=\"pkg-detail\" style=\"display:none;margin:-2px 0 4px 0;padding:8px 10px;background:var(--card);border-left:3px solid var(--border);border-radius:0 3px 3px 0;font-size:0.84em;line-height:1.6\"><div style=\"padding:4px 0 2px 0;color:var(--muted);font-size:0.84em\">H1 + Viktor Tabs</div></div><div onclick=\"togglePkg('pkgrow-PKG-023')\" style=\"font-size:0.88em;padding:6px 8px;margin-bottom:3px;background:var(--card);border-left:3px solid var(--green);border-radius:3px;line-height:1.5;display:flex;align-items:center;gap:8px;cursor:pointer;opacity:0.6\" onmouseenter=\"this.style.opacity='0.85'\" onmouseout=\"this.style.opacity='0.6'\"><span style=\"flex:1\"><strong>PKG-023</strong> Orchestrator Tab <span style=\"color:var(--accent);font-weight:700;font-size:0.82em\">L</span> <span style=\"color:var(--muted);font-size:0.82em\">→ <span style=\"color:var(--green)\">PKG-021✅</span> <span style=\"color:var(--green)\">PKG-022✅</span></span> <span style=\"font-size:0.75em;color:var(--accent);opacity:0.6\">▸</span></span><span style=\"color:var(--green);font-weight:700;font-size:0.82em;white-space:nowrap\">✅</span><button class=\"log-btn\" onclick=\"event.stopPropagation();viewLog('PKG-023',this.parentElement)\" title=\"Dev log megtekintése\">📋 Log</button></div><div id=\"pkgrow-PKG-023\" class=\"pkg-detail\" style=\"display:none;margin:-2px 0 4px 0;padding:8px 10px;background:var(--card);border-left:3px solid var(--border);border-radius:0 3px 3px 0;font-size:0.84em;line-height:1.6\"><div style=\"padding:4px 0 2px 0;color:var(--muted);font-size:0.84em\">Orchestrator Tab</div></div><div onclick=\"togglePkg('pkgrow-PKG-022')\" style=\"font-size:0.88em;padding:6px 8px;margin-bottom:3px;background:var(--card);border-left:3px solid var(--green);border-radius:3px;line-height:1.5;display:flex;align-items:center;gap:8px;cursor:pointer;opacity:0.6\" onmouseenter=\"this.style.opacity='0.85'\" onmouseout=\"this.style.opacity='0.6'\"><span style=\"flex:1\"><strong>PKG-022</strong> Agents + Crons Tabs <span style=\"color:var(--yellow);font-weight:700;font-size:0.82em\">M</span> <span style=\"color:var(--muted);font-size:0.82em\">→ <span style=\"color:var(--green)\">PKG-021✅</span></span> <span style=\"font-size:0.75em;color:var(--accent);opacity:0.6\">▸</span></span><span style=\"color:var(--green);font-weight:700;font-size:0.82em;white-space:nowrap\">✅</span><button class=\"log-btn\" onclick=\"event.stopPropagation();viewLog('PKG-022',this.parentElement)\" title=\"Dev log megtekintése\">📋 Log</button></div><div id=\"pkgrow-PKG-022\" class=\"pkg-detail\" style=\"display:none;margin:-2px 0 4px 0;padding:8px 10px;background:var(--card);border-left:3px solid var(--border);border-radius:0 3px 3px 0;font-size:0.84em;line-height:1.6\"><div style=\"padding:4px 0 2px 0;color:var(--muted);font-size:0.84em\">Agents + Crons Tabs</div></div><div onclick=\"togglePkg('pkgrow-PKG-021')\" style=\"font-size:0.88em;padding:6px 8px;margin-bottom:3px;background:var(--card);border-left:3px solid var(--green);border-radius:3px;line-height:1.5;display:flex;align-items:center;gap:8px;cursor:pointer;opacity:0.6\" onmouseenter=\"this.style.opacity='</pre></details></body></html>
