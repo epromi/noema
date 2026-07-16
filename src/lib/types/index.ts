@@ -428,7 +428,7 @@ export interface BrainstormData {
 
 /** Live action-queue status overlaid onto a package from noema-actions.jsonl. */
 export type DevPackageActionStatus =
-  "pending" | "processing" | "done" | "failed" | "dead";
+  "pending" | "processing" | "done" | "failed" | "dead" | "resolved";
 
 export interface DevPackageEntry {
   id: string;
@@ -441,6 +441,12 @@ export interface DevPackageEntry {
   actionStatus?: DevPackageActionStatus | null;
   actionQueuedAt?: string;
   actionCompletedAt?: string;
+  /** 🆕 PKG-034 — first descriptive line parsed from the package's spec.md. */
+  description?: string;
+  /** 🆕 PKG-034 — "📁"-marked file list parsed from spec.md, if present. */
+  files?: string;
+  /** 🆕 PKG-034 — F0–F5 phase headings mentioned in spec.md, if present. */
+  phases?: string;
 }
 
 export interface QueueStatus {

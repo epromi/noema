@@ -23,8 +23,11 @@ export interface PackageStats {
  */
 const LIVE_ACTIVE_STATUSES = new Set(["pending", "processing", "failed", "dead"]);
 
+/** A done PKG stays in the active list for this many ms after completion. */
+const DONE_GRACE_MS = 60_000;
+
 export function isDonePackage(pkg: DevPackageEntry): boolean {
-  if (pkg.actionStatus === "done") return true;
+  if (pkg.actionStatus === "done" || pkg.actionStatus === "resolved") return true;
   if (pkg.actionStatus && LIVE_ACTIVE_STATUSES.has(pkg.actionStatus)) {
     return false;
   }
@@ -35,7 +38,13 @@ export function isActivePackage(pkg: DevPackageEntry): boolean {
   if (pkg.actionStatus && LIVE_ACTIVE_STATUSES.has(pkg.actionStatus)) {
     return true;
   }
-  if (pkg.actionStatus === "done") return false;
+  // Resolved + done are NEVER active
+  if (pkg.actionStatus === "done" || pkg.actionStatus === "resolved") return false;
+  // Grace period: "done" packages stay active briefly for smooth UX
+  if (pkg.actionCompletedAt) {
+    const elapsed = Date.now() - new Date(pkg.actionCompletedAt).getTime();
+    if (elapsed < DONE_GRACE_MS) return true;
+  }
   return /F[1-4]|🔨|⏸|🔧|🤖|\b(IP|QA)\b/.test(pkg.phase);
 }
 
@@ -64,7 +73,14 @@ export function resolveLivePhase(pkg: DevPackageEntry): string {
       return "❌ Hiba";
     case "dead":
       return "💀 Végleg hibás";
+    case "resolved":
+      return "✅ Már kész";
     default:
+      // Grace period: show "just completed" briefly
+      if (pkg.actionCompletedAt) {
+        const elapsed = Date.now() - new Date(pkg.actionCompletedAt).getTime();
+        if (elapsed < DONE_GRACE_MS) return "✅ Frissen kész";
+      }
       return pkg.phase;
   }
 }

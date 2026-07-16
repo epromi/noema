@@ -37,6 +37,7 @@ const VALID_ACTION_STATUSES = new Set([
   "done",
   "failed",
   "dead",
+  "resolved",
 ]);
 
 /**
@@ -96,6 +97,82 @@ export function applyActionOverlay(
 
 function logDirPath(): string {
   return join(workspaceRoot(), "projects", "noema", "logs");
+}
+
+function packagesDirPath(): string {
+  return join(workspaceRoot(), "projects", "noema", "dev", "packages");
+}
+
+/** Parsed excerpt of a package's spec.md, used to enrich the collapsible row detail (PKG-034). */
+export interface ParsedSpec {
+  description?: string;
+  files?: string;
+  phases?: string;
+}
+
+/**
+ * Extract a short description, file list, and phase mentions from a spec.md's
+ * raw markdown. Pure/testable — no I/O.
+ */
+export function parseSpecMarkdown(spec: string): ParsedSpec {
+  let description: string | undefined;
+  const fileLines: string[] = [];
+  const phaseSet = new Set<string>();
+  let inFiles = false;
+
+  for (const rawLine of spec.split("\n")) {
+    const line = rawLine.trim();
+    if (!line) {
+      inFiles = false;
+      continue;
+    }
+
+    if (
+      !description &&
+      !line.startsWith("#") &&
+      !line.startsWith("**") &&
+      !line.startsWith("|") &&
+      /^[A-ZÁÉÍÓÖŐÚÜŰ0-9`]/.test(line)
+    ) {
+      description = line;
+    }
+
+    if (line.includes("📁")) {
+      inFiles = true;
+      fileLines.push(line);
+    } else if (inFiles) {
+      fileLines.push(line);
+    }
+
+    const headingMatch = line.match(/^#{2,4}\s*(?:\d+\.\s*)?(F[0-5])\b/);
+    if (headingMatch?.[1]) phaseSet.add(headingMatch[1]);
+  }
+
+  return {
+    description,
+    files: fileLines.length > 0 ? fileLines.join("\n") : undefined,
+    phases: phaseSet.size > 0 ? [...phaseSet].join(", ") : undefined,
+  };
+}
+
+/**
+ * Read and parse a package's spec.md (found under dev/packages/PKG-XXX*) into
+ * a short description + file list + phase mentions for the collapsible row
+ * detail panel. Missing/unreadable specs resolve to an empty object.
+ */
+export async function readSpec(pkgId: string): Promise<ParsedSpec> {
+  try {
+    const specDir = packagesDirPath();
+    const dirs = await readdir(specDir);
+    const pkgDir = dirs.find((d) => d.startsWith(pkgId));
+    if (!pkgDir) return {};
+
+    const specPath = join(specDir, pkgDir, "spec.md");
+    const spec = await readFile(specPath, "utf8");
+    return parseSpecMarkdown(spec);
+  } catch {
+    return {};
+  }
 }
 
 function queueMarkerPath(logDir: string, pkgId: string): string {
@@ -291,7 +368,14 @@ export async function getDevPackages(
     ]);
 
     const overlay = parseActionOverlay(actionsRaw);
-    const packages = applyActionOverlay(parsePackageIndex(indexMd), overlay);
+    const withOverlay = applyActionOverlay(parsePackageIndex(indexMd), overlay);
+    const specs = await Promise.all(
+      withOverlay.map((pkg) => readSpec(pkg.id)),
+    );
+    const packages = withOverlay.map((pkg, i) => ({
+      ...pkg,
+      ...specs[i],
+    }));
     return { packages, updatedAt: Date.now() };
   } catch (err) {
     return { packages: [], updatedAt: Date.now(), error: String(err) };
