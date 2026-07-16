@@ -295,7 +295,9 @@ HAS_PKG="$([ -f "$PROJECT_DIR/package.json" ] && echo 1 || echo 0)"
 log_dev "✅ Phase 4: Cursor Agent — kész ($CREATED_FILES files, $CURSOR_LINES lines)"
 
 GIT_DIFF_COUNT=$(git diff --name-only 2>/dev/null | wc -l | tr -d ' ')
-python3 -c "import json; json.dump({'logsDir':'$PIPELINE_DIR','pkgId':'$PKG_ID','gitDiffCount':int('${GIT_DIFF_COUNT:-0}')}, open('/tmp/noema-phase-ctx-${PKG_ID}-4.json','w'))"
+# Grab last 2000 chars of cursor log for "already done" detection
+CURSOR_LOG_TAIL=$(tail -c 2000 "$CURSOR_LOG" 2>/dev/null | python3 -c "import sys,json; print(json.dumps(sys.stdin.read()))" || echo '""')
+python3 -c "import json; d={'logsDir':r'$PIPELINE_DIR','pkgId':r'$PKG_ID','gitDiffCount':int('${GIT_DIFF_COUNT:-0}'),'cursorLogContent':$CURSOR_LOG_TAIL}; json.dump(d, open('/tmp/noema-phase-ctx-${PKG_ID}-4.json','w'))"
 validate_phase_output 4
 
 echo ""

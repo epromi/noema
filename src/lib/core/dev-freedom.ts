@@ -43,6 +43,7 @@ export interface PhaseOutputContext {
   reviewLogGlob?: string;
   gitDiffCount?: number;
   commitHash?: string;
+  cursorLogContent?: string;
 }
 
 const PHASE_NAMES: Record<number, string> = {
@@ -344,6 +345,21 @@ export function validatePhaseOutput(
     case 4: {
       const count = ctx.gitDiffCount ?? 0;
       if (count < 1) {
+        // Check if Cursor agent detected the PKG is already implemented
+        const cursorNoop = ctx.cursorLogContent ?? "";
+        const alreadyDoneMarkers = [
+          /no\s+action\s+needed/i,
+          /already\s+(complete|implemented|resolved|satisfied)/i,
+          /no\s+code\s+edits/i,
+          /no\s+files\s+were\s+touched/i,
+          /nothing\s+to\s+change/i,
+          /already-resolved/i,
+          /⛔\s*No\s+action\s+needed/i,
+        ];
+        if (alreadyDoneMarkers.some(r => r.test(cursorNoop))) {
+          console.log(`   ℹ️  Phase 4: Cursor agent detected PKG as already implemented — treating as no-op success`);
+          return { ok: true, phaseName };
+        }
         return {
           ok: false,
           phaseName,
