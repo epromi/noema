@@ -21,7 +21,13 @@ export function isDonePackage(pkg: DevPackageEntry): boolean {
 }
 
 export function isActivePackage(pkg: DevPackageEntry): boolean {
-  return /F[1-4]|🔨|⏸/.test(pkg.phase);
+  return /F[1-4]|🔨|⏸|🔧|🤖|\b(IP|QA)\b/.test(pkg.phase);
+}
+
+/** Extract the leading numeric PKG id (e.g. "PKG-014" → 14) for sorting. */
+function pkgNum(pkg: DevPackageEntry): number {
+  const m = /^(\d+)/.exec(pkg.id.replace(/^PKG-/, ""));
+  return m?.[1] ? Number.parseInt(m[1], 10) : 0;
 }
 
 export function isSpecPackage(pkg: DevPackageEntry): boolean {
@@ -33,7 +39,15 @@ export function isBlockedPackage(pkg: DevPackageEntry): boolean {
 }
 
 /**
- * Split packages into spec / active / done buckets (mutually exclusive).
+ * Split packages into spec / active / done buckets (mutually exclusive),
+ * then sort each bucket:
+ * - spec: oldest first (ascending PKG#)
+ * - active: oldest first (ascending PKG#)
+ * - done: newest first (descending PKG#)
+ *
+ * Packages with an unrecognized phase fall back to `active` rather than
+ * `spec`, since an unknown phase most likely means "in progress" work that
+ * doesn't match a known marker yet.
  */
 export function groupPackages(pkgs: DevPackageEntry[]): GroupedPackages {
   const spec: DevPackageEntry[] = [];
@@ -48,9 +62,13 @@ export function groupPackages(pkgs: DevPackageEntry[]): GroupedPackages {
     } else if (isSpecPackage(pkg)) {
       spec.push(pkg);
     } else {
-      spec.push(pkg);
+      active.push(pkg);
     }
   }
+
+  spec.sort((a, b) => pkgNum(a) - pkgNum(b));
+  active.sort((a, b) => pkgNum(a) - pkgNum(b));
+  done.sort((a, b) => pkgNum(b) - pkgNum(a));
 
   return { spec, active, done };
 }
