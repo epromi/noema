@@ -30,3 +30,33 @@ Add descriptive aria-labels to all interactive elements (buttons, clickable rows
 1. All interactive elements in listed components have aria-labels
 2. `pnpm check` passes
 3. No visual or functional changes
+
+
+## 🎯 Mit
+
+_Placeholder — to be filled._
+
+
+## 📐 Scope
+
+_Placeholder — to be filled._
+
+
+## Mit érint
+
+_Placeholder — to be filled._
+
+
+## Mit NEM érint
+
+_Placeholder — to be filled._
+
+
+## Fázisok
+
+_Placeholder — to be filled._
+
+
+## ✅ Acceptance Criteria
+
+_Placeholder — to be filled._
