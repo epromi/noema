@@ -26,7 +26,7 @@
 | PKG-017 | Cron Timeline + Processor Timer | ✅ F5 | F-07 P1 | M | ✅ kész | PKG-001+002 |
 | PKG-006 | Logs Viewer Tab | ✅ F5 | F-05 P1 | S | ✅ kész | PKG-001+002 |
 | PKG-007 | Audit Trail | ✅ F5 | F-06 P1 | M | ✅ kész | PKG-001+003 |
-| PKG-008 | Cron Health Timeline | 📋 F0 | F-07 P1 | S | 1h | PKG-001+002 |
+| PKG-008 | Cron Health Timeline | ✅ F5 | F-07 P1 | S | ✅ kész | PKG-001+002 |
 | PKG-009 | SSE Live Updates | ✅ F5 | F-17↑ | M | ✅ kész | PKG-001+002+003 |
 | PKG-010 | **Agent Decision Trace** | ✅ F5 | F-20 P2 | L | ✅ kész | PKG-001+003 |
 | PKG-011 | Session Health Scoring | 📋 F0 | F-21 P2 | M | 2-3h | PKG-003 |
@@ -59,6 +59,7 @@
 | PKG-046 | **Billentyűparancsok + Gyors Navigáció** ⌨️ | 📋 F0 | — | M | 2-3h | PKG-001 |
 | PKG-047 | **Accessibility Baseline — aria-labels** ♿ | 🔧 IP | — | XS | 15m | — |
 | PKG-048 | **Orchestrator Split → Sub-Components** 🧩 | 🤖 QA | — | L | 2-3h | PKG-023 |
+| PKG-054 | **Package List Rendezés + Queue Validáció** 📋 | 📋 F0 | — | S | 30m | PKG-031, PKG-033 |
 
 ## Függőségi Sorrend
 
