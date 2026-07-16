@@ -7,7 +7,9 @@ import {
   isActivePackage,
   isBlockedPackage,
   isDonePackage,
+  isSpecPackage,
   phaseIcon,
+  resolveLivePhase,
   truncateName,
 } from "$lib/core/dev-packages";
 
@@ -90,6 +92,46 @@ describe("dev-packages", () => {
   it("phaseIcon extracts leading emoji", () => {
     expect(phaseIcon("📋 F0")).toBe("📋");
     expect(phaseIcon("✅ F5")).toBe("✅");
+  });
+
+  it("resolveLivePhase overlays live action status, falling back to static phase", () => {
+    expect(
+      resolveLivePhase({ id: "PKG-001", name: "x", phase: "📋 F0", done: false, actionStatus: "processing" }),
+    ).toBe("🔄 Feldolgozás alatt");
+    expect(
+      resolveLivePhase({ id: "PKG-001", name: "x", phase: "📋 F0", done: false, actionStatus: "pending" }),
+    ).toBe("⏳ Sorban áll");
+    expect(
+      resolveLivePhase({ id: "PKG-001", name: "x", phase: "📋 F0", done: false, actionStatus: "failed" }),
+    ).toBe("❌ Hiba");
+    expect(
+      resolveLivePhase({ id: "PKG-001", name: "x", phase: "📋 F0", done: false, actionStatus: "dead" }),
+    ).toBe("💀 Végleg hibás");
+    expect(
+      resolveLivePhase({ id: "PKG-001", name: "x", phase: "📋 F0", done: false, actionStatus: "done" }),
+    ).toBe("📋 F0");
+    expect(
+      resolveLivePhase({ id: "PKG-001", name: "x", phase: "📋 F0", done: false }),
+    ).toBe("📋 F0");
+  });
+
+  it("isActivePackage treats pending/processing/failed/dead as active regardless of static phase", () => {
+    expect(isActivePackage({ id: "PKG-1", name: "x", phase: "✅ F5", done: true, actionStatus: "pending" })).toBe(true);
+    expect(isActivePackage({ id: "PKG-1", name: "x", phase: "📋 F0", done: false, actionStatus: "processing" })).toBe(true);
+    expect(isActivePackage({ id: "PKG-1", name: "x", phase: "✅ F5", done: true, actionStatus: "failed" })).toBe(true);
+    expect(isActivePackage({ id: "PKG-1", name: "x", phase: "✅ F5", done: true, actionStatus: "dead" })).toBe(true);
+    expect(isActivePackage({ id: "PKG-1", name: "x", phase: "📋 F0", done: false, actionStatus: "done" })).toBe(false);
+  });
+
+  it("isDonePackage treats a live 'done' status as done, and live active statuses as not done", () => {
+    expect(isDonePackage({ id: "PKG-1", name: "x", phase: "📋 F0", done: false, actionStatus: "done" })).toBe(true);
+    expect(isDonePackage({ id: "PKG-1", name: "x", phase: "✅ F5", done: true, actionStatus: "processing" })).toBe(false);
+    expect(isDonePackage({ id: "PKG-1", name: "x", phase: "✅ F5", done: true, actionStatus: "failed" })).toBe(false);
+  });
+
+  it("isSpecPackage returns false once any live action status is present", () => {
+    expect(isSpecPackage({ id: "PKG-1", name: "x", phase: "📋 F0", done: false })).toBe(true);
+    expect(isSpecPackage({ id: "PKG-1", name: "x", phase: "📋 F0", done: false, actionStatus: "pending" })).toBe(false);
   });
 
   it("truncateName ellipsizes long names and strips markdown", () => {

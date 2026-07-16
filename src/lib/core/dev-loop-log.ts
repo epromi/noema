@@ -24,6 +24,76 @@ export interface QueueMarker {
   estimatedMs: number;
 }
 
+/** One package's live status derived from a noema-actions.jsonl "implement" entry. */
+export interface ActionOverlayEntry {
+  status: NonNullable<DevPackageEntry["actionStatus"]>;
+  queuedAt?: string;
+  completedAt?: string;
+}
+
+const VALID_ACTION_STATUSES = new Set([
+  "pending",
+  "processing",
+  "done",
+  "failed",
+  "dead",
+]);
+
+/**
+ * Parse noema-actions.jsonl into a pkgId → latest status map.
+ * Only "implement" actions with a `PKG-*` id are considered; later lines
+ * win over earlier ones for the same id (the log is append-only).
+ */
+export function parseActionOverlay(
+  jsonl: string,
+): Map<string, ActionOverlayEntry> {
+  const overlay = new Map<string, ActionOverlayEntry>();
+
+  for (const line of jsonl.split("\n")) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+
+    let entry: Record<string, unknown>;
+    try {
+      entry = JSON.parse(trimmed) as Record<string, unknown>;
+    } catch {
+      continue;
+    }
+
+    const id = typeof entry.id === "string" ? entry.id : "";
+    if (!id.startsWith("PKG-") || entry.action !== "implement") continue;
+
+    const status = typeof entry.status === "string" ? entry.status : "";
+    if (!VALID_ACTION_STATUSES.has(status)) continue;
+
+    overlay.set(id, {
+      status: status as ActionOverlayEntry["status"],
+      queuedAt: typeof entry.ts === "string" ? entry.ts : undefined,
+      completedAt:
+        typeof entry.completedAt === "string" ? entry.completedAt : undefined,
+    });
+  }
+
+  return overlay;
+}
+
+/** Merge JSONL overlay status onto parsed INDEX.md package rows. */
+export function applyActionOverlay(
+  packages: DevPackageEntry[],
+  overlay: Map<string, ActionOverlayEntry>,
+): DevPackageEntry[] {
+  return packages.map((pkg) => {
+    const ov = overlay.get(pkg.id);
+    if (!ov) return pkg;
+    return {
+      ...pkg,
+      actionStatus: ov.status,
+      actionQueuedAt: ov.queuedAt,
+      actionCompletedAt: ov.completedAt,
+    };
+  });
+}
+
 function logDirPath(): string {
   return join(workspaceRoot(), "projects", "noema", "logs");
 }
@@ -197,11 +267,15 @@ export async function getRunningDevLoop(
 }
 
 /**
- * Parse dev/packages/INDEX.md into package rows for the Noema tab.
+ * Parse dev/packages/INDEX.md into package rows for the Noema tab, then
+ * overlay live pipeline status from memory/state/noema-actions.jsonl
+ * (PKG-055 — dynamic package state).
  */
 export async function getDevPackages(
-  _providers?: AllProviders,
+  providers?: AllProviders,
 ): Promise<DevPackagesData> {
+  const p = providers ?? getProvider();
+
   try {
     const indexPath = join(
       workspaceRoot(),
@@ -211,8 +285,13 @@ export async function getDevPackages(
       "packages",
       "INDEX.md",
     );
-    const indexMd = await readFile(indexPath, "utf8");
-    const packages = parsePackageIndex(indexMd);
+    const [indexMd, actionsRaw] = await Promise.all([
+      readFile(indexPath, "utf8"),
+      p.filesystem.readState("noema-actions.jsonl").catch(() => ""),
+    ]);
+
+    const overlay = parseActionOverlay(actionsRaw);
+    const packages = applyActionOverlay(parsePackageIndex(indexMd), overlay);
     return { packages, updatedAt: Date.now() };
   } catch (err) {
     return { packages: [], updatedAt: Date.now(), error: String(err) };

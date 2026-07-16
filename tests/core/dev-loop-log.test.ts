@@ -1,9 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import {
+  applyActionOverlay,
   findLogFile,
   getDevLoopLog,
   getRunningDevLoop,
   getDevPackages,
+  parseActionOverlay,
   parseEstimatedMinutes,
   parsePackageIndex,
   writeQueueMarker,
@@ -144,5 +146,93 @@ describe("dev-loop-log", () => {
     expect(parseEstimatedMinutes("30m")).toBe(30);
     expect(parseEstimatedMinutes("2-3h")).toBe(150);
     expect(parseEstimatedMinutes("✅ kész")).toBeNull();
+  });
+
+  it("parseActionOverlay parses valid implement entries, letting later lines win", () => {
+    const jsonl = [
+      JSON.stringify({ id: "PKG-014", action: "implement", status: "pending", ts: "2026-07-16T10:00:00.000Z" }),
+      JSON.stringify({ id: "PKG-014", action: "implement", status: "processing", ts: "2026-07-16T10:05:00.000Z" }),
+      JSON.stringify({ id: "PKG-031", action: "implement", status: "done", ts: "2026-07-16T09:00:00.000Z", completedAt: "2026-07-16T09:10:00.000Z" }),
+    ].join("\n");
+
+    const overlay = parseActionOverlay(jsonl);
+    expect(overlay.get("PKG-014")).toEqual({
+      status: "processing",
+      queuedAt: "2026-07-16T10:05:00.000Z",
+      completedAt: undefined,
+    });
+    expect(overlay.get("PKG-031")).toEqual({
+      status: "done",
+      queuedAt: "2026-07-16T09:00:00.000Z",
+      completedAt: "2026-07-16T09:10:00.000Z",
+    });
+  });
+
+  it("parseActionOverlay ignores non-implement actions, non-PKG ids, malformed JSON, and invalid statuses", () => {
+    const jsonl = [
+      JSON.stringify({ id: "decide_thing", action: "delegate", status: "resolved" }),
+      JSON.stringify({ id: "PKG-999", action: "investigate", status: "pending" }),
+      "not json at all",
+      JSON.stringify({ id: "PKG-998", action: "implement", status: "bogus" }),
+      "",
+      JSON.stringify({ id: "PKG-997", action: "implement", status: "pending" }),
+    ].join("\n");
+
+    const overlay = parseActionOverlay(jsonl);
+    expect(overlay.size).toBe(1);
+    expect(overlay.get("PKG-997")?.status).toBe("pending");
+  });
+
+  it("applyActionOverlay merges overlay onto matching ids only", () => {
+    const packages = [
+      { id: "PKG-014", name: "Log Viewer", phase: "📋 F2", done: false },
+      { id: "PKG-031", name: "Package Clarity", phase: "📋 F2", done: false },
+    ];
+    const overlay = new Map([
+      ["PKG-014", { status: "processing" as const, queuedAt: "2026-07-16T10:00:00.000Z" }],
+    ]);
+
+    const merged = applyActionOverlay(packages, overlay);
+    expect(merged[0]).toMatchObject({ id: "PKG-014", actionStatus: "processing" });
+    expect(merged[1]).toEqual(packages[1]);
+  });
+
+  it("getDevPackages overlays live JSONL status onto INDEX.md rows", async () => {
+    mockFileContents["noema-actions.jsonl"] = [
+      JSON.stringify({ id: "PKG-014", action: "implement", status: "processing", ts: "2026-07-16T10:00:00.000Z" }),
+    ].join("\n");
+
+    const providers = createMockProviders({
+      filesystem: {
+        ...createMockProviders().filesystem,
+        readState: async (path) => {
+          if (path === "noema-actions.jsonl") {
+            return mockFileContents["noema-actions.jsonl"] ?? "";
+          }
+          return "{}";
+        },
+      },
+    });
+
+    const data = await getDevPackages(providers);
+    const pkg014 = data.packages.find((p) => p.id === "PKG-014");
+    const pkg031 = data.packages.find((p) => p.id === "PKG-031");
+    expect(pkg014?.actionStatus).toBe("processing");
+    expect(pkg031?.actionStatus).toBeUndefined();
+  });
+
+  it("getDevPackages tolerates a missing/unreadable noema-actions.jsonl", async () => {
+    const providers = createMockProviders({
+      filesystem: {
+        ...createMockProviders().filesystem,
+        readState: async () => {
+          throw new Error("ENOENT");
+        },
+      },
+    });
+
+    const data = await getDevPackages(providers);
+    expect(data.packages.length).toBe(3);
+    expect(data.packages.every((p) => p.actionStatus === undefined)).toBe(true);
   });
 });

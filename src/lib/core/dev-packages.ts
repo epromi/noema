@@ -16,11 +16,26 @@ export interface PackageStats {
   donePercent: number;
 }
 
+/**
+ * Live pipeline states (pending/processing/failed/dead) always win over the
+ * static INDEX.md phase — a package that's queued or running is "active" no
+ * matter what its last recorded phase says, and one still failing isn't done.
+ */
+const LIVE_ACTIVE_STATUSES = new Set(["pending", "processing", "failed", "dead"]);
+
 export function isDonePackage(pkg: DevPackageEntry): boolean {
+  if (pkg.actionStatus === "done") return true;
+  if (pkg.actionStatus && LIVE_ACTIVE_STATUSES.has(pkg.actionStatus)) {
+    return false;
+  }
   return pkg.done || /F5/.test(pkg.phase);
 }
 
 export function isActivePackage(pkg: DevPackageEntry): boolean {
+  if (pkg.actionStatus && LIVE_ACTIVE_STATUSES.has(pkg.actionStatus)) {
+    return true;
+  }
+  if (pkg.actionStatus === "done") return false;
   return /F[1-4]|🔨|⏸|🔧|🤖|\b(IP|QA)\b/.test(pkg.phase);
 }
 
@@ -31,7 +46,27 @@ function pkgNum(pkg: DevPackageEntry): number {
 }
 
 export function isSpecPackage(pkg: DevPackageEntry): boolean {
+  if (pkg.actionStatus) return false;
   return /F0|📋/.test(pkg.phase);
+}
+
+/**
+ * Resolve the phase label to display, giving priority to the live
+ * noema-actions.jsonl overlay over the static INDEX.md phase (PKG-055).
+ */
+export function resolveLivePhase(pkg: DevPackageEntry): string {
+  switch (pkg.actionStatus) {
+    case "processing":
+      return "🔄 Feldolgozás alatt";
+    case "pending":
+      return "⏳ Sorban áll";
+    case "failed":
+      return "❌ Hiba";
+    case "dead":
+      return "💀 Végleg hibás";
+    default:
+      return pkg.phase;
+  }
 }
 
 export function isBlockedPackage(pkg: DevPackageEntry): boolean {

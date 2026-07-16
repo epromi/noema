@@ -117,3 +117,33 @@ Opcionális: `devPackages` hozzáadása az SSE payload-hoz (`getAllData()`-ban) 
 
 - **SSE**: komplexebb, de egységes a többi tab-bal. A polling egyszerűbb és a Noema tab amúgy is csak akkor aktív amikor rákattintanak. Phase 4-ben lehet átállni SSE-re.
 - **WebSocket**: túlzó, nincs szükség bidirectional kapcsolatra
+
+
+## 🎯 Mit
+
+_Placeholder — to be filled._
+
+
+## 📐 Scope
+
+_Placeholder — to be filled._
+
+
+## Mit érint
+
+_Placeholder — to be filled._
+
+
+## Mit NEM érint
+
+_Placeholder — to be filled._
+
+
+## Fázisok
+
+_Placeholder — to be filled._
+
+
+## ✅ Acceptance Criteria
+
+_Placeholder — to be filled._

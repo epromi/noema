@@ -62,7 +62,7 @@
 | PKG-054 | **Package List Rendezés + Queue Validáció** 📋 | ✅ F5 | — | S | ✅ kész | PKG-031, PKG-033 |
 | PKG-055 | **Dinamikus Package Állapot + Élő Frissítés** 🔄 | 📋 F0 | — | M | 1.5h | PKG-021, PKG-033, PKG-054 |
 | PKG-056 | **Action Queue — Race Condition Fix** 🏁 | 📋 F0 | — | XS | 15m | PKG-033 |
-| PKG-057 | **Legacy Dashboard Cleanup** 🧹 | 📋 F0 | — | S | 15m | — |
+| PKG-057 | **Legacy Dashboard Cleanup** 🧹 | ✅ F5 | — | S | ✅ kész | — |
 | PKG-058 | **Dev-Loop + Review — Spec Teljesség Védőháló** 🛡️ | 📋 F0 | — | M | 1h | PKG-054, PKG-056 |
 | PKG-059 | **Relay Action Queue Validáció** 🔒 | 📋 F0 | — | XS | 10m | — |
 

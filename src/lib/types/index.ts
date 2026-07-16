@@ -426,6 +426,10 @@ export interface BrainstormData {
   error?: string;
 }
 
+/** Live action-queue status overlaid onto a package from noema-actions.jsonl. */
+export type DevPackageActionStatus =
+  "pending" | "processing" | "done" | "failed" | "dead";
+
 export interface DevPackageEntry {
   id: string;
   name: string;
@@ -433,6 +437,10 @@ export interface DevPackageEntry {
   done: boolean;
   /** Parsed from INDEX.md “Becsült idő” column (minutes). */
   estimatedMinutes?: number | null;
+  /** 🆕 JSONL overlay (PKG-055) — live pipeline status, if queued/running/finished. */
+  actionStatus?: DevPackageActionStatus | null;
+  actionQueuedAt?: string;
+  actionCompletedAt?: string;
 }
 
 export interface QueueStatus {

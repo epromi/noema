@@ -5,8 +5,12 @@
     computePackageStats,
     filterPackages,
     groupPackages,
+    resolveLivePhase,
   } from "$lib/core/dev-packages";
   import type { DevPackageEntry, PkgState } from "$lib/types";
+
+  /** How often to re-poll /api/dev-packages for live JSONL overlay status. */
+  const LIVE_POLL_MS = 5000;
 
   let {
     packages,
@@ -31,9 +35,20 @@
   let collapsedSpec = $state(false);
   let collapsedActive = $state(false);
 
-  const filtered = $derived(filterPackages(packages, searchQuery));
+  // 🆕 PKG-055: poll override refreshed with live JSONL action-queue status.
+  // Resets to the SSR-provided `packages` prop whenever it changes (e.g.
+  // after a full page reload), so a stale poll result can never stick.
+  let polledPackages = $state<DevPackageEntry[] | null>(null);
+  const livePackages = $derived(polledPackages ?? packages);
+
+  $effect(() => {
+    packages;
+    polledPackages = null;
+  });
+
+  const filtered = $derived(filterPackages(livePackages, searchQuery));
   const grouped = $derived(groupPackages(filtered));
-  const stats = $derived(computePackageStats(packages));
+  const stats = $derived(computePackageStats(livePackages));
   const searching = $derived(searchQuery.trim().length > 0);
 
   const showSpec = $derived(searching ? grouped.spec.length > 0 : true);
@@ -96,6 +111,32 @@
     };
   }
 
+  /** Live status class for the JSONL-overlay background/animation (PKG-055). */
+  function liveStatusClass(pkg: DevPackageEntry): string {
+    switch (pkg.actionStatus) {
+      case "pending":
+        return "live-pending";
+      case "processing":
+        return "live-processing";
+      case "failed":
+      case "dead":
+        return "live-failed";
+      default:
+        return "";
+    }
+  }
+
+  async function pollLivePackages() {
+    try {
+      const res = await fetch("/api/dev-packages");
+      if (!res.ok) return;
+      const body = (await res.json()) as { packages?: DevPackageEntry[] };
+      if (Array.isArray(body.packages)) polledPackages = body.packages;
+    } catch {
+      /* keep last known state — network hiccups shouldn't clear the list */
+    }
+  }
+
   onMount(() => {
     try {
       const doneRaw = localStorage.getItem(STORAGE_DONE);
@@ -110,6 +151,11 @@
     } catch {
       /* ignore */
     }
+
+    const timer = setInterval(() => {
+      void pollLivePackages();
+    }, LIVE_POLL_MS);
+    return () => clearInterval(timer);
   });
 </script>
 
@@ -189,20 +235,22 @@
                 {:else}
                   {#each grouped.spec as pkg (pkg.id)}
                     {@const state = rowState(pkg.id)}
-                    <DevPackageRow
-                      pkgId={pkg.id}
-                      name={pkg.name}
-                      phase={pkg.phase}
-                      done={pkg.done}
-                      compact={compactView}
-                      implementState={state.implementState}
-                      showLogButton={state.showLogButton}
-                      logOpen={state.logOpen}
-                      logContent={state.logContent}
-                      queueStatus={state.queueStatus}
-                      onImplement={() => onImplement?.(pkg.id, pkg.name)}
-                      onLogToggle={() => onLogToggle?.(pkg.id)}
-                    />
+                    <div class="live-status {liveStatusClass(pkg)}">
+                      <DevPackageRow
+                        pkgId={pkg.id}
+                        name={pkg.name}
+                        phase={resolveLivePhase(pkg)}
+                        done={pkg.done}
+                        compact={compactView}
+                        implementState={state.implementState}
+                        showLogButton={state.showLogButton}
+                        logOpen={state.logOpen}
+                        logContent={state.logContent}
+                        queueStatus={state.queueStatus}
+                        onImplement={() => onImplement?.(pkg.id, pkg.name)}
+                        onLogToggle={() => onLogToggle?.(pkg.id)}
+                      />
+                    </div>
                   {/each}
                 {/if}
               </div>
@@ -228,20 +276,22 @@
                 {:else}
                   {#each grouped.active as pkg (pkg.id)}
                     {@const state = rowState(pkg.id)}
-                    <DevPackageRow
-                      pkgId={pkg.id}
-                      name={pkg.name}
-                      phase={pkg.phase}
-                      done={pkg.done}
-                      compact={compactView}
-                      implementState={state.implementState}
-                      showLogButton={state.showLogButton}
-                      logOpen={state.logOpen}
-                      logContent={state.logContent}
-                      queueStatus={state.queueStatus}
-                      onImplement={() => onImplement?.(pkg.id, pkg.name)}
-                      onLogToggle={() => onLogToggle?.(pkg.id)}
-                    />
+                    <div class="live-status {liveStatusClass(pkg)}">
+                      <DevPackageRow
+                        pkgId={pkg.id}
+                        name={pkg.name}
+                        phase={resolveLivePhase(pkg)}
+                        done={pkg.done}
+                        compact={compactView}
+                        implementState={state.implementState}
+                        showLogButton={state.showLogButton}
+                        logOpen={state.logOpen}
+                        logContent={state.logContent}
+                        queueStatus={state.queueStatus}
+                        onImplement={() => onImplement?.(pkg.id, pkg.name)}
+                        onLogToggle={() => onLogToggle?.(pkg.id)}
+                      />
+                    </div>
                   {/each}
                 {/if}
               </div>
@@ -264,20 +314,22 @@
               <div class="section-body" class:compact={compactView}>
                 {#each grouped.done as pkg (pkg.id)}
                   {@const state = rowState(pkg.id)}
-                  <DevPackageRow
-                    pkgId={pkg.id}
-                    name={pkg.name}
-                    phase={pkg.phase}
-                    done={pkg.done}
-                    compact={compactView}
-                    implementState={state.implementState}
-                    showLogButton={state.showLogButton}
-                    logOpen={state.logOpen}
-                    logContent={state.logContent}
-                    queueStatus={state.queueStatus}
-                    onImplement={() => onImplement?.(pkg.id, pkg.name)}
-                    onLogToggle={() => onLogToggle?.(pkg.id)}
-                  />
+                  <div class="live-status {liveStatusClass(pkg)}">
+                    <DevPackageRow
+                      pkgId={pkg.id}
+                      name={pkg.name}
+                      phase={resolveLivePhase(pkg)}
+                      done={pkg.done}
+                      compact={compactView}
+                      implementState={state.implementState}
+                      showLogButton={state.showLogButton}
+                      logOpen={state.logOpen}
+                      logContent={state.logContent}
+                      queueStatus={state.queueStatus}
+                      onImplement={() => onImplement?.(pkg.id, pkg.name)}
+                      onLogToggle={() => onLogToggle?.(pkg.id)}
+                    />
+                  </div>
                 {/each}
               </div>
             {/if}
@@ -451,5 +503,32 @@
 
   .section-body.compact {
     gap: 4px;
+  }
+
+  /* 🆕 PKG-055: live JSONL action-queue overlay visuals. */
+  .live-status.live-pending :global(.pkg-row) {
+    background: color-mix(in srgb, var(--yellow) 12%, var(--card));
+    border-color: var(--yellow);
+  }
+
+  .live-status.live-processing :global(.pkg-row) {
+    background: color-mix(in srgb, var(--accent) 12%, var(--card));
+    border-color: var(--accent);
+    animation: live-pulse 1.6s ease-in-out infinite;
+  }
+
+  .live-status.live-failed :global(.pkg-row) {
+    background: color-mix(in srgb, var(--error) 12%, var(--card));
+    border-color: var(--error);
+  }
+
+  @keyframes live-pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.82;
+    }
   }
 </style>
