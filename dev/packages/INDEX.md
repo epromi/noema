@@ -61,7 +61,7 @@
 | PKG-048 | **Orchestrator Split → Sub-Components** 🧩 | 🤖 QA | — | L | 2-3h | PKG-023 |
 | PKG-054 | **Package List Rendezés + Queue Validáció** 📋 | ✅ F5 | — | S | ✅ kész | PKG-031, PKG-033 |
 | PKG-055 | **Dinamikus Package Állapot + Élő Frissítés** 🔄 | ✅ F5 | — | M | ✅ kész | PKG-021, PKG-033, PKG-054 |
-| PKG-056 | **Action Queue — Race Condition Fix** 🏁 | 📋 F0 | — | XS | 15m | PKG-033 |
+| PKG-056 | **Action Queue — Race Condition Fix** 🏁 | ✅ F5 | — | XS | ✅ kész | PKG-033 |
 | PKG-057 | **Legacy Dashboard Cleanup** 🧹 | ✅ F5 | — | S | ✅ kész | — |
 | PKG-058 | **Dev-Loop + Review — Spec Teljesség Védőháló** 🛡️ | 📋 F0 | — | M | 1h | PKG-054, PKG-056 |
 | PKG-059 | **Relay Action Queue Validáció** 🔒 | 📋 F0 | — | XS | 10m | — |
