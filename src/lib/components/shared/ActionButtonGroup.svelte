@@ -180,7 +180,7 @@
 
   .action-btn.primary {
     background: var(--green);
-    color: #0d1117;
+    color: #fff;
   }
 
   .action-btn.warning {
@@ -190,7 +190,7 @@
 
   .action-btn.danger {
     background: var(--red);
-    color: #0d1117;
+    color: #fff;
   }
 
   .action-btn.secondary {
