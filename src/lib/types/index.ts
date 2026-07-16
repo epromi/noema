@@ -628,6 +628,69 @@ export interface DecisionTraceData {
   error?: string;
 }
 
+/** Weighted 0–100 sub-scores that make up a session's health score (PKG-011). */
+export interface ScoreBreakdown {
+  /** 35% weight — finished without timeout/abort? */
+  completion: number;
+  /** 30% weight — useful tool calls vs total tool calls. */
+  efficiency: number;
+  /** 20% weight — inverse of failed tool call ratio. */
+  errorRate: number;
+  /** 15% weight — inverse of repeated (looped) tool call ratio. */
+  loopPenalty: number;
+}
+
+/** Rule-based 0–100 health score for a single agent session (PKG-011 F-21). */
+export interface HealthScore {
+  sessionKey: string;
+  agentId?: string;
+  /** Weighted overall score, 0–100 (rounded). */
+  score: number;
+  breakdown: ScoreBreakdown;
+  totalSteps: number;
+  errorSteps: number;
+  loopSteps: number;
+  completed: boolean;
+  updatedAt: number;
+  error?: string;
+}
+
+export type ScoreTrendDirection = "improving" | "declining" | "stable";
+
+/** One session's score plotted along an agent's trend line. */
+export interface ScoreTrendPoint {
+  sessionKey: string;
+  score: number;
+  updatedAt?: number;
+}
+
+/** Last-10-sessions score trend for one agent, with decline alerting. */
+export interface ScoreTrend {
+  agentId: string;
+  points: ScoreTrendPoint[];
+  direction: ScoreTrendDirection;
+  /** True when score strictly declined for 3+ consecutive sessions. */
+  alert: boolean;
+  updatedAt: number;
+  error?: string;
+}
+
+/** Per-agent rollup shown as a card in the Session Health tab. */
+export interface AgentHealthSummary {
+  agentId: string;
+  averageScore: number;
+  sessionCount: number;
+  trend: ScoreTrendDirection;
+  alert: boolean;
+  latest?: HealthScore;
+}
+
+export interface AgentHealthReportData {
+  agents: AgentHealthSummary[];
+  updatedAt: number;
+  error?: string;
+}
+
 export interface BuildIntegrityData {
   ok: boolean;
   /** True after 3 consecutive SSR health failures. */
