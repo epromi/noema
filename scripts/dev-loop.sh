@@ -46,15 +46,7 @@ fi
 
 SPEC_FILE="$PROJECT_DIR/dev/packages/$PKG_ID/spec.md"
 if [ ! -f "$SPEC_FILE" ]; then
-  # Try fuzzy match
-  MATCH=$(ls -d "$PROJECT_DIR"/dev/packages/${PKG_ID}*/spec.md 2>/dev/null | head -1)
-  if [ -n "$MATCH" ]; then
-    PKG_ID=$(basename "$(dirname "$MATCH")")
-    SPEC_FILE="$MATCH"
-    ok "Fuzzy match: $PKG_ID"
-  else
-    fail "Spec not found: $PKG_ID (try: $(ls "$PROJECT_DIR"/dev/packages/ | head -3 | tr '\n' ' '))"
-  fi
+  fail "Spec not found: $PKG_ID — expected dev/packages/$PKG_ID/spec.md"
 fi
 
 # ─── Bootstrap ─────────────────────────────────────────────────────────────
