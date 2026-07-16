@@ -12,6 +12,8 @@
   const REFRESH_MS = 10_000;
   const COUNTDOWN_MS = 1_000;
   const STORAGE_KEY = "dli-pos";
+  const COLLAPSE_STORAGE_KEY = "dli-collapsed";
+  const RUNNING_NAME_MAX = 20;
   const DEFAULT_TOP = 80;
   const DEFAULT_RIGHT = 16;
 
@@ -26,6 +28,7 @@
   let posTop = $state<number | null>(null);
   let panelEl = $state<HTMLDivElement | null>(null);
   let dragging = $state(false);
+  let collapsed = $state(false);
 
   let dragStartX = 0;
   let dragStartY = 0;
@@ -36,6 +39,25 @@
     formatDevJobCountdown(status.nextMs, !!status.error, now),
   );
   const indicatorState = $derived(getDevJobIndicatorState(status, now));
+  const queueLabel = $derived(
+    status.queue > 0 ? `${status.queue} queued` : "üres",
+  );
+  const runningLabel = $derived(
+    status.running ? truncate(status.running, RUNNING_NAME_MAX) : null,
+  );
+
+  function truncate(text: string, max: number): string {
+    return text.length > max ? `${text.slice(0, max)}…` : text;
+  }
+
+  function toggleCollapsed() {
+    collapsed = !collapsed;
+    try {
+      localStorage.setItem(COLLAPSE_STORAGE_KEY, collapsed ? "1" : "0");
+    } catch {
+      /* ignore quota / private mode */
+    }
+  }
 
   let refreshTimer: ReturnType<typeof setInterval> | undefined;
   let countdownTimer: ReturnType<typeof setInterval> | undefined;
@@ -124,6 +146,12 @@
       /* ignore invalid saved position */
     }
 
+    try {
+      collapsed = localStorage.getItem(COLLAPSE_STORAGE_KEY) === "1";
+    } catch {
+      /* ignore quota / private mode */
+    }
+
     void refresh();
     countdownTimer = setInterval(() => {
       now = Date.now();
@@ -152,6 +180,7 @@
 <div
   bind:this={panelEl}
   class="dev-job-indicator"
+  class:collapsed
   class:idle={indicatorState === "idle" || indicatorState === "offline"}
   class:soon={indicatorState === "soon"}
   class:active={indicatorState === "active"}
@@ -159,51 +188,101 @@
   style:top={posTop !== null ? `${posTop}px` : `${DEFAULT_TOP}px`}
   style:right={posLeft !== null ? "auto" : `${DEFAULT_RIGHT}px`}
 >
-  <div class="dji-header">
-    <span class="dji-title">⚙️ Dev Job</span>
-    <button
-      type="button"
-      class="dji-grip"
+  {#if collapsed}
+    <div
+      class="dji-collapsed"
       class:dragging
+      role="button"
+      tabindex={0}
       aria-label="Drag to reposition indicator"
       onmousedown={onDragStart}
       ontouchstart={onDragStart}
     >
-      ⠿
-    </button>
-  </div>
+      <span class="dji-compact-icon">⚙️</span>
+      <span
+        class="dji-val dji-countdown"
+        class:offline={!!status.error}
+        class:soon={countdown.soon && !status.error}
+        class:expired={countdown.expired}
+      >
+        {countdown.text}
+      </span>
+      <span class="dji-sep">·</span>
+      <span class="dji-val" class:queue-active={status.queue > 0}
+        >{queueLabel}</span
+      >
+      {#if runningLabel}
+        <span class="dji-sep">·</span>
+        <span class="dji-val running">🔄 {runningLabel}</span>
+      {/if}
+      <button
+        type="button"
+        class="dji-toggle"
+        title="Részletes nézet"
+        aria-label="Részletes nézet"
+        onmousedown={(e) => e.stopPropagation()}
+        ontouchstart={(e) => e.stopPropagation()}
+        onclick={toggleCollapsed}
+      >
+        +
+      </button>
+    </div>
+  {:else}
+    <div class="dji-header">
+      <span class="dji-title">⚙️ Dev Job</span>
+      <button
+        type="button"
+        class="dji-toggle"
+        title="Egysoros nézet"
+        aria-label="Egysoros nézet"
+        onclick={toggleCollapsed}
+      >
+        −
+      </button>
+      <button
+        type="button"
+        class="dji-grip"
+        class:dragging
+        aria-label="Drag to reposition indicator"
+        onmousedown={onDragStart}
+        ontouchstart={onDragStart}
+      >
+        ⠿
+      </button>
+    </div>
 
-  <div class="dji-row">
-    <span class="dji-label">Következő:</span>
-    <span
-      class="dji-val dji-countdown"
-      class:offline={!!status.error}
-      class:soon={countdown.soon && !status.error}
-      class:expired={countdown.expired}
-    >
-      {countdown.text}
-    </span>
-  </div>
-
-  <div class="dji-row">
-    <span class="dji-label">Sorban áll:</span>
-    <span class="dji-val" class:queue-active={status.queue > 0}
-      >{status.queue}</span
-    >
-  </div>
-
-  {#if status.running}
     <div class="dji-row">
-      <span class="dji-label">Fut:</span>
-      <span class="dji-val running">{status.running}</span>
+      <span class="dji-label">Következő:</span>
+      <span
+        class="dji-val dji-countdown"
+        class:offline={!!status.error}
+        class:soon={countdown.soon && !status.error}
+        class:expired={countdown.expired}
+      >
+        {countdown.text}
+      </span>
     </div>
-  {/if}
 
-  {#if status.error}
-    <div class="dji-row dji-error">
-      <span class="dji-label">⚠️ Hiba:</span>
-      <span class="dji-val error-msg">{status.error}</span>
+    <div class="dji-row">
+      <span class="dji-label">Sorban áll:</span>
+      <span class="dji-val" class:queue-active={status.queue > 0}
+        >{status.queue}</span
+      >
     </div>
+
+    {#if status.running}
+      <div class="dji-row">
+        <span class="dji-label">Fut:</span>
+        <span class="dji-val running">{status.running}</span>
+      </div>
+    {/if}
+
+    {#if status.error}
+      <div class="dji-row dji-error">
+        <span class="dji-label">⚠️ Hiba:</span>
+        <span class="dji-val error-msg">{status.error}</span>
+      </div>
+    {/if}
   {/if}
 </div>
 
@@ -222,6 +301,14 @@
     line-height: 1.5;
     user-select: none;
     transition: border-color 0.3s;
+  }
+
+  .dev-job-indicator.collapsed {
+    width: auto;
+    min-width: 200px;
+    max-width: 380px;
+    padding: 6px 10px;
+    border-width: 1px;
   }
 
   .dev-job-indicator.idle {
@@ -251,6 +338,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 4px;
     margin-bottom: 6px;
     padding-bottom: 6px;
     border-bottom: 1px solid var(--border);
@@ -260,6 +348,57 @@
     font-weight: 700;
     color: var(--accent);
     font-size: 0.85em;
+    flex: 1;
+  }
+
+  .dji-toggle {
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    font-size: 1em;
+    line-height: 1;
+    padding: 2px 4px;
+    cursor: pointer;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+
+  .dji-toggle:hover {
+    color: var(--text);
+  }
+
+  .dji-collapsed {
+    width: auto;
+    min-width: 200px;
+    max-width: 380px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: grab;
+  }
+
+  .dji-collapsed.dragging {
+    cursor: grabbing;
+  }
+
+  .dji-compact-icon {
+    flex-shrink: 0;
+  }
+
+  .dji-sep {
+    color: var(--muted);
+    opacity: 0.5;
+    flex-shrink: 0;
+  }
+
+  .dji-collapsed .dji-countdown {
+    font-size: 1em;
+  }
+
+  .dji-collapsed .dji-val.running {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .dji-grip {
