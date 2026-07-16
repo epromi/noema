@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /**
  * noema-action-processor.js — JSONL action queue → direkt dev-loop.sh végrehajtás
- * 
- * 10 percenként fut (systemd timer). 
+ *
+ * 10 percenként fut (systemd timer).
  * A dashboard ▶ Mehet gomb → relay.js → JSONL → EZ a processor → dev-loop.sh → Cursor
  * 
  * Státusz flow:
@@ -36,13 +36,31 @@ function readEntries() {
 function writeEntries(entries) {
   const dir = path.dirname(ACTION_FILE);
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-  if (entries.length === 0) {
+
+  // Build merge map from in-memory entries (these win for their IDs)
+  const merged = new Map();
+  for (const e of entries) {
+    if (e && e.id) merged.set(e.id, e);
+  }
+
+  // Re-read on-disk entries and merge: on-disk wins only for IDs NOT in memory
+  // (these are entries added by relay during this run)
+  const onDisk = readEntries();
+  for (const e of onDisk) {
+    if (e && e.id && !merged.has(e.id)) {
+      merged.set(e.id, e);
+    }
+  }
+
+  const mergedEntries = Array.from(merged.values());
+
+  if (mergedEntries.length === 0) {
     if (fs.existsSync(ACTION_FILE)) fs.unlinkSync(ACTION_FILE);
     return;
   }
   // Atomic write: write to temp file first, then rename
   const tmp = ACTION_FILE + '.tmp.' + process.pid;
-  fs.writeFileSync(tmp, entries.map(e => JSON.stringify(e)).join('\n') + '\n', 'utf-8');
+  fs.writeFileSync(tmp, mergedEntries.map(e => JSON.stringify(e)).join('\n') + '\n', 'utf-8');
   fs.renameSync(tmp, ACTION_FILE);
 }
 
