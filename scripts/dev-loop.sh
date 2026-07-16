@@ -300,6 +300,19 @@ CURSOR_LOG_TAIL=$(tail -c 2000 "$CURSOR_LOG" 2>/dev/null | python3 -c "import sy
 python3 -c "import json; d={'logsDir':r'$PIPELINE_DIR','pkgId':r'$PKG_ID','gitDiffCount':int('${GIT_DIFF_COUNT:-0}'),'cursorLogContent':$CURSOR_LOG_TAIL}; json.dump(d, open('/tmp/noema-phase-ctx-${PKG_ID}-4.json','w'))"
 validate_phase_output 4
 
+# ═══════════════════════════════════════════════════════════════════════════
+# No-op detection: Cursor says already implemented, no git diff
+# ═══════════════════════════════════════════════════════════════════════════
+if [ "$GIT_DIFF_COUNT" = "0" ] || [ "$GIT_DIFF_COUNT" = "" ]; then
+  if [ -f "$CURSOR_LOG" ] && grep -qiE 'no action needed|already (complete|implemented|resolved|satisfied)|no code edits|no files were touched|nothing to change|already-resolved|no new code was needed|no action needed on this package' "$CURSOR_LOG" 2>/dev/null; then
+    log_dev "ℹ️  Phase 4: Cursor agent confirmed PKG is already implemented — no-op success"
+    echo ""
+    banner "DONE: Already implemented (no-op)"
+    log_dev "✅ $PKG_ID: no-op — cursor agent verified existing implementation"
+    exit 0
+  fi
+fi
+
 echo ""
 
 # ═══════════════════════════════════════════════════════════════════════════

@@ -64,7 +64,7 @@
 | PKG-056 | **Action Queue — Race Condition Fix** 🏁 | ✅ F5 | — | XS | ✅ kész | PKG-033 |
 | PKG-057 | **Legacy Dashboard Cleanup** 🧹 | ✅ F5 | — | S | ✅ kész | — |
 | PKG-058 | **Dev-Loop + Review — Spec Teljesség Védőháló** 🛡️ | 📋 F0 | — | M | 1h | PKG-054, PKG-056 |
-| PKG-059 | **Relay Action Queue Validáció** 🔒 | 📋 F0 | — | XS | 10m | — |
+| PKG-059 | **Relay Action Queue Validáció** 🔒 | ✅ F5 | — | XS | ✅ kész | — |
 | PKG-060 | **Failed/Dead Packages — Hibás Lista** ⚠️ | 📋 F0 | — | S | 30m | PKG-055, PKG-056 |
 
 ## Függőségi Sorrend
