@@ -44,6 +44,35 @@ export interface CronTimelineEntry extends CronEntry {
   sortScore: number;
 }
 
+/** Run outcome color-coding for the Gantt-style Cron Health Timeline (PKG-008). */
+export type CronGanttStatus = "ok" | "error" | "skipped" | "unknown";
+
+/** A single colored run bar within the Gantt timeline window. */
+export interface CronGanttBlock {
+  status: CronGanttStatus;
+  startMs: number;
+  endMs: number;
+  label: string;
+}
+
+/** One cron's row in the Gantt timeline — zero or more run blocks. */
+export interface CronGanttRow {
+  id: string;
+  name: string;
+  agentId: string;
+  schedule: string;
+  blocks: CronGanttBlock[];
+}
+
+/** Timeline payload for CronTimeline.svelte — last N hours of run bars per cron. */
+export interface CronGanttData {
+  rows: CronGanttRow[];
+  windowStartMs: number;
+  windowEndMs: number;
+  updatedAt: number;
+  error?: string;
+}
+
 export type AgentCardStatus = "green" | "yellow" | "red";
 
 /** Live session phase for an agent (distinct from card health color). */
