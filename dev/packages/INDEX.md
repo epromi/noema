@@ -70,6 +70,8 @@
 | PKG-062 | **Loading Skeleton States** 💀 | 🤖 auto-ready | — | S | 45m | — |
 | PKG-063 | **Collector Timeout Safety** ⏱️ | 🤖 auto-ready | — | S | 30m | — |
 | PKG-064 | **Cron Health Scorecard** 📊 | 🤖 auto-ready | — | M | 1h | — |
+| PKG-065 | **Partial Data Resilience — Promise.allSettled()** 🛡️ | 📋 F0 | — | S | 30m | — |
+| PKG-066 | **Accessibility Foundation v2 — Focus + Dark Mode** ♿ | 📋 F0 | — | S | 45m | — |
 
 ## Függőségi Sorrend
 
@@ -118,8 +120,7 @@ AJÁNLOTT SORREND:
   PKG-037 (Live Refresh) — PKG lista azonnal frissül fájl változásra 🔄
   PKG-042 (Porter + Pulse) — Email triage + agent operational status az Overview-on (SvelteKit) 🫀📧
 
-✅ KÉSZ: PKG-001, PKG-013, PKG-014, PKG-015, PKG-002, PKG-003, PKG-004, PKG-005, PKG-016, PKG-021, PKG-022, PKG-023, PKG-024, PKG-025, PKG-026
-⚠️  LEGACY-ONLY: PKG-017, PKG-019 (Cursor rossz target — dashboard.html helyett SvelteKit kell)
+✅ KÉSZ: PKG-001, PKG-013, PKG-014, PKG-015, PKG-002, PKG-003, PKG-004, PKG-005, PKG-016, PKG-017, PKG-019, PKG-021, PKG-022, PKG-023, PKG-024, PKG-025, PKG-026
 🔄 QUEUED: PKG-027 (Otto → Relay → Processor → Cursor bridge)
 ```
 
