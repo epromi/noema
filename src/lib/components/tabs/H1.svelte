@@ -71,12 +71,12 @@
       <table class="data-table">
         <thead>
           <tr>
-            <th>Program</th>
-            <th>Handle</th>
-            <th>BBP/Non-BBP</th>
-            <th>Scope</th>
-            <th>Bounty</th>
-            <th>Status</th>
+            <th scope="col">Program</th>
+            <th scope="col">Handle</th>
+            <th scope="col">BBP/Non-BBP</th>
+            <th scope="col">Scope</th>
+            <th scope="col">Bounty</th>
+            <th scope="col">Status</th>
           </tr>
         </thead>
         <tbody>

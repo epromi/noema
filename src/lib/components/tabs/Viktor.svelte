@@ -113,9 +113,9 @@
         <table class="data-table">
           <thead>
             <tr>
-              <th>Repo</th>
-              <th>Priority</th>
-              <th>Age</th>
+              <th scope="col">Repo</th>
+              <th scope="col">Priority</th>
+              <th scope="col">Age</th>
             </tr>
           </thead>
           <tbody>

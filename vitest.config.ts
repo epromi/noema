@@ -8,6 +8,7 @@ export default defineConfig({
     },
   },
   test: {
+    include: ['tests/**/*.{test,spec}.{js,ts}'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json-summary'],
