@@ -5,6 +5,8 @@
  * Used by SvelteKit SSR components (CJS imports don't work in Vite dev mode).
  */
 
+import type { CronTimelineSection } from "$lib/types";
+
 const DAY_NAMES = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
 
 function captureInt(match: RegExpMatchArray, index: number): number {
@@ -194,4 +196,71 @@ export function cronPeriod(mins: number): string {
   if (mins < 480) return "morning";
   if (mins < 1080) return "day";
   return "evening";
+}
+
+/** Parses a `lastRunAtMs` timestamp into the "YYYY-MM-DD HH:MM" string `computeNextRun` expects. */
+export function formatLastRunForSchedule(ms: number | undefined): string | null {
+  if (ms == null) return null;
+  const d = new Date(ms);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+/** Time-of-day section for the 24h cron timeline, folding spanning/auto schedules into their own buckets. */
+export function cronSectionFor(
+  schedule: string,
+  displayMin: number | null,
+): CronTimelineSection {
+  if (isSpanningSched(schedule)) return "spanning";
+  const mins = displayMin ?? 9999;
+  if (mins >= 9999) return "auto";
+  return cronPeriod(mins) as CronTimelineSection;
+}
+
+/** Sort score for the full-day cron timeline: spanning schedules float mid-day, undated ones sink to the bottom. */
+export function computeCronSortScore(
+  schedule: string,
+  displayMin: number | null,
+): number {
+  if (isSpanningSched(schedule)) return 400;
+  if (displayMin == null) return 9999;
+  return displayMin;
+}
+
+/** Sort key for the sidebar's rolling window view: prefers the next actual run time within `windowMs`. */
+export function computeSidebarSortKey(
+  displayMin: number,
+  nextMs: number | null,
+  schedule: string,
+  atMs: number,
+  windowMs: number,
+): number {
+  if (nextMs && nextMs > atMs && nextMs - atMs <= windowMs) {
+    return nextMs;
+  }
+  if (displayMin < 9999 && !isSpanningSched(schedule) && schedule !== "auto") {
+    return displayMin;
+  }
+  if (nextMs) return nextMs;
+  return 999_999;
+}
+
+/** Countdown label for a single cron row, handling spanning/auto schedules specially. */
+export function cronCountdownLabel(
+  schedule: string,
+  nextMs: number | null,
+  atMs: number,
+): string {
+  if (isSpanningSched(schedule)) {
+    return nextMs ? formatCountdown(nextMs, atMs) : "hourly";
+  }
+  if (schedule === "auto") return "auto";
+  return nextMs ? formatCountdown(nextMs, atMs) : "—";
+}
+
+/** Maps a cron's last result to a `{prefix}-status-{g|y|r}` CSS class name. */
+export function cronStatusClass(lastResult: string, prefix: string): string {
+  if (lastResult === "ok") return `${prefix}-status-g`;
+  if (lastResult === "error") return `${prefix}-status-r`;
+  return `${prefix}-status-y`;
 }

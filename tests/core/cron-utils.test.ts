@@ -7,6 +7,12 @@ import {
   formatTimeLabel,
   formatClock,
   cronPeriod,
+  formatLastRunForSchedule,
+  cronSectionFor,
+  computeCronSortScore,
+  computeSidebarSortKey,
+  cronCountdownLabel,
+  cronStatusClass,
 } from "../../src/lib/core/cron-utils";
 
 describe("cron-utils", () => {
@@ -207,6 +213,106 @@ describe("cron-utils", () => {
     it("returns evening for 1080+", () => {
       expect(cronPeriod(1080)).toBe("evening");
       expect(cronPeriod(5000)).toBe("evening");
+    });
+  });
+
+  describe("formatLastRunForSchedule", () => {
+    it("returns null for undefined ms", () => {
+      expect(formatLastRunForSchedule(undefined)).toBeNull();
+    });
+
+    it("formats a timestamp as YYYY-MM-DD HH:MM", () => {
+      const ms = new Date(2026, 6, 7, 9, 5).getTime();
+      expect(formatLastRunForSchedule(ms)).toBe("2026-07-07 09:05");
+    });
+  });
+
+  describe("cronSectionFor", () => {
+    it("returns spanning for spanning schedules", () => {
+      expect(cronSectionFor("8-17 hourly", null)).toBe("spanning");
+    });
+
+    it("returns auto for null/9999+ displayMin", () => {
+      expect(cronSectionFor("auto", null)).toBe("auto");
+    });
+
+    it("delegates to cronPeriod for fixed times", () => {
+      expect(cronSectionFor("06:00", 360)).toBe("morning");
+      expect(cronSectionFor("22:00", 1320)).toBe("evening");
+    });
+  });
+
+  describe("computeCronSortScore", () => {
+    it("returns 400 for spanning schedules", () => {
+      expect(computeCronSortScore("every 3h", null)).toBe(400);
+    });
+
+    it("returns 9999 for null displayMin", () => {
+      expect(computeCronSortScore("auto", null)).toBe(9999);
+    });
+
+    it("returns displayMin otherwise", () => {
+      expect(computeCronSortScore("08:00", 480)).toBe(480);
+    });
+  });
+
+  describe("computeSidebarSortKey", () => {
+    const now = Date.now();
+    const windowMs = 24 * 60 * 60 * 1000;
+
+    it("prefers nextMs when within the window", () => {
+      const nextMs = now + 60_000;
+      expect(
+        computeSidebarSortKey(9999, nextMs, "auto", now, windowMs),
+      ).toBe(nextMs);
+    });
+
+    it("falls back to displayMin for fixed, non-spanning schedules", () => {
+      expect(computeSidebarSortKey(480, null, "08:00", now, windowMs)).toBe(
+        480,
+      );
+    });
+
+    it("falls back to nextMs when outside the window and no fixed time", () => {
+      const farNextMs = now + windowMs * 2;
+      expect(
+        computeSidebarSortKey(9999, farNextMs, "auto", now, windowMs),
+      ).toBe(farNextMs);
+    });
+
+    it("falls back to 999999 when nothing else applies", () => {
+      expect(computeSidebarSortKey(9999, null, "auto", now, windowMs)).toBe(
+        999_999,
+      );
+    });
+  });
+
+  describe("cronCountdownLabel", () => {
+    const now = Date.now();
+
+    it("returns hourly for spanning schedules with no nextMs", () => {
+      expect(cronCountdownLabel("8-17 hourly", null, now)).toBe("hourly");
+    });
+
+    it("returns auto for auto schedules", () => {
+      expect(cronCountdownLabel("auto", null, now)).toBe("auto");
+    });
+
+    it("returns dash for fixed schedules with no nextMs", () => {
+      expect(cronCountdownLabel("08:00", null, now)).toBe("—");
+    });
+
+    it("returns formatted countdown when nextMs is set", () => {
+      const nextMs = now + 30 * 60_000;
+      expect(cronCountdownLabel("08:00", nextMs, now)).toBe("in 30m");
+    });
+  });
+
+  describe("cronStatusClass", () => {
+    it("maps ok/error/other to g/r/y with the given prefix", () => {
+      expect(cronStatusClass("ok", "ct")).toBe("ct-status-g");
+      expect(cronStatusClass("error", "cr")).toBe("cr-status-r");
+      expect(cronStatusClass("warn", "ct")).toBe("ct-status-y");
     });
   });
 });

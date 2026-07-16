@@ -4,8 +4,11 @@
   import type { CronData, CronEntry } from "$lib/types";
   import {
     computeNextRun,
+    computeSidebarSortKey,
+    cronCountdownLabel,
+    cronStatusClass,
     formatClock,
-    formatCountdown,
+    formatLastRunForSchedule,
     formatTimeLabel,
     isSpanningSched,
     parseDisplayMinutes,
@@ -64,7 +67,13 @@
         ...cron,
         displayMin,
         nextMs,
-        sortKey: sidebarSortKey(displayMin, nextMs, cron.schedule, nowMs),
+        sortKey: computeSidebarSortKey(
+          displayMin,
+          nextMs,
+          cron.schedule,
+          nowMs,
+          SIDEBAR_WINDOW_MS,
+        ),
       };
     });
   });
@@ -154,9 +163,9 @@
         key: cron.id,
         cron,
         timeLabel: sidebarTimeLabel(cron),
-        countdown: sidebarCountdown(cron, nowMs),
+        countdown: cronCountdownLabel(cron.schedule, cron.nextMs, nowMs),
         icon: cronIcon(cron),
-        statusClass: cronStatusClass(cron.lastResult),
+        statusClass: cronStatusClass(cron.lastResult, "cr"),
         isPast,
         isNext: cron.id === nextCronId,
       });
@@ -183,33 +192,6 @@
     return 9999;
   }
 
-  function sidebarSortKey(
-    displayMin: number,
-    nextMs: number | null,
-    schedule: string,
-    atMs: number,
-  ): number {
-    if (nextMs && nextMs > atMs && nextMs - atMs <= SIDEBAR_WINDOW_MS) {
-      return nextMs;
-    }
-    if (
-      displayMin < 9999 &&
-      !isSpanningSched(schedule) &&
-      schedule !== "auto"
-    ) {
-      return displayMin;
-    }
-    if (nextMs) return nextMs;
-    return 999_999;
-  }
-
-  function formatLastRunForSchedule(ms: number | undefined): string | null {
-    if (ms == null) return null;
-    const d = new Date(ms);
-    const pad = (n: number) => String(n).padStart(2, "0");
-    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
-  }
-
   function sidebarTimeLabel(cron: EnrichedCron): string {
     if (
       cron.nextMs &&
@@ -226,22 +208,8 @@
     return "—";
   }
 
-  function sidebarCountdown(cron: EnrichedCron, atMs: number): string {
-    if (isSpanningSched(cron.schedule)) {
-      return cron.nextMs ? formatCountdown(cron.nextMs, atMs) : "hourly";
-    }
-    if (cron.schedule === "auto") return "auto";
-    return cron.nextMs ? formatCountdown(cron.nextMs, atMs) : "—";
-  }
-
   function cronIcon(cron: CronEntry): string {
     return AGENT_ICONS[cron.agentId] ?? "🤖";
-  }
-
-  function cronStatusClass(lastResult: string): string {
-    if (lastResult === "ok") return "cr-status-g";
-    if (lastResult === "error") return "cr-status-r";
-    return "cr-status-y";
   }
 
   function toggleCollapsed(): void {
