@@ -87,3 +87,33 @@ if (action !== 'implement') {
 4. "Fejlesztés alatt" lista → PKG-047, PKG-048 megjelenik
 5. `POST /action` nem-`implement` típussal → 400, hibaüzenet
 6. `GET /next-trigger` → `queue: 0` (nincs fals count)
+
+
+## 🎯 Mit
+
+_Placeholder — to be filled._
+
+
+## 📐 Scope
+
+_Placeholder — to be filled._
+
+
+## Mit érint
+
+_Placeholder — to be filled._
+
+
+## Mit NEM érint
+
+_Placeholder — to be filled._
+
+
+## Fázisok
+
+_Placeholder — to be filled._
+
+
+## ✅ Acceptance Criteria
+
+_Placeholder — to be filled._

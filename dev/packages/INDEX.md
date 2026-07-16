@@ -60,6 +60,8 @@
 | PKG-047 | **Accessibility Baseline — aria-labels** ♿ | 🔧 IP | — | XS | 15m | — |
 | PKG-048 | **Orchestrator Split → Sub-Components** 🧩 | 🤖 QA | — | L | 2-3h | PKG-023 |
 | PKG-054 | **Package List Rendezés + Queue Validáció** 📋 | 📋 F0 | — | S | 30m | PKG-031, PKG-033 |
+| PKG-055 | **Dinamikus Package Állapot + Élő Frissítés** 🔄 | 📋 F0 | — | M | 1.5h | PKG-021, PKG-033, PKG-054 |
+| PKG-056 | **Action Queue — Race Condition Fix** 🏁 | 📋 F0 | — | XS | 15m | PKG-033 |
 
 ## Függőségi Sorrend
 
