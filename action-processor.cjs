@@ -69,16 +69,6 @@ function runDevLoop(pkgId) {
   }
 }
 
-function regenDashboard() {
-  try {
-    const result = execSync('node generate.cjs', { cwd: NOEMA_DIR, encoding: 'utf8', timeout: 30000 });
-    console.log('   ✅ Dashboard regen OK');
-  } catch (e) {
-    console.log(`   ⚠️  Dashboard regen hiba: ${(e.stderr || e.message).substring(0, 300)}`);
-    if (e.stdout) console.log(`   stdout: ${e.stdout.substring(0, 200)}`);
-  }
-}
-
 async function processActions() {
   let entries = readEntries();
   if (!entries.length) {
@@ -181,13 +171,6 @@ async function processActions() {
   }
 
   writeEntries(entries);
-
-  // Dashboard regen minden futás után
-  if (done > 0) {
-    console.log('');
-    console.log('🔄 Dashboard regen...');
-    regenDashboard();
-  }
 
   console.log(`✅ Kész: ${done} implementált, ${failed} hiba, ${entries.length} a queue-ban`);
   

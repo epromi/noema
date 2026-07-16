@@ -70,37 +70,6 @@ jobs:
 
           echo -e "${GREEN}✅ Secret scan passed ($(echo "$FILES" | wc -l) files)${NC}"
 
-  validate-v1:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-
-      - name: Syntax check (v1 scripts)
-        run: |
-          node --check generate.cjs && echo "✅ generate.cjs"
-          node --check relay.cjs && echo "✅ relay.cjs"
-          node --check action-processor.cjs && echo "✅ action-processor.cjs"
-          node --check scripts/spec-review-agent.cjs && echo "✅ spec-review-agent.cjs"
-          node --check lib/cron-schedule.cjs && echo "✅ cron-schedule.cjs"
-          echo "All syntax checks passed"
-
-      - name: Template integrity
-        run: |
-          grep -c 'data-tab=' archive/v4.html
-          grep -c 'tab-content' archive/v4.html
-          echo "Template integrity check passed"
-
-      - name: Documentation quality
-        run: |
-          test -f README.md && echo "✅ README"
-          test -f CONTRIBUTING.md && echo "✅ CONTRIBUTING"
-          test -f architecture.md && echo "✅ architecture"
-          test -f roadmap.md && echo "✅ roadmap"
-
   validate-v2:
     runs-on: ubuntu-latest
     steps:
