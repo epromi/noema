@@ -189,6 +189,7 @@
         aria-valuenow={stats.donePercent}
         aria-valuemin={0}
         aria-valuemax={100}
+        aria-valuetext={`${stats.done}/${stats.total} packages complete`}
         aria-label="Package progress"
       >
         <span class="seg spec" style:width="{specPct}%"></span>

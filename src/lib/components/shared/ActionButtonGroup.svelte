@@ -140,7 +140,7 @@
         class:error={state === "error" || state === "offline"}
         disabled={state === "loading"}
         title={ACTION_TOOLTIPS[action]}
-        aria-label="{ACTION_LABELS[action]}: {state === 'offline' ? 'Offline' : state}"
+        aria-label="{ACTION_LABELS[action]}: {state === 'idle' ? 'Ready' : state === 'loading' ? 'In progress' : state === 'ok' ? 'Completed' : state === 'error' ? 'Failed' : state === 'offline' ? 'Offline' : state}"
         onclick={() => onAction(action, itemId, description)}
       >
         {buttonLabel(action, state)}

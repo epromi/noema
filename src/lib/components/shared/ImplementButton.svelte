@@ -34,7 +34,7 @@
       {logOpen ? "📋 Log ▲" : "📋 Log ▼"}
     </button>
   {:else if buttonState === "done"}
-    <span class="done-badge" title="Kész">✅</span>
+    <span class="done-badge" role="status" aria-label="Implementation complete" title="Kész">✅</span>
   {:else}
     <button
       type="button"

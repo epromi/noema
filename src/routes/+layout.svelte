@@ -128,6 +128,7 @@
           class="tab-btn"
           class:active={activeTab === tab.id}
           class:tab-btn-mobile-crons={"mobileOnly" in tab && tab.mobileOnly}
+          aria-current={activeTab === tab.id ? 'page' : undefined}
           onclick={() => (activeTab = tab.id)}
         >
           {tab.label}
@@ -142,6 +143,7 @@
           type="button"
           class="tab-btn tab-btn-secondary"
           class:active={activeTab === tab.id}
+          aria-current={activeTab === tab.id ? 'page' : undefined}
           onclick={() => (activeTab = tab.id)}
         >
           {tab.label}

@@ -21,6 +21,7 @@
   let contentHash = $state("");
   let reversed = $state(false);
   let fetchError = $state<string | null>(null);
+  let loading = $state(false);
   let pollTimer: ReturnType<typeof setInterval> | undefined;
   let firstOpenScroll = $state(false);
 
@@ -65,6 +66,7 @@
   async function fetchLog(): Promise<void> {
     if (!pkgId) return;
 
+    if (!liveContent) loading = true;
     const el = scrollEl;
     const shouldAutoScroll =
       el != null && (isNearNewestEnd(el) || !firstOpenScroll);
@@ -81,6 +83,7 @@
       contentHash = next;
       liveContent = next;
       fetchError = body.error ?? null;
+      loading = false;
 
       if (shouldAutoScroll) {
         firstOpenScroll = true;
@@ -91,6 +94,7 @@
       if (!liveContent) {
         liveContent = "";
       }
+      loading = false;
     }
   }
 
@@ -174,7 +178,9 @@
       role="region"
       aria-label="Cursor log for {pkgId}"
     >
-      {#if fetchError && !liveContent.trim()}
+      {#if loading && !liveContent.trim()}
+        <p class="log-empty">⏳ Loading log…</p>
+      {:else if fetchError && !liveContent.trim()}
         <p class="log-empty">No log data — {fetchError}</p>
       {:else if showEmpty}
         <p class="log-empty">No log data</p>
