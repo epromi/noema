@@ -4,7 +4,7 @@
 
   const POLL_MS = 5000;
   const SCROLL_THRESHOLD = 50;
-  const STORAGE_KEY = "log-reversed";
+  const STORAGE_KEY = "pkg-log-reversed";
 
   let {
     open = false,

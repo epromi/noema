@@ -289,7 +289,7 @@
   {#if !mobile}
     <div class="cs-collapsed-icons">
       {#each collapsedIcons as cron (cron.id)}
-        <button type="button" class="cs-icon-btn" title={cron.name}>
+        <button type="button" class="cs-icon-btn" title={cron.name} aria-label="Jump to cron: {cron.name}">
           {cronIcon(cron)}
         </button>
       {/each}
@@ -413,6 +413,11 @@
 
   .cron-sidebar.collapsed .cs-collapsed-icons {
     display: flex;
+  }
+
+  .cs-icon-btn:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
   }
 
   .cs-icon-btn {

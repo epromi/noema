@@ -215,6 +215,7 @@
       type="button"
       class="ct-now-btn"
       title="Scroll to current time"
+      aria-label="Scroll to current time"
       onclick={scrollToNow}
     >
       📍 NOW

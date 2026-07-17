@@ -120,6 +120,7 @@
                 <button
                   type="button"
                   class="agent-link"
+                  aria-label="View agent {cron.agentId}"
                   onclick={(e) => handleAgentSelect(cron.agentId, e)}
                 >
                   {cron.agentId}

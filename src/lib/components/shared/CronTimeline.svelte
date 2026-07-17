@@ -47,7 +47,7 @@
 
     <ul class="timeline-rows">
       {#each timeline.rows as row (row.id)}
-        <li class="timeline-row">
+        <li class="timeline-row" role="listitem" aria-label={`Cron timeline: ${row.name}`}>
           <span class="row-name" title={`${row.name} — ${row.schedule}`}>
             {row.name}
           </span>

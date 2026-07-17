@@ -4,7 +4,7 @@
   import type { LogData, LogEntry, LogFilter } from "$lib/types";
 
   const POLL_MS = 10_000;
-  const STORAGE_KEY = "log-reversed";
+  const STORAGE_KEY = "logs-viewer-reversed";
 
   let { logs }: { logs: LogData } = $props();
 
