@@ -72,6 +72,7 @@
 | PKG-064 | **Cron Health Scorecard** 📊 | 🤖 auto-ready | — | M | 1h | — |
 | PKG-065 | **Partial Data Resilience — Promise.allSettled()** 🛡️ | 📋 F0 | — | S | 30m | — |
 | PKG-066 | **Accessibility Foundation v2 — Focus + Dark Mode** ♿ | 📋 F0 | — | S | 45m | — |
+| PKG-069 | **Shared Utility Extraction — Deduplicate Helpers** 🧹 | 🤖 auto-ready | — | S | 30m | — |
 
 ## Függőségi Sorrend
 
