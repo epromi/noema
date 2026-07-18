@@ -178,6 +178,7 @@
           type="button"
           class="compact-toggle"
           title={compactView ? "Részletes nézet" : "Kompakt nézet"}
+          aria-label={compactView ? "Részletes nézet" : "Kompakt nézet"}
           onclick={toggleCompact}
         >
           {compactView ? "📜" : "📋"}
@@ -225,6 +226,7 @@
               class="section-header"
               onclick={() => toggleSection("spec")}
               aria-expanded={specOpen}
+              aria-label="Specifications"
             >
               <span class="chevron">{specOpen ? "▾" : "▸"}</span>
               <span>📋 Specifikáció Kész ({grouped.spec.length})</span>
@@ -269,6 +271,7 @@
               class="section-header"
               onclick={() => toggleSection("active")}
               aria-expanded={activeOpen}
+              aria-label="Active packages"
             >
               <span class="chevron">{activeOpen ? "▾" : "▸"}</span>
               <span>🔨 Fejlesztés Alatt ({grouped.active.length})</span>
@@ -313,6 +316,7 @@
               class="section-header"
               onclick={() => toggleSection("done")}
               aria-expanded={doneOpen}
+              aria-label="Completed packages"
             >
               <span class="chevron">{doneOpen ? "▾" : "▸"}</span>
               <span>✅ Kész ({grouped.done.length})</span>
