@@ -73,6 +73,8 @@
 | PKG-065 | **Partial Data Resilience — Promise.allSettled()** 🛡️ | 📋 F0 | — | S | 30m | — |
 | PKG-066 | **Accessibility Foundation v2 — Focus + Dark Mode** ♿ | 📋 F0 | — | S | 45m | — |
 | PKG-069 | **Shared Utility Extraction — Deduplicate Helpers** 🧹 | 🤖 auto-ready | — | S | 30m | — |
+| PKG-070 | **Decorative Element Screen Reader Cleanup** ♿ | 🤖 auto-ready | — | XS | 20m | — |
+| PKG-071 | **Content Region Landmarks** 🏷️ | 🤖 auto-ready | — | XS | 15m | — |
 
 ## Függőségi Sorrend
 
