@@ -76,7 +76,7 @@
             class:otto-err={run.status === "err"}
           >
             <div class="otto-head">
-              {ottoIcon(run.status)}
+              <span aria-hidden="true">{ottoIcon(run.status)}</span>
               {run.title}
               <span class="otto-date">{run.date}</span>
             </div>
@@ -85,7 +85,7 @@
             {/if}
             {#each run.steps as step (`${run.date}-${step.label}`)}
               <div class="otto-step">
-                {step.status === "ok" ? "✅" : "⬜"}
+                <span aria-hidden="true">{step.status === "ok" ? "✅" : "⬜"}</span>
                 {step.label}
               </div>
             {/each}

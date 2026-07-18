@@ -45,7 +45,7 @@
                 ? section.bgColor
                 : undefined}
             >
-              <span class="item-icon">{STATUS_ICONS[item.status]}</span>
+              <span class="item-icon" aria-hidden="true">{STATUS_ICONS[item.status]}</span>
               <div class="item-body">
                 <span class="item-id">{item.id}</span>
                 {item.name}

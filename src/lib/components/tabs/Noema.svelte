@@ -228,7 +228,7 @@
               aria-expanded={specOpen}
               aria-label="Specifications"
             >
-              <span class="chevron">{specOpen ? "▾" : "▸"}</span>
+              <span class="chevron" aria-hidden="true">{specOpen ? "▾" : "▸"}</span>
               <span>📋 Specifikáció Kész ({grouped.spec.length})</span>
             </button>
             {#if specOpen}
@@ -273,7 +273,7 @@
               aria-expanded={activeOpen}
               aria-label="Active packages"
             >
-              <span class="chevron">{activeOpen ? "▾" : "▸"}</span>
+              <span class="chevron" aria-hidden="true">{activeOpen ? "▾" : "▸"}</span>
               <span>🔨 Fejlesztés Alatt ({grouped.active.length})</span>
             </button>
             {#if activeOpen}
@@ -318,7 +318,7 @@
               aria-expanded={doneOpen}
               aria-label="Completed packages"
             >
-              <span class="chevron">{doneOpen ? "▾" : "▸"}</span>
+              <span class="chevron" aria-hidden="true">{doneOpen ? "▾" : "▸"}</span>
               <span>✅ Kész ({grouped.done.length})</span>
             </button>
             {#if doneOpen}

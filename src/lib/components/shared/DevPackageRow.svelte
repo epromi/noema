@@ -107,7 +107,7 @@
 >
   <div class="pkg-main">
     {#if !compact}
-      <span class="pkg-chevron" class:invisible={!hasDetail}
+      <span class="pkg-chevron" class:invisible={!hasDetail} aria-hidden="true"
         >{detailOpen ? "▾" : "▸"}</span
       >
     {/if}
@@ -118,7 +118,8 @@
         class="pkg-phase-icon"
         class:phase-running={displayPhase.className === "phase-running"}
         class:phase-queued={displayPhase.className === "phase-queued"}
-        title={displayPhase.text}>{icon}</span
+        title={displayPhase.text}
+        aria-hidden="true">{icon}</span
       >
     {:else}
       <span class="pkg-name">{displayName}</span>

@@ -169,7 +169,7 @@
         aria-pressed={reversed}
         onclick={toggleReversed}
       >
-        {reversed ? "↑" : "↓"}
+        <span aria-hidden="true">{reversed ? "↑" : "↓"}</span>
       </button>
     </div>
     <div
