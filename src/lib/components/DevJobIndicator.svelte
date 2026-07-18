@@ -29,6 +29,7 @@
   let panelEl = $state<HTMLDivElement | null>(null);
   let dragging = $state(false);
   let collapsed = $state(false);
+  let loading = $state(true);
 
   let dragStartX = 0;
   let dragStartY = 0;
@@ -64,6 +65,7 @@
 
   async function refresh() {
     status = await getDevJobStatus(DEFAULT_RELAY_URL);
+    loading = false;
   }
 
   function savePosition(left: number, top: number) {
@@ -187,8 +189,11 @@
   style:left={posLeft !== null ? `${posLeft}px` : undefined}
   style:top={posTop !== null ? `${posTop}px` : `${DEFAULT_TOP}px`}
   style:right={posLeft !== null ? "auto" : `${DEFAULT_RIGHT}px`}
+  class:dji-loading={loading}
 >
-  {#if collapsed}
+{#if loading}
+  <div class="dji-loading">⏳ Loading…</div>
+{:else if collapsed}
     <div
       class="dji-collapsed"
       class:dragging

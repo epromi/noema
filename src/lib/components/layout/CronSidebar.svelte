@@ -246,6 +246,7 @@
         class="cs-toggle"
         title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+        aria-expanded={!collapsed}
         onclick={toggleCollapsed}
       >
         {collapsed ? "▶" : "◀"}

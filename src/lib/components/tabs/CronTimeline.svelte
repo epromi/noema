@@ -259,6 +259,7 @@
               class:ct-next-up={row.isNext}
               class:disabled={!row.cron.enabled}
               title={row.cron.name}
+              aria-label="{row.cron.name} — {row.timeLabel} {row.countdown}"
             >
               <span class="ct-time">{row.timeLabel}</span>
               <span class="ct-body">

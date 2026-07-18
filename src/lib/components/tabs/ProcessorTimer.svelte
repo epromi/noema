@@ -63,6 +63,8 @@
   class:pt-running={processorState === "running"}
   class:pt-offline={processorState === "offline"}
   transition:fade={{ duration: 150 }}
+  role="status"
+  aria-live="polite"
 >
   <span class="pt-main">{mainText}</span>
   {#if subText}

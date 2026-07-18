@@ -41,22 +41,22 @@
   <h3 class="section-title">🛡️ Viktor Security Audit</h3>
 
   <div class="metrics-bar">
-    <div class="metric-card">
+    <div class="metric-card" aria-label="Total completed audits: {viktor.totalCompleted}">
       <div class="metric-value">{viktor.totalCompleted}</div>
       <div class="metric-label">Total audits</div>
     </div>
 
-    <div class="metric-card {recallClass(viktor.recall)}">
+    <div class="metric-card {recallClass(viktor.recall)}" aria-label="Recall rate: {viktor.recall}%">
       <div class="metric-value">{viktor.recall}%</div>
       <div class="metric-label">Recall</div>
     </div>
 
-    <div class="metric-card">
+    <div class="metric-card" aria-label="Pending repositories: {viktor.pending}">
       <div class="metric-value">{viktor.pending}</div>
       <div class="metric-label">Pending repos</div>
     </div>
 
-    <div class="metric-card" class:warn={viktor.failed > 0}>
+    <div class="metric-card" class:warn={viktor.failed > 0} aria-label="Failed audits: {viktor.failed}">
       <div class="metric-value">{viktor.failed}</div>
       <div class="metric-label">Failed</div>
     </div>

@@ -48,7 +48,7 @@
           <p class="empty">—</p>
         {:else}
           {#each col.items as item (item.id)}
-            <div class="kb-item">
+            <div class="kb-item" role="article" aria-label="Action: {item.id} — {item.desc}">
               <div class="kb-id">{item.id}</div>
               <div class="kb-desc">{item.desc}</div>
               <div class="kb-meta">
