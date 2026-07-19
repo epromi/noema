@@ -11,6 +11,9 @@
     onClose?: () => void;
   } = $props();
 
+  let panelEl: HTMLElement | undefined = $state();
+  let previousFocus: HTMLElement | null = null;
+
   function statusClass(status: AgentEntry["status"]): string {
     if (status === "green") return "status-green";
     if (status === "yellow") return "status-yellow";
@@ -22,12 +25,65 @@
     if (level === "WARN") return "log-warn";
     return "log-info";
   }
+
+  function getFocusableElements(container: HTMLElement): HTMLElement[] {
+    return Array.from(
+      container.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      )
+    );
+  }
+
+  function handleKeyDown(e: KeyboardEvent) {
+    if (!panelEl) return;
+    const focusable = getFocusableElements(panelEl);
+    if (focusable.length === 0) return;
+
+    const first = focusable[0]!;
+    const last = focusable[focusable.length - 1]!;
+
+    if (e.key === "Tab") {
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+  }
+
+  $effect(() => {
+    if (open && agent) {
+      // Save currently focused element before opening
+      previousFocus = document.activeElement as HTMLElement;
+      // Focus first focusable element after panel renders
+      requestAnimationFrame(() => {
+        if (panelEl) {
+          const focusable = getFocusableElements(panelEl);
+          if (focusable.length > 0 && focusable[0]) {
+            focusable[0].focus();
+          }
+        }
+      });
+    } else if (!open) {
+      // Restore focus to the element that opened the panel
+      if (previousFocus) {
+        previousFocus.focus();
+        previousFocus = null;
+      }
+    }
+  });
 </script>
 
 {#if open && agent}
   <aside
     class="agent-detail-panel open"
     aria-label="Agent details for {agent.name}"
+    bind:this={panelEl}
+    onkeydown={handleKeyDown}
+    role="dialog"
+    aria-modal="true"
   >
     <div class="panel-header">
       <h2>{agent.emoji} {agent.name}</h2>
@@ -111,7 +167,14 @@
     </div>
   </aside>
 {:else if open}
-  <aside class="agent-detail-panel empty open" aria-label="Agent details">
+  <aside
+    class="agent-detail-panel empty open"
+    aria-label="Agent details"
+    bind:this={panelEl}
+    onkeydown={handleKeyDown}
+    role="dialog"
+    aria-modal="true"
+  >
     <button
       type="button"
       class="close-btn"
