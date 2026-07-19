@@ -66,7 +66,7 @@
 | PKG-058 | **Dev-Loop + Review — Spec Teljesség Védőháló** 🛡️ | 📋 F0 | — | M | 1h | PKG-054, PKG-056 |
 | PKG-059 | **Relay Action Queue Validáció** 🔒 | ✅ F5 | — | XS | ✅ kész | — |
 | PKG-060 | **Failed/Dead Packages — Hibás Lista** ⚠️ | 📋 F0 | — | S | 30m | PKG-055, PKG-056 |
-| PKG-061 | **Focus Trap in AgentDetailPanel** ⌨️ | 🤖 auto-ready | — | XS | 30m | — |
+| PKG-061 | **Focus Trap in AgentDetailPanel** ⌨️ | ✅ F5 | — | XS | 30m | — |
 | PKG-062 | **Loading Skeleton States** 💀 | 🤖 auto-ready | — | S | 45m | — |
 | PKG-063 | **Collector Timeout Safety** ⏱️ | 🤖 auto-ready | — | S | 30m | — |
 | PKG-064 | **Cron Health Scorecard** 📊 | 🤖 auto-ready | — | M | 1h | — |
