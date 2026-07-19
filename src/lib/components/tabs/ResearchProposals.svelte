@@ -50,12 +50,12 @@
     <div class="research-header">
       <span class="research-date">{research.latestDate}</span>
       {#if research.autoFixCount > 0}
-        <span class="badge badge-ok">🔧 {research.autoFixCount} AUTO-FIX</span
+        <span class="badge badge-ok"><span aria-hidden="true">🔧</span> {research.autoFixCount} AUTO-FIX</span
         >
       {/if}
       {#if research.proposeCount > 0}
         <span class="badge badge-warn"
-          >📋 {research.proposeCount} PROPOSE</span
+          ><span aria-hidden="true">📋</span> {research.proposeCount} PROPOSE</span
         >
       {/if}
     </div>

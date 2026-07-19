@@ -59,14 +59,14 @@
           <header class="card-head">
             <span class="agent-id">{agent.agentId}</span>
             <span class="score-pill {scoreClass(agent.averageScore)}">
-              {scoreEmoji(agent.averageScore)} {agent.averageScore}
+              <span aria-hidden="true">{scoreEmoji(agent.averageScore)}</span> {agent.averageScore}
             </span>
           </header>
 
           <p class="card-meta">
             <span>{agent.sessionCount} session{agent.sessionCount === 1 ? "" : "s"}</span>
             <span class="trend" class:declining={agent.trend === "declining"}>
-              {trendIcon(agent.trend)} {trendLabel(agent)}
+              <span aria-hidden="true">{trendIcon(agent.trend)}</span> {trendLabel(agent)}
             </span>
           </p>
 

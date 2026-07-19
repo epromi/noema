@@ -192,7 +192,7 @@
   class:dji-loading={loading}
 >
 {#if loading}
-  <div class="dji-loading">⏳ Loading…</div>
+  <div class="dji-loading"><span aria-hidden="true">⏳</span> Loading…</div>
 {:else if collapsed}
     <div
       class="dji-collapsed"

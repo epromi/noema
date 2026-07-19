@@ -231,7 +231,7 @@
     <span
       ><span class="ct-leg-dot" style:background="var(--yellow)"></span> Warning</span
     >
-    <span>🔴 NOW vonal</span>
+    <span><span aria-hidden="true">🔴</span> NOW vonal</span>
   </div>
   {#if crons.error}
     <p class="empty">No cron data — {crons.error}</p>
