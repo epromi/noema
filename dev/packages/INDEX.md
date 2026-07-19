@@ -75,7 +75,6 @@
 | PKG-069 | **Shared Utility Extraction — Deduplicate Helpers** 🧹 | 🤖 auto-ready | — | S | 30m | — |
 | PKG-070 | **Decorative Element Screen Reader Cleanup** ♿ | 🤖 auto-ready | — | XS | 20m | — |
 | PKG-071 | **Content Region Landmarks** 🏷️ | 🤖 auto-ready | — | XS | 15m | — |
-| PKG-073 | **Consistent Time Formatting** 🕐 | 🤖 auto-ready | — | XS | 15m | — |
 
 ## Függőségi Sorrend
 
