@@ -32,7 +32,7 @@
           {/if}
           {#each run.steps as step (`${run.date}-${step.label}`)}
             <div class="tl-sub">
-              {step.status === "ok" ? "✅" : "⬜"}
+              <span aria-hidden="true">{step.status === "ok" ? "✅" : "⬜"}</span>
               {step.label}
             </div>
           {/each}

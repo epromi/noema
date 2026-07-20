@@ -198,9 +198,9 @@
         <span class="seg done" style:width="{donePct}%"></span>
       </div>
       <div class="stats-chips">
-        <span>📋 {stats.spec} spec</span>
-        <span>🔨 {stats.active} aktív</span>
-        <span>✅ {stats.done} kész</span>
+        <span><span aria-hidden="true">📋</span> {stats.spec} spec</span>
+        <span><span aria-hidden="true">🔨</span> {stats.active} aktív</span>
+        <span><span aria-hidden="true">✅</span> {stats.done} kész</span>
       </div>
     </div>
 

@@ -157,7 +157,7 @@
       {/if}
       {#if phases}
         <div class="detail-phases">
-          <strong>📋 Fázisok:</strong> {phases}
+          <strong><span aria-hidden="true">📋</span> Fázisok:</strong> {phases}
         </div>
       {/if}
     </div>
