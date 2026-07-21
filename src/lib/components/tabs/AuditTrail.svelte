@@ -76,7 +76,7 @@
 </script>
 
 <section class="audit-tab">
-  <h3 class="section-title">📜 Audit Trail</h3>
+  <h3 class="section-title"><span aria-hidden="true">📜 </span>Audit Trail</h3>
   <p class="subtitle">
     Chronological activity — sessions, spawns, crons, errors, dashboard actions
   </p>

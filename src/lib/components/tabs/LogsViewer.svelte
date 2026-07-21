@@ -123,7 +123,7 @@
 </script>
 
 <section class="logs-tab">
-  <h3 class="section-title">📋 Logs</h3>
+  <h3 class="section-title"><span aria-hidden="true">📋 </span>Logs</h3>
   <p class="subtitle">Last 500 lines from ~/.openclaw/logs/</p>
 
   {#if resolvedLogs.error && resolvedLogs.entries.length === 0}

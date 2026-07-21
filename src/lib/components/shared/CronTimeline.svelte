@@ -26,7 +26,7 @@
 </script>
 
 <div class="cron-timeline">
-  <h3 class="section-title">📊 Cron Health Timeline (24h)</h3>
+  <h3 class="section-title"><span aria-hidden="true">📊 </span>Cron Health Timeline (24h)</h3>
 
   {#if timeline.error}
     <p class="empty">No timeline data — {timeline.error}</p>

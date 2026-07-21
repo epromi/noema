@@ -92,7 +92,7 @@
 </script>
 
 <section class="crons-tab">
-  <h3 class="section-title">⏰ Crons</h3>
+  <h3 class="section-title"><span aria-hidden="true">⏰ </span>Crons</h3>
 
   {#if crons.error}
     <p class="empty">No cron data — {crons.error}</p>

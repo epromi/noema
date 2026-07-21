@@ -55,7 +55,7 @@
 </script>
 
 <section class="trace-tab" aria-label="Agent decision trace">
-  <h3 class="section-title">🌳 Agent Decision Trace</h3>
+  <h3 class="section-title"><span aria-hidden="true">🌳 </span>Agent Decision Trace</h3>
   <p class="subtitle">
     Tool call decision chain — what ran, in what order, and what triggered the
     next step

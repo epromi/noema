@@ -133,7 +133,7 @@
 </script>
 
 <section class="bills-tab" aria-label="Bills and open loops">
-  <h3 class="section-title">💰 Bills</h3>
+  <h3 class="section-title"><span aria-hidden="true">💰 </span>Bills</h3>
 
   {#if bills.error}
     <p class="empty">Bills unavailable — {bills.error}</p>
