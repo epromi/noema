@@ -1,6 +1,6 @@
 # Noema 🧠 — Development Package Index
 
-> Utolsó frissítés: 2026-07-16 21:24
+> Utolsó frissítés: 2026-07-22 06:45 (Nova QA)
 
 ## Aktív Csomagok
 
@@ -76,6 +76,8 @@
 | PKG-070 | **Decorative Element Screen Reader Cleanup** ♿ | 🤖 auto-ready | — | XS | 20m | — |
 | PKG-071 | **Content Region Landmarks** 🏷️ | 🤖 auto-ready | — | XS | 15m | — |
 | PKG-075 | **Keyboard Command Palette** ⌨️ | 📋 F0 | — | S | 45m | — |
+| PKG-076 | **Shared Loading States Component** 💀 | ✅ F5 | — | S | 45m | — |
+| PKG-077 | **Alert Threshold Configuration** 🚨 | 📋 F0 | — | S | 30m | — |
 
 ## Függőségi Sorrend
 

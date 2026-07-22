@@ -33,7 +33,7 @@
 </script>
 
 <section class="h1-tab">
-  <h3 class="section-title">🏴 HackerOne</h3>
+  <h3 class="section-title"><span aria-hidden="true">🏴</span> HackerOne</h3>
 
   {#if h1.error}
     <p class="empty">No H1 data — {h1.error}</p>

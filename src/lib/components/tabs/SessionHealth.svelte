@@ -38,7 +38,7 @@
 </script>
 
 <section class="health-tab" aria-label="Agent session health scoring">
-  <h3 class="section-title">🩺 Agent Session Health</h3>
+  <h3 class="section-title"><span aria-hidden="true">🩺</span> Agent Session Health</h3>
   <p class="subtitle">
     Rule-based 0–100 score per session — completion, efficiency, error rate,
     loop penalty. No LLM grading.

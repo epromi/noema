@@ -40,7 +40,7 @@
   }
 </script>
 
-<h3 class="section-title">🧠 Noema Product Research</h3>
+<h3 class="section-title"><span aria-hidden="true">🧠</span> Noema Product Research</h3>
 <div class="card research-card">
   {#if research.error}
     <p class="empty">Research unavailable — {research.error}</p>

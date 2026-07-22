@@ -38,7 +38,7 @@
 </script>
 
 <section class="viktor-tab">
-  <h3 class="section-title">🛡️ Viktor Security Audit</h3>
+  <h3 class="section-title"><span aria-hidden="true">🛡️</span> Viktor Security Audit</h3>
 
   <div class="metrics-bar">
     <div class="metric-card" aria-label="Total completed audits: {viktor.totalCompleted}">

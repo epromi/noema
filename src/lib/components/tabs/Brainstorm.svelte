@@ -16,7 +16,7 @@
 
 <section class="brainstorm-tab" aria-label="Brainstorming action tracker">
   <div class="tab-header">
-    <h2 class="section-title">🧠 Brainstorming Action Tracker</h2>
+    <h2 class="section-title"><span aria-hidden="true">🧠</span> Brainstorming Action Tracker</h2>
     <div class="pending-badge">
       <span class="pending-count">{brainstorm.pending}</span>
       <span class="pending-label">pending</span>

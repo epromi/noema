@@ -48,7 +48,7 @@
 
 {#if cpu && (part === "list" || part === "both")}
   <div class="cpu-top-card" aria-label="Top CPU processes">
-    <h3 class="section-title">🔥 Top CPU</h3>
+    <h3 class="section-title"><span aria-hidden="true">🔥</span> Top CPU</h3>
     {#if cpu.topProcesses.length === 0}
       <p class="empty">No processes above 1% CPU.</p>
     {:else}
