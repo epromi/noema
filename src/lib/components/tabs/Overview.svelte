@@ -131,7 +131,7 @@
 
   <CpuWidget cpu={health.cpu} part="list" />
 
-  <h3 class="section-title">🤖 Agents</h3>
+  <h3 class="section-title"><span aria-hidden="true">🤖</span> Agents</h3>
   {#if agents.error}
     <p class="empty">No agent data — {agents.error}</p>
   {:else if agents.agents.length === 0}
@@ -164,7 +164,7 @@
     </div>
   {/if}
 
-  <h3 class="section-title">🏴 HackerOne</h3>
+  <h3 class="section-title"><span aria-hidden="true">🏴</span> HackerOne</h3>
   <div class="h1-grid">
     <div class="card">
       <div class="card-row">

@@ -160,7 +160,7 @@
 </script>
 
 <section class="noema-tab">
-  <h2>🧠 Development Packages</h2>
+  <h2><span aria-hidden="true">🧠</span> Development Packages</h2>
   <p class="hint">
     ▶ Mehet indítja a dev-loop-ot. Futás közben 📋 Log mutatja a Cursor
     kimenetét (3s frissítés).
