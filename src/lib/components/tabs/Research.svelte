@@ -21,7 +21,7 @@
 </script>
 
 <section class="research-tab" aria-label="Dashboard research">
-  <h3 class="section-title"><span aria-hidden="true">🧠</span> Dashboard Research</h3>
+  <h3 class="section-title">🧠 Dashboard Research</h3>
 
   {#if research.error}
     <p class="empty">Research data unavailable — {research.error}</p>

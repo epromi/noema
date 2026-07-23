@@ -62,7 +62,7 @@
 </script>
 
 <section class="agents-tab">
-  <h3 class="section-title"><span aria-hidden="true">🤖</span> Agents</h3>
+  <h3 class="section-title">🤖 Agents</h3>
 
   {#if agents.error}
     <p class="empty">No agent data — {agents.error}</p>

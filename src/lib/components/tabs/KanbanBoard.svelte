@@ -36,7 +36,7 @@
   ]);
 </script>
 
-<h3 class="section-title"><span aria-hidden="true">📋</span> Action Queue</h3>
+<h3 class="section-title">📋 Action Queue</h3>
 {#if actionQueue.error}
   <p class="empty">Action queue unavailable — {actionQueue.error}</p>
 {:else}
