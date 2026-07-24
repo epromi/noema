@@ -10,7 +10,7 @@
   }
 </script>
 
-<h3 class="section-title">⚡ Otto Nightly Runs</h3>
+<h3 class="section-title"><span aria-hidden="true">⚡</span> Otto Nightly Runs</h3>
 <div class="card timeline-card">
   {#if ottoRuns.length === 0}
     <p class="empty">No timeline data</p>

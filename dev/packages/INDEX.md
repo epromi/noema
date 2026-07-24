@@ -78,6 +78,7 @@
 | PKG-075 | **Keyboard Command Palette** ⌨️ | 📋 F0 | — | S | 45m | — |
 | PKG-076 | **Shared Loading States Component** 💀 | ✅ F5 | — | S | 45m | — |
 | PKG-077 | **Alert Threshold Configuration** 🚨 | 📋 F0 | — | S | 30m | — |
+| PKG-078 | **Color Scheme Toggle (Light Mode)** 🌓 | 📋 F0 | — | S | 1h | — |
 
 ## Függőségi Sorrend
 

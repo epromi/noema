@@ -172,7 +172,7 @@
     <div class="stats-bar">
       <div class="stats-line">
         <span class="stats-primary">
-          📊 {stats.done}/{stats.total} kész ({stats.donePercent}%)
+          <span id="stats-summary">📊 {stats.done}/{stats.total} kész ({stats.donePercent}%)</span>
         </span>
         <button
           type="button"
@@ -212,7 +212,9 @@
         class="search-input"
         placeholder="Keresés..."
         aria-label="Search packages"
+        aria-describedby="stats-summary"
         bind:value={searchQuery}
+        onkeydown={(e) => { if (e.key === 'Escape') searchQuery = '' }}
       />
     </label>
 

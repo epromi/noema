@@ -49,7 +49,7 @@
       {#each timeline.rows as row (row.id)}
         <li class="timeline-row" role="listitem" aria-label={`Cron timeline: ${row.name}`}>
           <span class="row-name" title={`${row.name} — ${row.schedule}`}>
-            {row.name}
+            {row.name}<span class="sr-only"> — {row.schedule}</span>
           </span>
           <div class="row-track">
             {#each row.blocks as block (block.startMs)}

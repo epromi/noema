@@ -42,8 +42,8 @@
 {:else}
   <div class="kanban">
     {#each columns as col (col.key)}
-      <div class="kb-col">
-        <h4>{col.title}</h4>
+      <div class="kb-col" role="region" aria-labelledby={`kb-heading-${col.key}`}>
+        <h4 id={`kb-heading-${col.key}`}>{col.title}</h4>
         {#if col.items.length === 0}
           <p class="empty">—</p>
         {:else}
