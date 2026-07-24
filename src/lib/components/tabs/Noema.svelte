@@ -178,7 +178,7 @@
           type="button"
           class="compact-toggle"
           title={compactView ? "Részletes nézet" : "Kompakt nézet"}
-          aria-label={compactView ? "Részletes nézet" : "Kompakt nézet"}
+          aria-label={compactView ? "Detailed view" : "Compact view"}
           onclick={toggleCompact}
         >
           {compactView ? "📜" : "📋"}

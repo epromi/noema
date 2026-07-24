@@ -83,7 +83,7 @@
     <span class="sys-item">RAM: {na(health.ram)}</span>
     <CpuWidget cpu={health.cpu} part="bar" />
     {#if health.error}
-      <span class="sys-item sys-error">⚠ {health.error}</span>
+      <span class="sys-item sys-error"><span aria-hidden="true">⚠</span> {health.error}</span>
     {/if}
   </div>
 
@@ -148,7 +148,7 @@
           onkeydown={(e) => handleAgentKeydown(e, agent.id)}
         >
           <div class="agent-header">
-            <span class="agent-emoji">{agent.emoji}</span>
+            <span class="agent-emoji" aria-hidden="true">{agent.emoji}</span>
             <span class="agent-name">{agent.name}</span>
             <span
               class="status-dot {statusDotClass(agent.status)}"

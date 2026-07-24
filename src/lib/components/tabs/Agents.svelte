@@ -95,7 +95,7 @@
               onclick={() => handleAgentSelect(agent.id)}
               onkeydown={(e) => handleRowKeydown(e, agent.id)}
             >
-              <td class="col-emoji">{agent.emoji}</td>
+              <td class="col-emoji" aria-hidden="true">{agent.emoji}</td>
               <td class="col-name">{agent.name}</td>
               <td class="col-status">
                 <span
@@ -116,7 +116,7 @@
   {/if}
 
   <div class="viktor-mini">
-    <span class="viktor-label">🛡️ Viktor</span>
+    <span class="viktor-label"><span aria-hidden="true">🛡️</span> Viktor</span>
     Total: {viktor.totalCompleted} | Recall: {viktor.recall}% | Pending: —
   </div>
 </section>

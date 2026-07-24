@@ -64,7 +64,7 @@
   class:pt-offline={processorState === "offline"}
   transition:fade={{ duration: 150 }}
   role="status"
-  aria-live="polite"
+  aria-live="off"
 >
   <span class="pt-main">{mainText}</span>
   {#if subText}
