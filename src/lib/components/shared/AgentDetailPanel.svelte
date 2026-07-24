@@ -35,6 +35,10 @@
   }
 
   function handleKeyDown(e: KeyboardEvent) {
+    if (e.key === "Escape") {
+      onClose?.();
+      return;
+    }
     if (!panelEl) return;
     const focusable = getFocusableElements(panelEl);
     if (focusable.length === 0) return;
@@ -183,7 +187,7 @@
     >
       ✕
     </button>
-    <p>Válassz egy agent-et a részletek megtekintéséhez</p>
+    <p role="status">Válassz egy agent-et a részletek megtekintéséhez</p>
   </aside>
 {/if}
 

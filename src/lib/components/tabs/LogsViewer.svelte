@@ -136,6 +136,7 @@
           class="filter-btn"
           class:active={activeFilter === filter.id}
           aria-label={filter.label}
+          aria-pressed={activeFilter === filter.id}
           onclick={() => (activeFilter = filter.id)}
         >
           {filter.label}

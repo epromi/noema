@@ -153,6 +153,8 @@
             <span
               class="status-dot {statusDotClass(agent.status)}"
               title={agent.statusText}
+              role="img"
+              aria-label="Status: {agent.statusText}"
             ></span>
           </div>
           <div class="agent-meta">{agent.lastActive || agent.lastRun}</div>

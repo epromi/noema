@@ -206,6 +206,7 @@
 
     <label class="search-wrap">
       <span class="search-icon" aria-hidden="true">🔍</span>
+      <span class="sr-only">Keresés</span>
       <input
         type="search"
         class="search-input"

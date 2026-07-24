@@ -101,6 +101,8 @@
                 <span
                   class="status-dot {statusDotClass(agent.status)}"
                   title={agent.statusText}
+                  role="img"
+                  aria-label="Status: {agent.statusText}"
                 ></span>
               </td>
               <td>{agent.statusText}</td>
