@@ -93,3 +93,33 @@ Az Albert review summary-ben új sor: **Spec Completeness**: ✅ All files prese
 2. PKG-054 diff-re futtatva: spec completeness FAIL → MISSING: `relay.cjs`
 3. Jövőbeli PKG: ha missing file van, a deep review FAIL-el és a subagent is látja a hiányt
 4. `git diff --name-only` nem ütközik más fájlokkal (csak a PKG fájljait nézi)
+
+
+## 🎯 Mit
+
+_Placeholder — to be filled._
+
+
+## 📐 Scope
+
+_Placeholder — to be filled._
+
+
+## Mit érint
+
+_Placeholder — to be filled._
+
+
+## Mit NEM érint
+
+_Placeholder — to be filled._
+
+
+## Fázisok
+
+_Placeholder — to be filled._
+
+
+## ✅ Acceptance Criteria
+
+_Placeholder — to be filled._
