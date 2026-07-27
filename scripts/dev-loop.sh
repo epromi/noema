@@ -146,7 +146,9 @@ PKG_EFFORT="${PKG_EFFORT:-?}"
 PKG_PHASES=$(grep -c '^### F[0-9]' "$SPEC_FILE" || echo "?")
 
 # Extract expected files from spec (for post-cursor verification)
-EXPECTED_FILES=$(grep -oP '`(lib|tests|src)/[^`]+\.(ts|svelte|js|html)`' "$SPEC_FILE" | sed 's/`//g' | sort -u || true)
+# PKG-058: widened from `(lib|tests|src)/...` to any path prefix + more extensions,
+# so root-level files (relay.cjs) and config files (.yml, .gitignore) aren't dropped.
+EXPECTED_FILES=$(grep -oP '`([a-zA-Z0-9_.-]+/)*[^`]*\.(ts|svelte|js|html|cjs|mjs|sh|txt|yml|yaml|json|gitignore)`' "$SPEC_FILE" | sed 's/`//g' | sort -u || true)
 
 echo "Package:  $PKG_ID — $PKG_NAME"
 echo "Size:     $PKG_SIZE ($PKG_EFFORT)"
@@ -609,8 +611,30 @@ fi
 
 echo ""
 
-# ─── 5f: Summary ─────────────────────────────────────────────────────────
-banner "5f: Review Summary"
+# ─── 5f: Spec Completeness (PKG-058) ─────────────────────────────────────
+banner "5f: Spec Completeness"
+
+if [ -f "$REVIEW_AGENT" ]; then
+  set +e
+  SPEC_COMPLETENESS_OUT=$(node "$REVIEW_AGENT" "$PKG_ID" --check-diff 2>&1)
+  SPEC_COMPLETENESS_EXIT=$?
+  set -e
+  echo "$SPEC_COMPLETENESS_OUT"
+  echo "$SPEC_COMPLETENESS_OUT" >> "$REVIEW_LOG"
+
+  if [ "$SPEC_COMPLETENESS_EXIT" -eq 0 ]; then
+    review_ok "5f: Spec Completeness — all spec files present in diff"
+  else
+    review_fail "5f: Spec Completeness — missing spec file(s) in diff (see log)"
+  fi
+else
+  echo "    (spec-review-agent.cjs not found — skip)"
+fi
+
+echo ""
+
+# ─── 5g: Summary ─────────────────────────────────────────────────────────
+banner "5g: Review Summary"
 
 echo ""
 echo "  ┌─────────────────────────────────────┐"
@@ -620,7 +644,7 @@ printf "  │  ❌ Failures:  %2d                   │\n" "$REVIEW_FAIL"
 echo "  │  Full log:    logs/review-${PKG_ID}.log  │"
 echo "  └─────────────────────────────────────┘"
 echo ""
-log_dev "📊 5f: Summary — ${REVIEW_PASS}✅ ${REVIEW_WARN}⚠️ ${REVIEW_FAIL}❌"
+log_dev "📊 5g: Summary — ${REVIEW_PASS}✅ ${REVIEW_WARN}⚠️ ${REVIEW_FAIL}❌"
 
 # Decision gate
 if [ "$ARCH_VIOLATIONS" -gt 0 ]; then

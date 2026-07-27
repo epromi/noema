@@ -68,6 +68,10 @@ RESEARCH_PLACEHOLDER
 
 ## DONE — all must be true before you stop
 
+**File-by-file checklist (every file below MUST be created/modified — a missing file fails Spec Completeness review):**
+
+PKG_FILES_CHECKLIST_PLACEHOLDER
+
 - [ ] `pnpm check` — zero errors, zero warnings
 - [ ] `pnpm test`  — all tests pass (your tests + pre-existing). If old tests broke, your IMPLEMENTATION is wrong — fix it, not the test.
 - [ ] Coverage on files YOU created or modified: ≥70%

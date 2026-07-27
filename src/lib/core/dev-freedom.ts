@@ -108,9 +108,18 @@ export function extractSpecDeps(specText: string): string[] {
   return [...deps].sort();
 }
 
-/** Extract backtick file paths from spec (lib/, tests/, src/). */
+/**
+ * Extract backtick file paths from spec text.
+ *
+ * Matches any path-like backtick token (root files like `relay.cjs`, nested
+ * paths like `src/lib/core/agents.ts`, or config/dotfiles like `.gitignore`)
+ * ending in a known source/config extension — not just `lib|tests|src`
+ * prefixes (PKG-058: the old prefix-only regex missed root-level files such
+ * as `relay.cjs`, silently dropping them from the Cursor prompt's file list).
+ */
 export function extractExpectedFiles(specText: string): string[] {
-  const pattern = /`(lib|tests|src)\/[^`]+\.(ts|svelte|js|html)`/g;
+  const pattern =
+    /`([a-zA-Z0-9_.-]+\/)*[^`]*\.(ts|svelte|js|html|cjs|mjs|sh|txt|yml|yaml|json|gitignore)`/g;
   const files = new Set<string>();
   let match: RegExpExecArray | null;
   while ((match = pattern.exec(specText)) !== null) {
@@ -224,6 +233,14 @@ export function buildGardeningPromptSection(level: DevFreedomLevel): string {
   ].join("\n");
 }
 
+/** Build the explicit file-by-file DONE checklist (PKG-058: spec completeness). */
+export function buildFileChecklist(expectedFiles: string[]): string {
+  if (expectedFiles.length === 0) {
+    return "- [ ] (no files listed in spec — verify Scope section manually)";
+  }
+  return expectedFiles.map((f) => `- [ ] \`${f}\` created/modified`).join("\n");
+}
+
 /** Replace cursor-implement.txt placeholders. */
 export function fillCursorPrompt(
   template: string,
@@ -240,6 +257,10 @@ export function fillCursorPrompt(
   out = out.replace(/PKG_SIZE_PLACEHOLDER/g, vars.pkgSize);
   out = out.replace(/PKG_EFFORT_PLACEHOLDER/g, vars.pkgEffort);
   out = out.replace(/PKG_FILES_PLACEHOLDER/g, files);
+  out = out.replace(
+    /PKG_FILES_CHECKLIST_PLACEHOLDER/g,
+    buildFileChecklist(vars.expectedFiles),
+  );
   out = out.replace(/DEVFREEDOM_PLACEHOLDER/g, vars.devFreedom);
   out = out.replace(/GARDENING_PLACEHOLDER/g, vars.gardeningSection);
   out = out.replace(

@@ -11,12 +11,14 @@
 
 const fs = require('fs');
 const path = require('path');
+const { execSync } = require('child_process');
 
 const ROOT = path.resolve(__dirname, '..');
 const PKG_ID = process.argv[2];
+const CHECK_DIFF = process.argv.includes('--check-diff');
 
 if (!PKG_ID) {
-  console.error('Usage: node spec-review-agent.cjs <PKG-ID>');
+  console.error('Usage: node spec-review-agent.cjs <PKG-ID> [--check-diff]');
   process.exit(2);
 }
 
@@ -26,6 +28,91 @@ const pkgDir = fs.readdirSync(PKGDIR).find(d => d.startsWith(PKG_ID));
 const SPEC_FILE = pkgDir ? path.join(PKGDIR, pkgDir, 'spec.md') : null;
 const INDEX_FILE = path.join(PKGDIR, 'INDEX.md');
 const CONTRIBUTING = path.join(ROOT, 'CONTRIBUTING.md');
+
+// Same widened pattern as src/lib/core/dev-freedom.ts#extractExpectedFiles
+// and scripts/dev-loop.sh's EXPECTED_FILES (PKG-058: kept in sync by hand —
+// core/ can't be required from a .cjs script without a build step).
+const EXPECTED_FILE_RE = /`([a-zA-Z0-9_.-]+\/)*[^`]*\.(ts|svelte|js|html|cjs|mjs|sh|txt|yml|yaml|json|gitignore)`/g;
+
+/**
+ * Isolate the section of the spec that actually declares scope, so
+ * illustrative filenames in prose/examples elsewhere in the doc (e.g. "the
+ * old regex missed `relay.cjs`") aren't mistaken for required files.
+ * Falls back to the full spec text if no known scope section is found.
+ */
+function extractScopeSection(specText) {
+  const sectionPatterns = [
+    /## Érintett fájlok\n([\s\S]*?)(?=\n## |$)/,
+    /### Mit érint\n([\s\S]*?)(?=\n###|\n## |$)/,
+    /## 📐 Scope\n([\s\S]*?)(?=\n## |$)/,
+  ];
+  for (const pattern of sectionPatterns) {
+    const match = specText.match(pattern);
+    if (match && match[1].trim() && !match[1].includes('Placeholder')) {
+      return match[1];
+    }
+  }
+  return specText;
+}
+
+/** Extract expected file paths (backtick tokens) from the spec's scope section. */
+function extractSpecFiles(specText) {
+  const scoped = extractScopeSection(specText);
+  const files = new Set();
+  let match;
+  const re = new RegExp(EXPECTED_FILE_RE);
+  while ((match = re.exec(scoped)) !== null) {
+    files.add(match[0].slice(1, -1));
+  }
+  return [...files].sort();
+}
+
+/** Files touched in the working tree: unstaged, staged, and untracked. */
+function getChangedFiles(root) {
+  try {
+    const run = (cmd) => execSync(cmd, { cwd: root, encoding: 'utf8' });
+    const unstaged = run('git diff --name-only').split('\n');
+    const staged = run('git diff --cached --name-only').split('\n');
+    const untracked = run('git status --porcelain --untracked-files=all')
+      .split('\n')
+      .filter(Boolean)
+      .map((line) => line.slice(3).trim());
+    return [...new Set([...unstaged, ...staged, ...untracked].filter(Boolean))].sort();
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Spec completeness check (PKG-058): every file the spec's "Érintett fájlok"
+ * table lists must actually appear in the git diff. Only runs meaningfully
+ * post-implementation (Phase 5) — Phase 0 has no diff yet.
+ */
+function checkSpecCompleteness(specFile, root) {
+  const spec = fs.readFileSync(specFile, 'utf8');
+  const specFiles = extractSpecFiles(spec);
+  const changedFiles = getChangedFiles(root);
+  const missing = specFiles.filter((f) => !changedFiles.includes(f));
+  return { specFiles, changedFiles, missing };
+}
+
+if (CHECK_DIFF) {
+  if (!SPEC_FILE) {
+    console.error(`❌ Spec file not found for ${PKG_ID}`);
+    process.exit(1);
+  }
+  const { specFiles, changedFiles, missing } = checkSpecCompleteness(SPEC_FILE, ROOT);
+  console.log(`🔍 Spec Completeness: ${PKG_ID}`);
+  console.log(`   Spec files (${specFiles.length}): ${specFiles.join(', ') || '(none)'}`);
+  console.log(`   Changed files (${changedFiles.length})`);
+  if (missing.length > 0) {
+    console.log(`❌ SPEC COMPLETENESS FAILED — missing from diff:`);
+    for (const f of missing) console.log(`   - ${f}`);
+    process.exit(1);
+  }
+  console.log(`✅ Spec Completeness — all ${specFiles.length} spec file(s) present in diff.`);
+  process.exit(0);
+}
 
 // ── Rule definitions ──
 

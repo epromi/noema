@@ -8,6 +8,7 @@ import {
   generateResearchQueries,
   formatResearchMarkdown,
   buildGardeningPromptSection,
+  buildFileChecklist,
   fillCursorPrompt,
   buildSpecAnalysis,
   validatePhaseOutput,
@@ -73,6 +74,45 @@ describe("dev-freedom", () => {
     expect(files).toContain("src/lib/components/tabs/Agents.svelte");
   });
 
+  it("extractExpectedFiles catches root-level and .cjs/.yml/config files (PKG-058)", () => {
+    const spec = [
+      "## Érintett fájlok",
+      "",
+      "| Fájl | Művelet |",
+      "|------|---------|",
+      "| `relay.cjs` | queue filter |",
+      "| `action-processor.cjs` | validáció |",
+      "| `.github/workflows/ci.yml` | CI pipeline |",
+      "| `.gitignore` | ignore rule |",
+      "| `src/lib/core/dev-packages.ts` | rendezés |",
+    ].join("\n");
+    const files = extractExpectedFiles(spec);
+    expect(files).toContain("relay.cjs");
+    expect(files).toContain("action-processor.cjs");
+    expect(files).toContain(".github/workflows/ci.yml");
+    expect(files).toContain(".gitignore");
+    expect(files).toContain("src/lib/core/dev-packages.ts");
+  });
+
+  it("extractExpectedFiles ignores non-code backtick tokens", () => {
+    const spec = "Run `pnpm check` and `pnpm test` before `git commit`.";
+    expect(extractExpectedFiles(spec)).toEqual([]);
+  });
+
+  it("buildFileChecklist renders a checkbox per expected file", () => {
+    const checklist = buildFileChecklist([
+      "src/lib/core/dev-freedom.ts",
+      "relay.cjs",
+    ]);
+    expect(checklist).toContain("- [ ] `src/lib/core/dev-freedom.ts` created/modified");
+    expect(checklist).toContain("- [ ] `relay.cjs` created/modified");
+  });
+
+  it("buildFileChecklist falls back to a manual-check note when no files listed", () => {
+    const checklist = buildFileChecklist([]);
+    expect(checklist).toContain("no files listed in spec");
+  });
+
   it("generateResearchQueries uses research-topics.md lines", () => {
     const topics = "- grafana agent status panel\n- svelte dialog a11y";
     const queries = generateResearchQueries(SAMPLE_SPEC, topics);
@@ -133,6 +173,23 @@ describe("dev-freedom", () => {
     expect(out).toContain("## 🎨 Gardening");
     expect(out).toContain("(none)");
     expect(out).not.toContain("GARDENING_PLACEHOLDER");
+  });
+
+  it("fillCursorPrompt replaces the file-by-file DONE checklist placeholder (PKG-058)", () => {
+    const template = "PKG_FILES_CHECKLIST_PLACEHOLDER";
+    const out = fillCursorPrompt(template, {
+      pkgId: "PKG-058",
+      pkgName: "Spec Completeness",
+      pkgSize: "M",
+      pkgEffort: "1h",
+      expectedFiles: ["scripts/dev-loop.sh", "relay.cjs"],
+      devFreedom: "gardening",
+      gardeningSection: "",
+      researchSection: "(none)",
+    });
+    expect(out).toContain("- [ ] `scripts/dev-loop.sh` created/modified");
+    expect(out).toContain("- [ ] `relay.cjs` created/modified");
+    expect(out).not.toContain("PKG_FILES_CHECKLIST_PLACEHOLDER");
   });
 
   it("buildSpecAnalysis includes research when provided", () => {
