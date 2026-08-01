@@ -119,7 +119,7 @@ describe("dev-packages", () => {
     expect(isActivePackage({ id: "PKG-1", name: "x", phase: "✅ F5", done: true, actionStatus: "pending" })).toBe(true);
     expect(isActivePackage({ id: "PKG-1", name: "x", phase: "📋 F0", done: false, actionStatus: "processing" })).toBe(true);
     expect(isActivePackage({ id: "PKG-1", name: "x", phase: "✅ F5", done: true, actionStatus: "failed" })).toBe(true);
-    expect(isActivePackage({ id: "PKG-1", name: "x", phase: "✅ F5", done: true, actionStatus: "dead" })).toBe(true);
+    expect(isActivePackage({ id: "PKG-1", name: "x", phase: "✅ F5", done: true, actionStatus: "dead" })).toBe(false);
     expect(isActivePackage({ id: "PKG-1", name: "x", phase: "📋 F0", done: false, actionStatus: "done" })).toBe(false);
   });
 

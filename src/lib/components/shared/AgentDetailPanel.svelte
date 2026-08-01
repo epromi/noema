@@ -81,8 +81,9 @@
 </script>
 
 {#if open && agent}
-  <aside
+  <div
     class="agent-detail-panel open"
+    tabindex="-1"
     aria-label="Agent details for {agent.name}"
     bind:this={panelEl}
     onkeydown={handleKeyDown}
@@ -169,10 +170,11 @@
         </div>
       {/if}
     </div>
-  </aside>
+  </div>
 {:else if open}
-  <aside
+  <div
     class="agent-detail-panel empty open"
+    tabindex="-1"
     aria-label="Agent details"
     bind:this={panelEl}
     onkeydown={handleKeyDown}
@@ -188,7 +190,7 @@
       ✕
     </button>
     <p role="status">Válassz egy agent-et a részletek megtekintéséhez</p>
-  </aside>
+  </div>
 {/if}
 
 <style>
