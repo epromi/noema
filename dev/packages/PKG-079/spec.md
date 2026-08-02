@@ -1,0 +1,56 @@
+# PKG-079: Extract Duplicated Utility Functions
+
+**Status:** 📋 F0 | **Size:** S | **Estimate:** 30m | **Scope:** ✅ Non-core
+
+## Problem
+
+QA gap scan (2026-08-02) identified 4 groups of duplicated code across tab components:
+
+1. `na()` helper — duplicated identically in `tabs/Overview.svelte` and `tabs/H1.svelte` (4 lines each)
+2. `ottoIcon()` — duplicated with minor type differences in `tabs/OttoTimeline.svelte` and `tabs/Research.svelte`
+3. `proposalColor()` / `proposalPriorityColor()` — same logic, different names in `tabs/Research.svelte` and `tabs/ResearchProposals.svelte`
+4. `CRON_DESCRIPTIONS` map — 60 lines hardcoded inline in `tabs/Crons.svelte`
+
+This violates DRY and makes future changes risky (need to update in multiple places).
+
+## Solution
+
+1. Create `src/lib/utils/display.ts` with:
+   - `na(value: string | number | undefined | null): string` — returns "N/A" for nullish values
+   - `ottoIcon(status: string): string` — returns emoji for Otto run status
+   - `proposalColor(priority: string): string` — returns CSS class for proposal priority
+
+2. Create `src/lib/data/cron-descriptions.ts` with:
+   - `CRON_DESCRIPTIONS: Record<string, string>` — extracted from Crons.svelte
+
+3. Update imports in:
+   - `tabs/Overview.svelte` — import `na` from `$lib/utils/display`
+   - `tabs/H1.svelte` — import `na` from `$lib/utils/display`
+   - `tabs/OttoTimeline.svelte` — import `ottoIcon` from `$lib/utils/display`
+   - `tabs/Research.svelte` — import `ottoIcon`, `proposalColor` from `$lib/utils/display`
+   - `tabs/ResearchProposals.svelte` — import `proposalColor` from `$lib/utils/display` (rename `proposalPriorityColor` → `proposalColor`)
+   - `tabs/Crons.svelte` — import `CRON_DESCRIPTIONS` from `$lib/data/cron-descriptions`
+
+## Files Touched
+
+| File | Action | Scope |
+|------|--------|-------|
+| `src/lib/utils/display.ts` | CREATE | ✅ New file in lib |
+| `src/lib/data/cron-descriptions.ts` | CREATE | ✅ New file in lib |
+| `src/lib/components/tabs/Overview.svelte` | MODIFY (import + remove inline) | ✅ Tabs |
+| `src/lib/components/tabs/H1.svelte` | MODIFY (import + remove inline) | ✅ Tabs |
+| `src/lib/components/tabs/OttoTimeline.svelte` | MODIFY (import + remove inline) | ✅ Tabs |
+| `src/lib/components/tabs/Research.svelte` | MODIFY (import + remove inline) | ✅ Tabs |
+| `src/lib/components/tabs/ResearchProposals.svelte` | MODIFY (import + rename) | ✅ Tabs |
+| `src/lib/components/tabs/Crons.svelte` | MODIFY (import + remove inline) | ✅ Tabs |
+
+## Verification
+
+- `pnpm check` — no new errors
+- `pnpm build` — dashboard builds
+- `pnpm test` — 356 tests pass
+- Visual: dashboard renders without changes in behavior
+
+## Source
+
+QA Gap Scan 2026-08-02, Phase 1 (gap-components.md §5)

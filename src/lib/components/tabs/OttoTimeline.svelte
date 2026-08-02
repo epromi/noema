@@ -12,7 +12,9 @@
 
 <h3 class="section-title"><span aria-hidden="true">⚡</span> Otto Nightly Runs</h3>
 <div class="card timeline-card">
-  {#if ottoRuns.length === 0}
+  {#if !ottoRuns}
+    <p class="empty" role="alert">Otto timeline data unavailable</p>
+  {:else if ottoRuns.length === 0}
     <p class="empty">No timeline data</p>
   {:else}
     <div class="timeline">
@@ -31,7 +33,7 @@
             <div class="tl-body">{run.summary}</div>
           {/if}
           {#each run.steps as step (`${run.date}-${step.label}`)}
-            <div class="tl-sub">
+            <div class="tl-sub" role="listitem" aria-label="{step.label}: {step.status}">
               <span aria-hidden="true">{step.status === "ok" ? "✅" : "⬜"}</span>
               {step.label}
             </div>

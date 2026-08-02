@@ -109,7 +109,7 @@
   });
 </script>
 
-<section class="orchestrator-tab">
+<section class="orchestrator-tab" aria-label="Orchestrator dashboard">
   <OttoTimeline ottoRuns={research.ottoRuns} />
 
   <KanbanBoard {actionQueue} {getActionState} onAction={sendAction} />

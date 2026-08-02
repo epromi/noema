@@ -107,7 +107,9 @@
 </script>
 
 <div class="action-group">
-  {#if options.length > 0}
+  {#if actions.length === 0 && options.length === 0}
+    <span class="no-actions">No actions available</span>
+  {:else if options.length > 0}
     {#each options as opt (opt.key)}
       {@const state = getState(itemId, opt.key as DashboardActionType)}
       <button
@@ -216,5 +218,11 @@
   .action-btn:not(:disabled):hover {
     opacity: 1;
     transform: scale(1.03);
+  }
+
+  .no-actions {
+    color: var(--muted);
+    font-size: 0.85em;
+    font-style: italic;
   }
 </style>

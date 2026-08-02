@@ -40,6 +40,11 @@
 <section class="viktor-tab">
   <h3 class="section-title"><span aria-hidden="true">🛡️</span> Viktor Security Audit</h3>
 
+  {#if (viktor as any).error}
+    <div class="error-banner" role="alert">
+      <p class="error-text">⚠️ Viktor data unavailable: {(viktor as any).error}</p>
+    </div>
+  {:else}
   <div class="metrics-bar">
     <div class="metric-card" aria-label="Total completed audits: {viktor.totalCompleted}">
       <div class="metric-value">{viktor.totalCompleted}</div>
@@ -132,6 +137,7 @@
       </div>
     {/if}
   </div>
+  {/if}
 </section>
 
 <style>
@@ -329,6 +335,20 @@
 
   .muted {
     color: var(--muted);
+  }
+
+  .error-banner {
+    background: var(--r-bg);
+    border: 1px solid var(--red);
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+  }
+
+  .error-text {
+    color: var(--red);
+    margin: 0;
+    font-size: 0.9em;
   }
 
   .empty {

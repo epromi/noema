@@ -39,14 +39,18 @@
   );
 </script>
 
-{#if cpu && (part === "bar" || part === "both")}
+{#if cpu && (cpu as any).error}
+  <span class="sys-item cpu-load error" role="alert">CPU: error</span>
+{:else if cpu && (part === "bar" || part === "both")}
   <span class="sys-item cpu-load {loadClass(cpu)}">
     CPU: {cpuPercent}% ({formatLoad(cpu)})
   </span>
   <span class="sys-item">Procs: {cpu.totalProcs}</span>
 {/if}
 
-{#if cpu && (part === "list" || part === "both")}
+{#if cpu && (cpu as any).error}
+  <!-- error already shown above -->
+{:else if cpu && (part === "list" || part === "both")}
   <div class="cpu-top-card" aria-label="Top CPU processes">
     <h3 class="section-title"><span aria-hidden="true">🔥</span> Top CPU</h3>
     {#if cpu.topProcesses.length === 0}
