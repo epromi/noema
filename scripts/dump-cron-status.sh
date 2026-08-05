@@ -3,11 +3,15 @@
 # Called by system crontab every 3 minutes to avoid Gateway API timeout in SSR
 set -e
 
+# Cron has minimal PATH — use absolute paths
+export PATH="$HOME/.local/bin:$HOME/bin:/usr/local/bin:/usr/bin:/bin"
+export HOME="$HOME"
+
 OUTDIR="/home/promi/projects/noema/data/cron-state"
 mkdir -p "$OUTDIR"
 
 # Dump all cron jobs as JSON
-openclaw cron list --json 2>/dev/null > "$OUTDIR/_all.json.tmp" && mv "$OUTDIR/_all.json.tmp" "$OUTDIR/_all.json"
+$HOME/.local/bin/openclaw cron list --json 2>/dev/null > "$OUTDIR/_all.json.tmp" && mv "$OUTDIR/_all.json.tmp" "$OUTDIR/_all.json"
 
 # Write individual job status files for per-job dashboard views
 python3 -c "
