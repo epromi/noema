@@ -2,10 +2,15 @@ import type { DashboardData } from "$lib/types";
 
 export type SseSendFn = (data: DashboardData) => void;
 
+const MAX_CLIENTS = 100;
 const clients = new Set<SseSendFn>();
 
 /** Register an SSE client send callback. Returns unsubscribe cleanup. */
 export function addClient(send: SseSendFn): () => void {
+  if (clients.size >= MAX_CLIENTS) {
+    console.warn(`[sse] MAX_CLIENTS (${MAX_CLIENTS}) reached, rejecting new client`);
+    return () => {};
+  }
   clients.add(send);
   return () => {
     clients.delete(send);

@@ -27,6 +27,7 @@
 
   let sseData = $state<DashboardData | null>(null);
 
+  // Deep merge: keep SSR data for keys absent from SSE (defense against partial SSE pushes)
   const data = $derived(sseData ? { ...serverData, ...sseData } : serverData);
 
   $effect(() => {

@@ -42,7 +42,9 @@ export function startCollector(): void {
   void collectOnce();
 
   collectorTimer = setInterval(() => {
-    void collectOnce();
+    void collectOnce().catch((err) =>
+      console.error("[noema] collect cycle failed:", err),
+    );
   }, COLLECT_INTERVAL_MS);
 }
 
