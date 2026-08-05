@@ -1,7 +1,7 @@
 <script lang="ts">
   import { dev } from "$app/environment";
 
-  let { status, error } = $props();
+  let { status, error }: { status: number; error: Error } = $props();
 
   const message = $derived(
     status === 404 ? "Oldal nem található." :
