@@ -21,11 +21,12 @@ export async function getCrons(providers?: AllProviders): Promise<CronData> {
       agentId: job.agentId ?? "system",
       schedule: formatSchedule(job.schedule),
       group: classifyCronGroup(job.schedule),
-      lastResult: job.state?.lastRunStatus ?? job.status ?? "unknown",
+      // v2026.7+ Gateway returns lastRunStatus at top level, not in state
+      lastResult: job.lastRunStatus ?? job.state?.lastRunStatus ?? job.status ?? "unknown",
       enabled: job.enabled,
-      lastRunAtMs: job.state?.lastRunAtMs,
-      nextRunAtMs: job.state?.nextRunAtMs,
-      consecutiveErrors: job.state?.consecutiveErrors ?? 0,
+      lastRunAtMs: job.lastRunAtMs ?? job.state?.lastRunAtMs,
+      nextRunAtMs: job.nextRunAtMs ?? job.state?.nextRunAtMs,
+      consecutiveErrors: job.consecutiveErrors ?? job.state?.consecutiveErrors ?? 0,
     }));
 
     const healthy = crons.filter((c) => c.lastResult === "ok").length;

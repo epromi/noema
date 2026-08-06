@@ -7,6 +7,11 @@ export interface CronJob {
   enabled: boolean;
   schedule: unknown;
   status?: string;
+  lastRunStatus?: string;       // top-level in Gateway API response (v2026.7+)
+  lastRunAtMs?: number;         // top-level in Gateway API response (v2026.7+)
+  nextRunAtMs?: number;         // top-level in Gateway API response (v2026.7+)
+  lastRunError?: string | null; // top-level in Gateway API response
+  consecutiveErrors?: number;   // may be top-level or in state
   state?: {
     lastRunAtMs?: number;
     lastRunStatus?: string;
