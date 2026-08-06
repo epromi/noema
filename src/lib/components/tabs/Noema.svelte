@@ -438,6 +438,12 @@
     background: var(--accent);
   }
 
+  @media (prefers-reduced-motion: reduce) {
+    .seg {
+      transition: none;
+    }
+  }
+
   .seg.done {
     background: var(--green);
   }

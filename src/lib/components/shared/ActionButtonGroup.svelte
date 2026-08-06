@@ -220,6 +220,12 @@
     transform: scale(1.03);
   }
 
+  @media (prefers-reduced-motion: reduce) {
+    .action-btn:not(:disabled):hover {
+      transform: none;
+    }
+  }
+
   .no-actions {
     color: var(--muted);
     font-size: 0.85em;

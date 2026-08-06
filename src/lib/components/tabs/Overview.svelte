@@ -295,6 +295,12 @@
       background 0.2s;
   }
 
+  @media (prefers-reduced-motion: reduce) {
+    .agent-card.clickable {
+      transition: none;
+    }
+  }
+
   .agent-card.clickable:hover,
   .agent-card.clickable:focus-visible {
     border-color: var(--accent);

@@ -214,6 +214,12 @@
     transform: translateX(0);
   }
 
+  @media (prefers-reduced-motion: reduce) {
+    .agent-detail-panel {
+      transition: none;
+    }
+  }
+
   .panel-header {
     display: flex;
     align-items: flex-start;
