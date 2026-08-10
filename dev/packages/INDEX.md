@@ -79,6 +79,8 @@
 | PKG-076 | **Shared Loading States Component** 💀 | ✅ F5 | — | S | 45m | — |
 | PKG-077 | **Alert Threshold Configuration** 🚨 | 📋 F0 | — | S | 30m | — |
 | PKG-078 | **Color Scheme Toggle (Light Mode)** 🌓 | 📋 F0 | — | S | 1h | — |
+| PKG-079 | **LoadingSkeleton Integration** 💀 | 📋 F0 | — | M | 2-3h | — |
+| PKG-080 | **Fix Overview H1 Data Field Crash** 🐛 | 📋 F0 | — | XS | 15m | — |
 
 ## Függőségi Sorrend
 

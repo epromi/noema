@@ -88,7 +88,8 @@
   </div>
 
   <div class="metrics-bar">
-    <div class="metric-card {cronMetricClass(crons.healthy, crons.total)}">
+    <div class="metric-card {cronMetricClass(crons.healthy, crons.total)}"
+         aria-label="Cron jobs: {crons.error ? 'No data' : `${crons.healthy} of ${crons.total} healthy`}">
       <div class="metric-value">
         {crons.error ? "N/A" : `${crons.healthy}/${crons.total}`}
       </div>
@@ -102,7 +103,8 @@
       </div>
     </div>
 
-    <div class="metric-card {agentMetricClass(agents.online, agents.total)}">
+    <div class="metric-card {agentMetricClass(agents.online, agents.total)}"
+         aria-label="Agents: {agents.error ? 'No data' : `${agents.online} of ${agents.total} active, ${agents.stale} stale`}">
       <div class="metric-value">
         {agents.error ? "N/A" : `${agents.online}/${agents.total}`}
       </div>
@@ -112,7 +114,8 @@
       </div>
     </div>
 
-    <div class="metric-card">
+    <div class="metric-card"
+         aria-label="H1 Signal: {h1.error ? 'No data' : `${na(h1.signal.signal)} signal, ${na(h1.signal.reputation)} reputation`}">
       <div class="metric-value">
         {h1.error ? "N/A" : na(h1.signal.signal)}
       </div>
@@ -122,7 +125,8 @@
       </div>
     </div>
 
-    <div class="metric-card">
+    <div class="metric-card"
+         aria-label="Disk usage: {diskPercent(health.disk)} used, {na(health.ram)} RAM">
       <div class="metric-value">{diskPercent(health.disk)}</div>
       <div class="metric-label">Disk</div>
       <div class="metric-sub">{na(health.ram)}</div>
@@ -159,7 +163,9 @@
           </div>
           <div class="agent-meta">{agent.lastActive || agent.lastRun}</div>
           {#if isStale(agent)}
-            <div class="stale-warn">⚠ Stale</div>
+            <div class="stale-warn" role="alert">
+              <span aria-hidden="true">⚠</span> Stale
+            </div>
           {/if}
         </div>
       {/each}
@@ -305,7 +311,8 @@
   .agent-card.clickable:focus-visible {
     border-color: var(--accent);
     background: rgba(255, 255, 255, 0.03);
-    outline: none;
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
   }
 
   .agent-header {

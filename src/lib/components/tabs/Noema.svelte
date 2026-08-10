@@ -540,6 +540,12 @@
     animation: live-pulse 1.6s ease-in-out infinite;
   }
 
+  @media (prefers-reduced-motion: reduce) {
+    .live-status.live-processing :global(.pkg-row) {
+      animation: none;
+    }
+  }
+
   .live-status.live-failed :global(.pkg-row) {
     background: color-mix(in srgb, var(--error) 12%, var(--card));
     border-color: var(--error);

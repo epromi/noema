@@ -189,7 +189,8 @@
   .data-table tbody tr.clickable:hover,
   .data-table tbody tr.clickable:focus-visible {
     background: rgba(255, 255, 255, 0.04);
-    outline: none;
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
   }
 
   .col-emoji {
