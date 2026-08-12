@@ -523,7 +523,12 @@
     font-weight: 700;
     font-size: 0.82em;
     color: var(--red);
-    animation: cs-now-pulse 2s ease-in-out infinite;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .cr-now-line {
+      animation: cs-now-pulse 2s ease-in-out infinite;
+    }
   }
 
   @keyframes cs-now-pulse {

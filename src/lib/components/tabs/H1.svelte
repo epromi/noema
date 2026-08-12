@@ -40,24 +40,28 @@
   {/if}
 
   <div class="metrics-bar">
-    <div class="metric-card">
+    <div class="metric-card"
+         aria-label="Open reports: {h1.error ? 'No data' : na(h1.stats.open)}">
       <div class="metric-value">{h1.error ? "N/A" : na(h1.stats.open)}</div>
       <div class="metric-label">Open reports</div>
     </div>
 
-    <div class="metric-card {signalClass(h1.stats.signal)}">
+    <div class="metric-card {signalClass(h1.stats.signal)}"
+         aria-label="H1 Signal: {h1.error ? 'No data' : na(h1.stats.signal)}">
       <div class="metric-value">{h1.error ? "N/A" : na(h1.stats.signal)}</div>
       <div class="metric-label">Signal</div>
     </div>
 
-    <div class="metric-card">
+    <div class="metric-card"
+         aria-label="Reputation: {h1.error ? 'No data' : na(h1.stats.reputation)}">
       <div class="metric-value">
         {h1.error ? "N/A" : na(h1.stats.reputation)}
       </div>
       <div class="metric-label">Reputation</div>
     </div>
 
-    <div class="metric-card">
+    <div class="metric-card"
+         aria-label="Trial count: {h1.error ? 'No data' : na(h1.stats.trial)}">
       <div class="metric-value">{h1.error ? "N/A" : na(h1.stats.trial)}</div>
       <div class="metric-label">Trial count</div>
     </div>

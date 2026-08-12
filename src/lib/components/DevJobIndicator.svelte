@@ -326,7 +326,12 @@
 
   .dev-job-indicator.active {
     border-color: var(--green);
-    animation: dji-pulse 2s infinite;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .dev-job-indicator.active {
+      animation: dji-pulse 2s infinite;
+    }
   }
 
   @keyframes dji-pulse {

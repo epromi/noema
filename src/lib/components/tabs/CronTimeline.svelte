@@ -221,17 +221,17 @@
       📍 NOW
     </button>
   </div>
-  <div class="ct-legend">
-    <span
-      ><span class="ct-leg-dot" style:background="var(--green)"></span> OK</span
+  <div class="ct-legend" role="list" aria-label="Status legend">
+    <span role="listitem"
+      ><span class="ct-leg-dot" style:background="var(--green)" aria-hidden="true"></span> OK</span
     >
-    <span
-      ><span class="ct-leg-dot" style:background="var(--red)"></span> Error</span
+    <span role="listitem"
+      ><span class="ct-leg-dot" style:background="var(--red)" aria-hidden="true"></span> Error</span
     >
-    <span
-      ><span class="ct-leg-dot" style:background="var(--yellow)"></span> Warning</span
+    <span role="listitem"
+      ><span class="ct-leg-dot" style:background="var(--yellow)" aria-hidden="true"></span> Warning</span
     >
-    <span><span aria-hidden="true">🔴</span> NOW vonal</span>
+    <span role="listitem" aria-label="Now indicator line"><span aria-hidden="true">🔴</span> NOW vonal</span>
   </div>
   {#if crons.error}
     <p class="empty">No cron data — {crons.error}</p>

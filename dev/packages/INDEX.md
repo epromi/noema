@@ -81,6 +81,8 @@
 | PKG-078 | **Color Scheme Toggle (Light Mode)** 🌓 | 📋 F0 | — | S | 1h | — |
 | PKG-079 | **LoadingSkeleton Integration** 💀 | 📋 F0 | — | M | 2-3h | — |
 | PKG-080 | **Fix Overview H1 Data Field Crash** 🐛 | 📋 F0 | — | XS | 15m | — |
+| PKG-081 | **ErrorBanner Shared Component** ⚠️ | 🤖 auto-ready | — | S | 20m | QA 2026-08-12 |
+| PKG-082 | **Loading Skeleton States for Key Tabs** 💀 | 🤖 auto-ready | — | S | 30m | QA 2026-08-12 |
 
 ## Függőségi Sorrend
 

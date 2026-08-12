@@ -33,11 +33,19 @@
   {:else if timeline.rows.length === 0}
     <p class="empty">No crons to display.</p>
   {:else}
-    <div class="timeline-legend">
-      <span class="legend-item"><span class="dot dot-ok"></span> OK</span>
-      <span class="legend-item"><span class="dot dot-error"></span> Error</span>
-      <span class="legend-item"><span class="dot dot-skipped"></span> Skipped</span>
-      <span class="legend-item"><span class="dot dot-unknown"></span> Unknown</span>
+    <div class="timeline-legend" role="list">
+      <span class="legend-item" role="listitem"
+            ><span class="dot dot-ok" aria-hidden="true"></span> OK</span
+      >
+      <span class="legend-item" role="listitem"
+            ><span class="dot dot-error" aria-hidden="true"></span> Error</span
+      >
+      <span class="legend-item" role="listitem"
+            ><span class="dot dot-skipped" aria-hidden="true"></span> Skipped</span
+      >
+      <span class="legend-item" role="listitem"
+            ><span class="dot dot-unknown" aria-hidden="true"></span> Unknown</span
+      >
     </div>
 
     <div class="timeline-axis">

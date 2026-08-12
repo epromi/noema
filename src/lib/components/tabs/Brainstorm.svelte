@@ -9,6 +9,12 @@
     pending: "📋",
   };
 
+  const STATUS_LABELS: Record<BrainstormItemStatus, string> = {
+    done: "Completed",
+    waiting: "Waiting",
+    pending: "Pending",
+  };
+
   const sectionsWithItems = $derived(
     brainstorm.sections.filter((section) => section.items.length > 0),
   );
@@ -45,7 +51,7 @@
                 ? section.bgColor
                 : undefined}
             >
-              <span class="item-icon" aria-hidden="true">{STATUS_ICONS[item.status]}</span>
+              <span class="item-icon" role="img" aria-label="{STATUS_LABELS[item.status]}">{STATUS_ICONS[item.status]}</span>
               <div class="item-body">
                 <span class="item-id">{item.id}</span>
                 {item.name}
