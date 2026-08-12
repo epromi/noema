@@ -1,0 +1,85 @@
+Implement the following specification:
+
+# PKG-081: ErrorBanner Shared Component
+
+**Status:** 🤖 auto-ready | **Source:** Nova QA 2026-08-12 gap scan
+**Priority:** Medium | **Est. effort:** 20 min
+
+## Problem
+
+Error states across Noema tabs are inconsistently formatted:
+- Some use `<p class="empty">No data — {error}</p>`
+- Some use just `<p class="empty">Something went wrong.</p>` (no error detail)
+- Some use `role="alert"`, most don't
+- Error banner styling varies: some inline, some red, some gray
+
+This inconsistency:
+- Makes errors harder to notice for users (especially with screen readers)
+- Duplicates error display logic across 15+ components
+- Lacks `role="alert"` which means screen readers don't announce errors
+
+## Solution
+
+Create a reusable `<ErrorBanner>` component that:
+1. Accepts `message` prop (string, required)
+2. Optionally accepts `retry` callback for retry-able errors
+3. Shows a consistent red/amber banner with `role="alert"`
+4. Uses `aria-live="assertive"` for screen reader announcement
+5. Includes a clear icon (⚠️) + message + optional retry button
+
+## Files
+
+| File | Action |
+|------|--------|
+| `src/lib/components/shared/ErrorBanner.svelte` | CREATE |
+| `src/lib/components/tabs/Agents.svelte` | MODIFY — replace inline error with `<ErrorBanner>` |
+| `src/lib/components/tabs/AuditTrail.svelte` | MODIFY |
+| `src/lib/components/tabs/Bills.svelte` | MODIFY |
+| `src/lib/components/tabs/Brainstorm.svelte` | MODIFY |
+| `src/lib/components/tabs/Crons.svelte` | MODIFY |
+| `src/lib/components/tabs/CronTimeline.svelte` | MODIFY |
+| `src/lib/components/tabs/DecisionTrace.svelte` | MODIFY |
+| `src/lib/components/tabs/H1.svelte` | MODIFY |
+| `src/lib/components/tabs/KanbanBoard.svelte` | MODIFY |
+| `src/lib/components/tabs/LogsViewer.svelte` | MODIFY |
+| `src/lib/components/tabs/Noema.svelte` | MODIFY |
+| `src/lib/components/tabs/Orchestrator.svelte` | MODIFY |
+| `src/lib/components/tabs/OttoTimeline.svelte` | MODIFY |
+| `src/lib/components/tabs/Overview.svelte` | MODIFY |
+| `src/lib/components/tabs/ProcessorTimer.svelte` | MODIFY |
+| `src/lib/components/tabs/Research.svelte` | MODIFY |
+| `src/lib/components/tabs/ResearchProposals.svelte` | MODIFY |
+| `src/lib/components/tabs/SessionHealth.svelte` | MODIFY |
+| `src/lib/components/tabs/Viktor.svelte` | MODIFY |
+
+## Component API
+
+```svelte
+<script lang="ts">
+  let { message, retry }: { message: string; retry?: () => void } = $props();
+</script>
+
+<div class="error-banner" role="alert" aria-live="assertive">
+  <span class="error-icon" aria-hidden="true">⚠️</span>
+  <span class="error-message">{message}</span>
+  {#if retry}
+    <button class="error-retry" onclick={retry}>Retry</button>
+  {/if}
+</div>
+```
+
+## Scope Gate
+
+| Check | Result |
+|-------|--------|
+| Touches `src/routes/`? | ❌ No |
+| Touches `src/lib/stores/`? | ❌ No |
+| Touches `src/lib/server/`? | ❌ No |
+| Touches config files? | ❌ No |
+| Touches provider interface? | ❌ No |
+| All files in ✅ scope? | ✅ Yes — `src/lib/components/` only |
+
+## Traceability
+
+- Source: Nova QA 2026-08-12, gap-components.md §6.5 ("Error state format inconsistency")
+- Dedup: No existing PKG for error banner component
