@@ -83,6 +83,8 @@
 | PKG-080 | **Fix Overview H1 Data Field Crash** 🐛 | 📋 F0 | — | XS | 15m | — |
 | PKG-081 | **ErrorBanner Shared Component** ⚠️ | 🤖 auto-ready | — | S | 20m | QA 2026-08-12 |
 | PKG-082 | **Loading Skeleton States for Key Tabs** 💀 | 🤖 auto-ready | — | S | 30m | QA 2026-08-12 |
+| PKG-083 | **ARIA Tabs Pattern + Keyboard Navigation** ⌨️ | 🤖 auto-ready | — | M | 2h | QA 2026-08-16 |
+| PKG-084 | **Color-Only Status → Non-Color Cues** 🎨 | 🤖 auto-ready | — | M | 1.5h | QA 2026-08-16 |
 
 ## Függőségi Sorrend
 
