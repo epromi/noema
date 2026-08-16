@@ -218,7 +218,7 @@
       aria-label="Scroll to current time"
       onclick={scrollToNow}
     >
-      📍 NOW
+      <span aria-hidden="true">📍</span> NOW
     </button>
   </div>
   <div class="ct-legend" role="list" aria-label="Status legend">

@@ -31,10 +31,17 @@
         {#if research.latestDate}
           <span class="date-badge">{research.latestDate}</span>
         {/if}
-        <span class="badge badge-ok">🔧 {research.autoFixCount} AUTO-FIX</span>
-        <span class="badge badge-warn">📋 {research.proposeCount} PROPOSE</span>
+        <span class="badge badge-ok"
+          ><span aria-hidden="true">🔧</span> {research.autoFixCount}
+          AUTO-FIX</span
+        >
+        <span class="badge badge-warn"
+          ><span aria-hidden="true">📋</span> {research.proposeCount}
+          PROPOSE</span
+        >
         <span class="badge badge-purple"
-          >💡 {Math.max(0, research.totalFiles - research.recentFiles)} corpus</span
+          ><span aria-hidden="true">💡</span>
+          {Math.max(0, research.totalFiles - research.recentFiles)} corpus</span
         >
       </div>
 
@@ -63,7 +70,7 @@
     </div>
   {/if}
 
-  <h3 class="section-title">🧪 Otto Nightly QA</h3>
+  <h3 class="section-title"><span aria-hidden="true">🧪</span> Otto Nightly QA</h3>
   <div class="card">
     {#if recentOttoRuns.length === 0}
       <p class="empty">No Otto nightly runs yet</p>
@@ -95,7 +102,7 @@
     {/if}
   </div>
 
-  <h3 class="section-title">📂 Research Corpus</h3>
+  <h3 class="section-title"><span aria-hidden="true">📂</span> Research Corpus</h3>
   <div class="card corpus-card">
     <div class="corpus-stat">
       <span class="corpus-value">{research.totalFiles}</span>

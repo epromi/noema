@@ -25,7 +25,7 @@
           class:tl-err={run.status === "err"}
         >
           <div class="tl-head">
-            {ottoIcon(run.status)}
+            <span aria-hidden="true">{ottoIcon(run.status)}</span>
             {run.title}
             <span class="tl-date">{run.date}</span>
           </div>

@@ -183,7 +183,7 @@
                   class="action-btn"
                   class:loading={state === "loading"}
                   disabled={state === "loading" || row.status === "paid"}
-                  aria-label="Mark bill as paid"
+                  aria-label={`Mark "${row.name}" as paid`}
                   onclick={() => markPaid(row.id, row.raw)}
                 >
                   {state === "loading"
